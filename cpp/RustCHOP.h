@@ -13,6 +13,7 @@
 */
 
 #include "CHOP_CPlusPlusBase.h"
+#include "lib.rs.h"
 
 /*
 
@@ -61,18 +62,5 @@ public:
 	virtual void		pulsePressed(const char* name, void* reserved1) override;
 
 private:
-
-	// We don't need to store this pointer, but we do for the example.
-	// The OP_NodeInfo class store information about the node that's using
-	// this instance of the class (like its name).
-	const OP_NodeInfo*	myNodeInfo;
-
-	// In this example this value will be incremented each time the execute()
-	// function is called, then passes back to the CHOP 
-	int32_t				myExecuteCount;
-
-
-	double				myOffset;
-
-
+   Chop chop;
 };
