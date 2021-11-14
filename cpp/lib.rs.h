@@ -692,10 +692,32 @@ std::size_t align_of() {
 } // namespace cxxbridge1
 } // namespace rust
 
+struct NumericParameter;
 struct OperatorInfo;
 struct Chop;
-struct ChopInput;
+struct ChopChannel;
 struct ChopOperatorInputs;
+struct ChopOperatorInput;
+struct ChopOutputInfo;
+struct ChopOutput;
+
+#ifndef CXXBRIDGE1_STRUCT_NumericParameter
+#define CXXBRIDGE1_STRUCT_NumericParameter
+struct NumericParameter final {
+  ::rust::String name;
+  ::rust::String label;
+  ::rust::String page;
+  ::std::array<double, 4> default_values;
+  ::std::array<double, 4> min_values;
+  ::std::array<double, 4> max_values;
+  ::std::array<bool, 4> clamp_mins;
+  ::std::array<bool, 4> clamp_maxes;
+  ::std::array<double, 4> min_sliders;
+  ::std::array<double, 4> max_sliders;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_NumericParameter
 
 #ifndef CXXBRIDGE1_STRUCT_OperatorInfo
 #define CXXBRIDGE1_STRUCT_OperatorInfo
@@ -720,35 +742,73 @@ struct OperatorInfo final {
 #define CXXBRIDGE1_STRUCT_Chop
 struct Chop final {
   ::OperatorInfo info;
+  ::rust::Vec<::NumericParameter> params;
 
   using IsRelocatable = ::std::true_type;
 };
 #endif // CXXBRIDGE1_STRUCT_Chop
 
-#ifndef CXXBRIDGE1_STRUCT_ChopInput
-#define CXXBRIDGE1_STRUCT_ChopInput
-struct ChopInput final {
+#ifndef CXXBRIDGE1_STRUCT_ChopChannel
+#define CXXBRIDGE1_STRUCT_ChopChannel
+struct ChopChannel final {
   ::rust::Vec<float> data;
 
   using IsRelocatable = ::std::true_type;
 };
-#endif // CXXBRIDGE1_STRUCT_ChopInput
+#endif // CXXBRIDGE1_STRUCT_ChopChannel
 
 #ifndef CXXBRIDGE1_STRUCT_ChopOperatorInputs
 #define CXXBRIDGE1_STRUCT_ChopOperatorInputs
 struct ChopOperatorInputs final {
+  ::std::int32_t num_inputs;
+  ::rust::Vec<::ChopOperatorInput> inputs;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ChopOperatorInputs
+
+#ifndef CXXBRIDGE1_STRUCT_ChopOperatorInput
+#define CXXBRIDGE1_STRUCT_ChopOperatorInput
+struct ChopOperatorInput final {
   ::rust::String path;
   ::std::uint32_t id;
   ::std::uint32_t num_channels;
   ::std::uint32_t num_samples;
   double sample_rate;
   double start_index;
-  ::rust::Vec<::ChopInput> inputs;
+  ::rust::Vec<::ChopChannel> channels;
 
   using IsRelocatable = ::std::true_type;
 };
-#endif // CXXBRIDGE1_STRUCT_ChopOperatorInputs
+#endif // CXXBRIDGE1_STRUCT_ChopOperatorInput
+
+#ifndef CXXBRIDGE1_STRUCT_ChopOutputInfo
+#define CXXBRIDGE1_STRUCT_ChopOutputInfo
+struct ChopOutputInfo final {
+  ::std::uint32_t num_channels;
+  ::std::uint32_t num_samples;
+  double sample_rate;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ChopOutputInfo
+
+#ifndef CXXBRIDGE1_STRUCT_ChopOutput
+#define CXXBRIDGE1_STRUCT_ChopOutput
+struct ChopOutput final {
+  ::rust::Vec<::ChopChannel> channels;
+  ::std::int32_t num_channels;
+  ::std::int32_t num_samples;
+  ::std::int32_t sample_rate;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ChopOutput
+
+void on_reset(const ::Chop &chop) noexcept;
 
 ::Chop get_chop() noexcept;
 
-void chop_execute(::ChopOperatorInputs chop) noexcept;
+bool get_output_info(::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+
+void chop_execute(::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;

@@ -20,6 +20,7 @@
 #include <cmath>
 #include <assert.h>
 #include <functional>
+#include <iostream>
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
@@ -92,25 +93,21 @@ RustCHOP::getGeneralInfo(CHOP_GeneralInfo* ginfo, const OP_Inputs* inputs, void*
 bool
 RustCHOP::getOutputInfo(CHOP_OutputInfo* info, const OP_Inputs* inputs, void* reserved1)
 {
-	// If there is an input connected, we are going to match it's channel names etc
-	// otherwise we'll specify our own.
-	if (inputs->getNumInputs() > 0)
-	{
-		return false;
-	}
-	else
-	{
-		info->numChannels = 1;
+    ChopOutputInfo ci;
+    ChopOperatorInputs opIn;
+    for (auto i = 0; i < inputs->getNumInputs(); i++) {
+        auto ci = inputs->getInputCHOP(i);
+        auto in = mapInput(ci);
+        opIn.inputs.push_back(in);
+    }
 
-		// Since we are outputting a timeslice, the system will dictate
-		// the numSamples and start_index of the CHOP data
-		//info->numSamples = 1;
-		//info->start_index = 0
+    auto is_output = get_output_info(ci, opIn);
 
-		// For illustration we are going to output 120hz data
-		info->sampleRate = 120;
-		return true;
-	}
+    info->numChannels = ci.num_channels;
+    info->sampleRate = ci.sample_rate;
+    info->numSamples = ci.num_samples;
+
+    return is_output;
 }
 
 void
@@ -124,37 +121,30 @@ RustCHOP::execute(CHOP_Output* output,
 							  const OP_Inputs* inputs,
 							  void* reserved)
 {
+    ChopOperatorInputs ins;
+    ins.inputs = rust::Vec<ChopOperatorInput>();
     for (int i = 0; i < inputs->getNumInputs(); i++) {
         auto cinput = inputs->getInputCHOP(i);
-        ChopOperatorInputs chop;
-        chop.id = cinput->opId;
-        chop.path = cinput->opPath;
-        chop.num_channels = cinput->numChannels;
-        chop.num_samples = cinput->numSamples;
-        chop.sample_rate = cinput->sampleRate;
-        chop.start_index = cinput->startIndex;
-        chop.inputs = rust::Vec<ChopInput>();
-        int ind = 0;
-        for (auto i = 0; i < cinput->numChannels; i++) {
-            ChopInput input;
-            input.data = rust::Vec<float>();
-            for (auto j = 0; j < cinput->numSamples; j++) {
-                input.data.push_back(cinput->getChannelData(i)[ind]);
-                ind++;
-                ind = ind % cinput->numSamples;
-            }
-            chop.inputs.push_back(input);
-        }
-        chop_execute(chop);
+        auto in = mapInput(cinput);
+        ins.inputs.push_back(in);
+    }
+
+    ChopOutput out;
+    out.channels = rust::Vec<ChopChannel>();
+    out.num_channels = output->numChannels;
+    out.num_samples = output->numSamples;
+    out.sample_rate = output->sampleRate;
+    chop_execute(out, ins);
+    for (int i = 0; i < output->numChannels; i++) {
+        auto c = out.channels[i];
+        output->channels[i] = c.data.data();
     }
 }
 
 int32_t
 RustCHOP::getNumInfoCHOPChans(void * reserved1)
 {
-	// We return the number of channel we want to output to any Info CHOP
-	// connected to the CHOP. In this example we are just going to send one channel.
-	return 2;
+	return 0;
 }
 
 void
@@ -162,19 +152,14 @@ RustCHOP::getInfoCHOPChan(int32_t index,
 										OP_InfoCHOPChan* chan,
 										void* reserved1)
 {
-
     // TODO:
 }
 
 bool		
 RustCHOP::getInfoDATSize(OP_InfoDATSize* infoSize, void* reserved1)
 {
-	infoSize->rows = 2;
-	infoSize->cols = 2;
-	// Setting this to false means we'll be assigning values to the table
-	// one row at a time. True means we'll do it one column at a time.
-	infoSize->byColumn = false;
-	return true;
+    // TODO support dat
+	return false;
 }
 
 void
@@ -183,13 +168,30 @@ RustCHOP::getInfoDATEntries(int32_t index,
 										OP_InfoDATEntries* entries, 
 										void* reserved1)
 {
-    // TODO
+
+    // TODO map dat
 }
 
 void
 RustCHOP::setupParameters(OP_ParameterManager* manager, void *reserved1)
 {
+    // TODO support all param types
+    for (auto param : chop.params) {
+        OP_NumericParameter    np;
 
+        np.name = param.name.c_str();
+        np.label = param.label.c_str();
+        std::copy(std::begin(param.default_values), std::end(param.default_values), std::begin(np.defaultValues));
+        std::copy(std::begin(param.max_values), std::end(param.max_values), std::begin(np.maxValues));
+        std::copy(std::begin(param.min_values), std::end(param.min_values), std::begin(np.minValues));
+        std::copy(std::begin(param.max_sliders), std::end(param.max_sliders), std::begin(np.maxSliders));
+        std::copy(std::begin(param.min_sliders), std::end(param.min_sliders), std::begin(np.minSliders));
+        std::copy(std::begin(param.clamp_maxes), std::end(param.clamp_maxes), std::begin(np.clampMaxes));
+        std::copy(std::begin(param.clamp_mins), std::end(param.clamp_mins), std::begin(np.clampMaxes));
+
+        OP_ParAppendResult res = manager->appendFloat(np);
+        assert(res == OP_ParAppendResult::Success);
+    }
 }
 
 void 
@@ -197,7 +199,31 @@ RustCHOP::pulsePressed(const char* name, void* reserved1)
 {
 	if (!strcmp(name, "Reset"))
 	{
-	    // TODO
+        on_reset(chop);
     }
+}
+
+ChopOperatorInput
+RustCHOP::mapInput(const OP_CHOPInput* input) {
+    ChopOperatorInput chop;
+    chop.id = input->opId;
+    chop.path = input->opPath;
+    chop.num_channels = input->numChannels;
+    chop.num_samples = input->numSamples;
+    chop.sample_rate = input->sampleRate;
+    chop.start_index = input->startIndex;
+    chop.channels = rust::Vec<ChopChannel>();
+    int ind = 0;
+    for (auto i = 0; i < input->numChannels; i++) {
+        ChopChannel chan;
+        chan .data = rust::Vec<float>();
+        for (auto j = 0; j < input->numSamples; j++) {
+            chan.data.push_back(input->getChannelData(i)[ind]);
+            ind++;
+            ind = ind % input->numSamples;
+        }
+        chop.channels.push_back(chan);
+    }
+    return chop;
 }
 
