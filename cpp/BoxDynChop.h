@@ -10,6 +10,7 @@ struct ChopOperatorInputs;
 struct ChopOutputInfo;
 struct ChopOutput;
 struct OperatorInfo;
+struct ChopInfoChan;
 
 class BoxDynChop {
 public:
@@ -17,9 +18,11 @@ public:
     ~BoxDynChop() noexcept;
     using IsRelocatable = std::true_type;
 
-    void on_reset() noexcept;
-    ChopParams get_params() noexcept;
-    bool get_output_info(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept;
+    void onReset() noexcept;
+    ChopParams getParams() noexcept;
+    bool getOutputInfo(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept;
+    int32_t getNumInfoChopChans() noexcept;
+    ChopInfoChan getInfoChopChan(int32_t index) noexcept;
     rust::String getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept;
     void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
 

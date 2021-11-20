@@ -765,6 +765,7 @@ struct ChopOperatorInputs;
 struct ChopOperatorInput;
 struct ChopOutputInfo;
 struct ChopOutput;
+struct ChopInfoChan;
 
 #ifndef CXXBRIDGE1_STRUCT_NumericParameter
 #define CXXBRIDGE1_STRUCT_NumericParameter
@@ -882,6 +883,16 @@ struct ChopOutput final {
 };
 #endif // CXXBRIDGE1_STRUCT_ChopOutput
 
+#ifndef CXXBRIDGE1_STRUCT_ChopInfoChan
+#define CXXBRIDGE1_STRUCT_ChopInfoChan
+struct ChopInfoChan final {
+  ::rust::String name;
+  float value;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ChopInfoChan
+
 static_assert(
     ::rust::IsRelocatable<::BoxDynChop>::value,
     "type BoxDynChop should be trivially move constructible and trivially destructible in C++ to be used as a return value of `chop_new` or non-pinned mutable reference in signature of `chop_get_params`, `chop_on_reset`, `chop_get_output_info` in Rust");
@@ -898,9 +909,13 @@ void cxxbridge1$chop_get_params(::BoxDynChop &chop, ::ChopParams *return$) noexc
 
 void cxxbridge1$chop_on_reset(::BoxDynChop &chop) noexcept;
 
+::std::int32_t cxxbridge1$chop_get_num_info_chop_chans(const ::BoxDynChop &chop) noexcept;
+
+void cxxbridge1$chop_get_info_chop_chan(const ::BoxDynChop &chop, ::std::int32_t index, ::ChopInfoChan *return$) noexcept;
+
 bool cxxbridge1$chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
 
-void cxxbridge1$chop_get_channel_name(::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs, ::rust::String *return$) noexcept;
+void cxxbridge1$chop_get_channel_name(const ::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs, ::rust::String *return$) noexcept;
 
 void cxxbridge1$chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
@@ -928,11 +943,21 @@ void chop_on_reset(::BoxDynChop &chop) noexcept {
   cxxbridge1$chop_on_reset(chop);
 }
 
+::std::int32_t chop_get_num_info_chop_chans(const ::BoxDynChop &chop) noexcept {
+  return cxxbridge1$chop_get_num_info_chop_chans(chop);
+}
+
+::ChopInfoChan chop_get_info_chop_chan(const ::BoxDynChop &chop, ::std::int32_t index) noexcept {
+  ::rust::MaybeUninit<::ChopInfoChan> return$;
+  cxxbridge1$chop_get_info_chop_chan(chop, index, &return$.value);
+  return ::std::move(return$.value);
+}
+
 bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept {
   return cxxbridge1$chop_get_output_info(chop, info, inputs);
 }
 
-::rust::String chop_get_channel_name(::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs) noexcept {
+::rust::String chop_get_channel_name(const ::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs) noexcept {
   ::rust::MaybeUninit<::rust::String> return$;
   cxxbridge1$chop_get_channel_name(chop, index, inputs, &return$.value);
   return ::std::move(return$.value);

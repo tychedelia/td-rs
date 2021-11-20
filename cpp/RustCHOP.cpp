@@ -83,7 +83,7 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *re
         opIn.inputs.push_back(in);
     }
 
-    auto is_output = chop->get_output_info(&ci, &opIn);
+    auto is_output = chop->getOutputInfo(&ci, &opIn);
 
     info->numChannels = ci.num_channels;
     info->sampleRate = ci.sample_rate;
@@ -129,14 +129,16 @@ RustCHOP::execute(CHOP_Output *output,
 
 int32_t
 RustCHOP::getNumInfoCHOPChans(void *reserved1) {
-    return 0;
+    return chop->getNumInfoChopChans();
 }
 
 void
 RustCHOP::getInfoCHOPChan(int32_t index,
                           OP_InfoCHOPChan *chan,
                           void *reserved1) {
-    // TODO:
+    auto c = chop->getInfoChopChan(index);
+    chan->name->setString(c.name.c_str());
+    c.value = c.value;
 }
 
 bool
@@ -156,7 +158,7 @@ RustCHOP::getInfoDATEntries(int32_t index,
 
 void
 RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
-    for (auto param: chop->get_params().numeric_params) {
+    for (auto param: chop->getParams().numeric_params) {
         OP_NumericParameter np;
 
         np.name = param.name.c_str();
@@ -174,7 +176,7 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
         assert(res == OP_ParAppendResult::Success);
     }
 
-    for (auto param: chop->get_params().string_params) {
+    for (auto param: chop->getParams().string_params) {
         OP_StringParameter sp;
 
         sp.name = param.name.c_str();
@@ -187,7 +189,7 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
 void
 RustCHOP::pulsePressed(const char *name, void *reserved1) {
     if (!strcmp(name, "Reset")) {
-        chop->on_reset();
+        chop->onReset();
     }
 }
 
