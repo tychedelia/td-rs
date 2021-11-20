@@ -68,8 +68,9 @@ RustCHOP::~RustCHOP() {
 
 void
 RustCHOP::getGeneralInfo(CHOP_GeneralInfo *ginfo, const OP_Inputs *inputs, void *reserved1) {
-    ginfo->cookEveryFrameIfAsked = true;
-    ginfo->timeslice = true;
+//    ginfo->cookEveryFrameIfAsked = true;
+    ginfo->cookEveryFrame = true;
+    ginfo->timeslice = false;
     ginfo->inputMatchIndex = 0;
 }
 
@@ -88,6 +89,7 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *re
     info->numChannels = ci.num_channels;
     info->sampleRate = ci.sample_rate;
     info->numSamples = ci.num_samples;
+    info->startIndex = ci.start_index;
 
     return is_output;
 }
@@ -120,10 +122,14 @@ RustCHOP::execute(CHOP_Output *output,
     out.num_channels = output->numChannels;
     out.num_samples = output->numSamples;
     out.sample_rate = output->sampleRate;
+    for (auto i = 0; i < out.num_channels; i++) {
+        ChopChannel c;
+        out.channels.push_back(c);
+    }
     chop->execute(&out, &ins);
-    for (int i = 0; i < out.channels.size(); i++) {
+    for (auto i = 0; i < out.channels.size(); i++) {
         auto c = out.channels[i];
-        output->channels[i] = c.data.data();
+        std::copy(std::begin(c.data), std::end(c.data), output->channels[i]);
     }
 }
 
@@ -191,6 +197,20 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
         sp.label = param.label.c_str();
         sp.page = param.page.c_str();
         sp.defaultValue = param.default_value.c_str();
+
+        OP_ParAppendResult res = manager->appendString(sp);
+        assert(res == OP_ParAppendResult::Success);
+    }
+
+    for (auto param : chop->getParams().pulse_params) {
+        OP_NumericParameter np;
+
+        np.name = param.name.c_str();
+        np.label = param.label.c_str();
+        np.page = param.page.c_str();
+
+        OP_ParAppendResult res = manager->appendPulse(np);
+        assert(res == OP_ParAppendResult::Success);
     }
 }
 
