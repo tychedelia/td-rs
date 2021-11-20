@@ -3,19 +3,20 @@ use cxx::u;
 use crate::ffi::{ChopGeneralInfo, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams};
 use crate::{Chop, ChopChannel, NumericParameter, PuleParameter};
 
+/// Struct representing our CHOP's state
 pub struct SinChop {
     execute_count: u64,
 }
 
+/// Impl block providing default constructor for plugin
 impl SinChop {
     pub(crate) fn new() -> Self {
         Self { execute_count: 0 }
     }
 }
 
+/// Chop implementation for our plugin
 impl Chop for SinChop {
-
-
     fn on_reset(&mut self) {
         self.execute_count = 0;
     }
@@ -33,8 +34,6 @@ impl Chop for SinChop {
         }
     }
 
-
-
     fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
         info.num_channels = 1;
         info.num_samples = 100;
@@ -42,8 +41,6 @@ impl Chop for SinChop {
         info.sample_rate = 60.0;
         true
     }
-
-
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
         for chan_index in 0..output.num_channels {
