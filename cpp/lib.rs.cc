@@ -757,6 +757,7 @@ union MaybeUninit {
 } // namespace rust
 
 struct NumericParameter;
+struct StringParameter;
 struct OperatorInfo;
 struct ChopParams;
 struct ChopChannel;
@@ -783,6 +784,18 @@ struct NumericParameter final {
 };
 #endif // CXXBRIDGE1_STRUCT_NumericParameter
 
+#ifndef CXXBRIDGE1_STRUCT_StringParameter
+#define CXXBRIDGE1_STRUCT_StringParameter
+struct StringParameter final {
+  ::rust::String name;
+  ::rust::String label;
+  ::rust::String page;
+  ::rust::String default_value;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_StringParameter
+
 #ifndef CXXBRIDGE1_STRUCT_OperatorInfo
 #define CXXBRIDGE1_STRUCT_OperatorInfo
 struct OperatorInfo final {
@@ -805,7 +818,8 @@ struct OperatorInfo final {
 #ifndef CXXBRIDGE1_STRUCT_ChopParams
 #define CXXBRIDGE1_STRUCT_ChopParams
 struct ChopParams final {
-  ::rust::Vec<::NumericParameter> params;
+  ::rust::Vec<::NumericParameter> numeric_params;
+  ::rust::Vec<::StringParameter> string_params;
 
   using IsRelocatable = ::std::true_type;
 };
@@ -886,6 +900,8 @@ void cxxbridge1$chop_on_reset(::BoxDynChop &chop) noexcept;
 
 bool cxxbridge1$chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
 
+void cxxbridge1$chop_get_channel_name(::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs, ::rust::String *return$) noexcept;
+
 void cxxbridge1$chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
 void cxxbridge1$chop_new(::BoxDynChop *return$) noexcept;
@@ -916,6 +932,12 @@ bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::Ch
   return cxxbridge1$chop_get_output_info(chop, info, inputs);
 }
 
+::rust::String chop_get_channel_name(::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs) noexcept {
+  ::rust::MaybeUninit<::rust::String> return$;
+  cxxbridge1$chop_get_channel_name(chop, index, inputs, &return$.value);
+  return ::std::move(return$.value);
+}
+
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept {
   cxxbridge1$chop_execute(chop, output, inputs);
 }
@@ -934,6 +956,14 @@ void cxxbridge1$rust_vec$NumericParameter$drop(::rust::Vec<::NumericParameter> *
 const ::NumericParameter *cxxbridge1$rust_vec$NumericParameter$data(const ::rust::Vec<::NumericParameter> *ptr) noexcept;
 void cxxbridge1$rust_vec$NumericParameter$reserve_total(::rust::Vec<::NumericParameter> *ptr, ::std::size_t new_cap) noexcept;
 void cxxbridge1$rust_vec$NumericParameter$set_len(::rust::Vec<::NumericParameter> *ptr, ::std::size_t len) noexcept;
+
+void cxxbridge1$rust_vec$StringParameter$new(const ::rust::Vec<::StringParameter> *ptr) noexcept;
+void cxxbridge1$rust_vec$StringParameter$drop(::rust::Vec<::StringParameter> *ptr) noexcept;
+::std::size_t cxxbridge1$rust_vec$StringParameter$len(const ::rust::Vec<::StringParameter> *ptr) noexcept;
+::std::size_t cxxbridge1$rust_vec$StringParameter$capacity(const ::rust::Vec<::StringParameter> *ptr) noexcept;
+const ::StringParameter *cxxbridge1$rust_vec$StringParameter$data(const ::rust::Vec<::StringParameter> *ptr) noexcept;
+void cxxbridge1$rust_vec$StringParameter$reserve_total(::rust::Vec<::StringParameter> *ptr, ::std::size_t new_cap) noexcept;
+void cxxbridge1$rust_vec$StringParameter$set_len(::rust::Vec<::StringParameter> *ptr, ::std::size_t len) noexcept;
 
 void cxxbridge1$rust_vec$ChopOperatorInput$new(const ::rust::Vec<::ChopOperatorInput> *ptr) noexcept;
 void cxxbridge1$rust_vec$ChopOperatorInput$drop(::rust::Vec<::ChopOperatorInput> *ptr) noexcept;
@@ -981,6 +1011,34 @@ void Vec<::NumericParameter>::reserve_total(::std::size_t new_cap) noexcept {
 template <>
 void Vec<::NumericParameter>::set_len(::std::size_t len) noexcept {
   return cxxbridge1$rust_vec$NumericParameter$set_len(this, len);
+}
+template <>
+Vec<::StringParameter>::Vec() noexcept {
+  cxxbridge1$rust_vec$StringParameter$new(this);
+}
+template <>
+void Vec<::StringParameter>::drop() noexcept {
+  return cxxbridge1$rust_vec$StringParameter$drop(this);
+}
+template <>
+::std::size_t Vec<::StringParameter>::size() const noexcept {
+  return cxxbridge1$rust_vec$StringParameter$len(this);
+}
+template <>
+::std::size_t Vec<::StringParameter>::capacity() const noexcept {
+  return cxxbridge1$rust_vec$StringParameter$capacity(this);
+}
+template <>
+const ::StringParameter *Vec<::StringParameter>::data() const noexcept {
+  return cxxbridge1$rust_vec$StringParameter$data(this);
+}
+template <>
+void Vec<::StringParameter>::reserve_total(::std::size_t new_cap) noexcept {
+  return cxxbridge1$rust_vec$StringParameter$reserve_total(this, new_cap);
+}
+template <>
+void Vec<::StringParameter>::set_len(::std::size_t len) noexcept {
+  return cxxbridge1$rust_vec$StringParameter$set_len(this, len);
 }
 template <>
 Vec<::ChopOperatorInput>::Vec() noexcept {

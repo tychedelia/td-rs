@@ -17,12 +17,17 @@ impl Chop for SinChop {
 
     fn get_params(&mut self) -> ChopParams {
         ChopParams {
-            params: vec![]
+            numeric_params: vec![],
+            string_params: vec![]
         }
     }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
         false
+    }
+
+    fn get_channel_name(&self, index: i32, inputs: &ChopOperatorInputs) -> String {
+        format!("chan{}", index)
     }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
