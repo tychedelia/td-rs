@@ -1,4 +1,5 @@
 #pragma once
+#include "BoxDynChop.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -694,7 +695,7 @@ std::size_t align_of() {
 
 struct NumericParameter;
 struct OperatorInfo;
-struct Chop;
+struct ChopParams;
 struct ChopChannel;
 struct ChopOperatorInputs;
 struct ChopOperatorInput;
@@ -738,15 +739,14 @@ struct OperatorInfo final {
 };
 #endif // CXXBRIDGE1_STRUCT_OperatorInfo
 
-#ifndef CXXBRIDGE1_STRUCT_Chop
-#define CXXBRIDGE1_STRUCT_Chop
-struct Chop final {
-  ::OperatorInfo info;
+#ifndef CXXBRIDGE1_STRUCT_ChopParams
+#define CXXBRIDGE1_STRUCT_ChopParams
+struct ChopParams final {
   ::rust::Vec<::NumericParameter> params;
 
   using IsRelocatable = ::std::true_type;
 };
-#endif // CXXBRIDGE1_STRUCT_Chop
+#endif // CXXBRIDGE1_STRUCT_ChopParams
 
 #ifndef CXXBRIDGE1_STRUCT_ChopChannel
 #define CXXBRIDGE1_STRUCT_ChopChannel
@@ -805,10 +805,16 @@ struct ChopOutput final {
 };
 #endif // CXXBRIDGE1_STRUCT_ChopOutput
 
-void on_reset(const ::Chop &chop) noexcept;
+void dyn_chop_drop_in_place(::PtrBoxDynChop ptr) noexcept;
 
-::Chop get_chop() noexcept;
+::OperatorInfo chop_get_operator_info() noexcept;
 
-bool get_output_info(::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+::ChopParams chop_get_params(::BoxDynChop &chop) noexcept;
 
-void chop_execute(::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+void chop_on_reset(::BoxDynChop &chop) noexcept;
+
+bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+
+void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+
+::BoxDynChop chop_new() noexcept;

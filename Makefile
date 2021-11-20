@@ -8,6 +8,9 @@ build: cpp/build/Release/RustCHOP.plugin
 
 cpp/build/Release/RustCHOP.plugin: $(RUST_TARGET) $(CXX_BRIDGE) $(CPP_SRC)
 	cp $(RUST_TARGET) $(CXX_BRIDGE) ./cpp
+	# todo: cleanup hax to rename include from cxx macro
+	sed -i '' 's/td-rs\/cpp\///g' ./cpp/lib.rs.h
+	sed -i '' 's/td-rs\/cpp\///g' ./cpp/lib.rs.cc
 	xcodebuild -project ./cpp/RustCHOP.xcodeproj/ clean build
 
  $(RUST_TARGET) $(CXX_BRIDGE): $(RUST_SRC)

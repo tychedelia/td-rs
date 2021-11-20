@@ -13,6 +13,7 @@
 */
 
 #include "RustCHOP.h"
+#include "BoxDynChop.h"
 #include "lib.rs.h"
 #include "cxx.h"
 #include <stdio.h>
@@ -33,14 +34,14 @@ DLLEXPORT
 void
 FillCHOPPluginInfo(CHOP_PluginInfo *info)
 {
-    Chop chop = get_chop();
+    OperatorInfo chopInfo = chop_get_operator_info();
 	info->apiVersion = CHOPCPlusPlusAPIVersion;
-	info->customOPInfo.opType->setString(chop.info.operator_type.c_str());
-	info->customOPInfo.opLabel->setString(chop.info.operator_label.c_str());
-	info->customOPInfo.authorName->setString(chop.info.author_name.c_str());
-	info->customOPInfo.authorEmail->setString(chop.info.author_email.c_str());
-	info->customOPInfo.minInputs = chop.info.min_inputs;
-	info->customOPInfo.maxInputs = chop.info.max_inputs;
+	info->customOPInfo.opType->setString(chopInfo.operator_type.c_str());
+	info->customOPInfo.opLabel->setString(chopInfo.operator_label.c_str());
+	info->customOPInfo.authorName->setString(chopInfo.author_name.c_str());
+	info->customOPInfo.authorEmail->setString(chopInfo.author_email.c_str());
+	info->customOPInfo.minInputs = chopInfo.min_inputs;
+	info->customOPInfo.maxInputs = chopInfo.max_inputs;
 }
 
 DLLEXPORT
@@ -67,12 +68,13 @@ DestroyCHOPInstance(CHOP_CPlusPlusBase* instance)
 
 RustCHOP::RustCHOP(const OP_NodeInfo* info)
 {
-    chop = get_chop();
+    auto chop = chop_new();
+    this->chop = &chop;
 }
 
 RustCHOP::~RustCHOP()
 {
-
+    dyn_chop_drop_in_place(chop);
 }
 
 void
@@ -101,7 +103,7 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo* info, const OP_Inputs* inputs, void* re
         opIn.inputs.push_back(in);
     }
 
-    auto is_output = get_output_info(ci, opIn);
+    auto is_output = chop->get_output_info(&ci, &opIn);
 
     info->numChannels = ci.num_channels;
     info->sampleRate = ci.sample_rate;
@@ -134,7 +136,7 @@ RustCHOP::execute(CHOP_Output* output,
     out.num_channels = output->numChannels;
     out.num_samples = output->numSamples;
     out.sample_rate = output->sampleRate;
-    chop_execute(out, ins);
+    chop->execute(&out, &ins);
     for (int i = 0; i < output->numChannels; i++) {
         auto c = out.channels[i];
         output->channels[i] = c.data.data();
@@ -176,7 +178,7 @@ void
 RustCHOP::setupParameters(OP_ParameterManager* manager, void *reserved1)
 {
     // TODO support all param types
-    for (auto param : chop.params) {
+    for (auto param : chop->get_params().params) {
         OP_NumericParameter    np;
 
         np.name = param.name.c_str();
@@ -199,7 +201,7 @@ RustCHOP::pulsePressed(const char* name, void* reserved1)
 {
 	if (!strcmp(name, "Reset"))
 	{
-        on_reset(chop);
+        chop->on_reset();
     }
 }
 

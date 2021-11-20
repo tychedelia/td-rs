@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		B9369E75274173B500EA7D98 /* libtd_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9369E732741736D00EA7D98 /* libtd_rs.a */; };
 		B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */ = {isa = PBXBuildFile; fileRef = B9369E76274177C500EA7D98 /* lib.rs.cc */; };
+		B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */; };
 		E23329E31DF092C90002B4FE /* RustCHOP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23329E11DF092C90002B4FE /* RustCHOP.cpp */; };
 /* End PBXBuildFile section */
 
@@ -16,6 +17,8 @@
 		B9369E732741736D00EA7D98 /* libtd_rs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtd_rs.a; sourceTree = "<group>"; };
 		B9369E76274177C500EA7D98 /* lib.rs.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lib.rs.cc; sourceTree = "<group>"; };
 		B9369E782741832600EA7D98 /* cxx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxx.h; sourceTree = "<group>"; };
+		B9BF86CF27481CA300D63C86 /* BoxDynChop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BoxDynChop.h; sourceTree = "<group>"; };
+		B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = BoxDynChop.cpp; sourceTree = "<group>"; };
 		E23329D61DF092AD0002B4FE /* RustCHOP.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RustCHOP.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		E23329D91DF092AD0002B4FE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
 		E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHOP_CPlusPlusBase.h; sourceTree = SOURCE_ROOT; };
@@ -47,6 +50,8 @@
 		E23329CD1DF092AD0002B4FE = {
 			isa = PBXGroup;
 			children = (
+				B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */,
+				B9BF86CF27481CA300D63C86 /* BoxDynChop.h */,
 				B9369E782741832600EA7D98 /* cxx.h */,
 				E23329F11DF1D64A0002B4FE /* CHOP */,
 				E23329D71DF092AD0002B4FE /* Products */,
@@ -143,6 +148,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */,
 				E23329E31DF092C90002B4FE /* RustCHOP.cpp in Sources */,
 				B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */,
 			);

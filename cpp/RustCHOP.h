@@ -14,6 +14,7 @@
 
 #include "CHOP_CPlusPlusBase.h"
 #include "lib.rs.h"
+#include "BoxDynChop.h"
 
 /*
 
@@ -62,7 +63,7 @@ public:
 	virtual void		pulsePressed(const char* name, void* reserved1) override;
 
 private:
-   Chop chop;
+   BoxDynChop* chop;
 
    ChopOperatorInput    mapInput(const OP_CHOPInput* input);
 };
