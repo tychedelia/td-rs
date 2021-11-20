@@ -944,6 +944,12 @@ void cxxbridge1$chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32
 
 void cxxbridge1$chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
+void cxxbridge1$chop_get_info(const ::BoxDynChop &chop, ::rust::String *return$) noexcept;
+
+void cxxbridge1$chop_get_warning(const ::BoxDynChop &chop, ::rust::String *return$) noexcept;
+
+void cxxbridge1$chop_get_error(const ::BoxDynChop &chop, ::rust::String *return$) noexcept;
+
 void cxxbridge1$chop_new(::BoxDynChop *return$) noexcept;
 } // extern "C"
 
@@ -998,6 +1004,24 @@ void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, :
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept {
   cxxbridge1$chop_execute(chop, output, inputs);
+}
+
+::rust::String chop_get_info(const ::BoxDynChop &chop) noexcept {
+  ::rust::MaybeUninit<::rust::String> return$;
+  cxxbridge1$chop_get_info(chop, &return$.value);
+  return ::std::move(return$.value);
+}
+
+::rust::String chop_get_warning(const ::BoxDynChop &chop) noexcept {
+  ::rust::MaybeUninit<::rust::String> return$;
+  cxxbridge1$chop_get_warning(chop, &return$.value);
+  return ::std::move(return$.value);
+}
+
+::rust::String chop_get_error(const ::BoxDynChop &chop) noexcept {
+  ::rust::MaybeUninit<::rust::String> return$;
+  cxxbridge1$chop_get_error(chop, &return$.value);
+  return ::std::move(return$.value);
 }
 
 ::BoxDynChop chop_new() noexcept {

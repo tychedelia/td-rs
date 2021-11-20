@@ -873,4 +873,10 @@ void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, :
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
+::rust::String chop_get_info(const ::BoxDynChop &chop) noexcept;
+
+::rust::String chop_get_warning(const ::BoxDynChop &chop) noexcept;
+
+::rust::String chop_get_error(const ::BoxDynChop &chop) noexcept;
+
 ::BoxDynChop chop_new() noexcept;
