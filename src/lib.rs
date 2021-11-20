@@ -128,6 +128,14 @@ mod ffi {
         values: Vec<String>,
     }
 
+    #[derive(Debug, Default)]
+    pub struct ChopGeneralInfo {
+        pub cook_every_frame: bool,
+        pub cook_every_frame_if_asked: bool,
+        pub timeslice: bool,
+        pub input_match_index: i32,
+    }
+
     extern "C++" {
         include!("td-rs/cpp/BoxDynChop.h");
         type BoxDynChop = Box<dyn crate::chop::Chop>;
@@ -163,6 +171,7 @@ mod ffi {
             output: &mut ChopOutput,
             inputs: &ChopOperatorInputs,
         );
+        fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
         fn chop_get_info(chop: &BoxDynChop) -> String;
         fn chop_get_warning(chop: &BoxDynChop) -> String;
         fn chop_get_error(chop: &BoxDynChop) -> String;
@@ -215,6 +224,10 @@ fn chop_get_info_dat_entries(
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
     (**chop).execute(output, inputs)
+}
+
+fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {
+    (**chop).get_general_info()
 }
 
 fn chop_get_info(chop: &BoxDynChop) -> String {

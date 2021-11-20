@@ -47,6 +47,10 @@ void BoxDynChop::execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcep
     chop_execute(*this, *output, *inputs);
 }
 
+ChopGeneralInfo BoxDynChop::getGeneralInfo() noexcept {
+    return chop_get_general_info(*this);
+}
+
 rust::String BoxDynChop::getWarningString() noexcept {
     return chop_get_warning(*this);
 }
