@@ -1,4 +1,7 @@
-use crate::{ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, StringParameter};
+use crate::{
+    ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput,
+    ChopOutputInfo, ChopParams, StringParameter,
+};
 
 pub trait Chop {
     fn on_reset(&mut self);
@@ -15,7 +18,7 @@ pub trait Chop {
     fn get_info_dat_size(&self, size: &mut ChopInfoDatSize) -> bool {
         false
     }
-    fn get_info_dat_entries(&self, index: i32, entries: &mut ChopInfoDatEntries) {
+    fn get_info_dat_entries(&self, index: i32, num_entries: i32, entries: &mut ChopInfoDatEntries) {
         // must be implemented if GetInfoDatSize returns true
         unimplemented!()
     }

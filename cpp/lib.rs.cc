@@ -940,7 +940,7 @@ void cxxbridge1$chop_get_channel_name(const ::BoxDynChop &chop, ::std::int32_t i
 
 bool cxxbridge1$chop_get_info_dat_size(const ::BoxDynChop &chop, ::ChopInfoDatSize &size) noexcept;
 
-void cxxbridge1$chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::ChopInfoDatEntries &entries) noexcept;
+void cxxbridge1$chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept;
 
 void cxxbridge1$chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
@@ -992,8 +992,8 @@ bool chop_get_info_dat_size(const ::BoxDynChop &chop, ::ChopInfoDatSize &size) n
   return cxxbridge1$chop_get_info_dat_size(chop, size);
 }
 
-void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::ChopInfoDatEntries &entries) noexcept {
-  cxxbridge1$chop_get_info_dat_entries(chop, index, entries);
+void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept {
+  cxxbridge1$chop_get_info_dat_entries(chop, index, num_entries, entries);
 }
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept {

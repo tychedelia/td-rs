@@ -1,5 +1,4 @@
 fn main() {
-
     // build the bridge
     cxx_build::bridge("src/lib.rs")
         .file("./cpp/BoxDynChop.h")

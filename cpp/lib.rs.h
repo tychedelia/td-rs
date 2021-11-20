@@ -869,7 +869,7 @@ bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::Ch
 
 bool chop_get_info_dat_size(const ::BoxDynChop &chop, ::ChopInfoDatSize &size) noexcept;
 
-void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::ChopInfoDatEntries &entries) noexcept;
+void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept;
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 
