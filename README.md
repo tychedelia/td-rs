@@ -40,3 +40,12 @@ in favor of passing references to the underlying structs managed by TouchDesigne
 ## Examples
 
 - [`sin_chop`](./src/sin_chop.rs) - A basic CHOP generator that outputs a sin wave on a single channel.
+  ![example of sin chop](./sin.png)
+
+## Build
+
+Build currently has only been tested on a Mac. `cxx` outputs a `.a` and header files for our library and common bridge 
+structs to Rust's default build directory. We copy these into the [`./cpp`](./cpp) directory and build the project with
+Xcode to produce a `.plugin` file that can be used by TouchDesigner. Future work is needed to be able to provide this
+project as a crate that could be consumed by other projects without this manual work to bundle our Rust lib into the
+C++ project.
