@@ -35,6 +35,14 @@ rust::String BoxDynChop::getChannelName(int32_t index, ChopOperatorInputs* input
     return chop_get_channel_name(*this, index, *inputs);
 };
 
+bool BoxDynChop::getInfoDatSize(ChopInfoDatSize* size) noexcept {
+    return chop_get_info_dat_size(*this, *size);
+}
+
+void BoxDynChop::getInfoDATEntries(int32_t index, ChopInfoDatEntries* entries) noexcept {
+    return chop_get_info_dat_entries(*this, index, *entries);
+}
+
 void BoxDynChop::execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept {
     chop_execute(*this, *output, *inputs);
 }

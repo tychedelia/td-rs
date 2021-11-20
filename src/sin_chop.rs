@@ -15,7 +15,7 @@ impl Chop for SinChop {
     fn on_reset(&mut self) {
     }
 
-    fn get_params(&mut self) -> ChopParams {
+    fn get_params(&self) -> ChopParams {
         ChopParams {
             numeric_params: vec![],
             string_params: vec![]
