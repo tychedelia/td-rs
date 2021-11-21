@@ -1,12 +1,14 @@
 mod chop;
 mod sin_chop;
 mod arc_chop;
+pub mod grid_chop;
 
 use crate::chop::Chop;
 use crate::ffi::*;
 use crate::sin_chop::SinChop;
 use cxx::ExternType;
 use crate::arc_chop::ArcChop;
+use crate::grid_chop::GridChop;
 
 unsafe impl ExternType for Box<dyn Chop> {
     type Id = cxx::type_id!("BoxDynChop");
@@ -267,5 +269,5 @@ fn chop_get_operator_info() -> OperatorInfo {
 }
 
 fn chop_new() -> Box<dyn Chop> {
-    Box::new(ArcChop::new())
+    Box::new(GridChop::new())
 }
