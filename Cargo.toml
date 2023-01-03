@@ -13,4 +13,8 @@ cxx-build = "1.0"
 
 [lib]
 name = "td_rs"
-crate-type = ["staticlib"]
+
+[workspace]
+members = [
+    "plugins/sin"
+]

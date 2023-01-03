@@ -1,7 +1,7 @@
 RUST_SRC:=$(wildcard ./src/*)
 CPP_SRC:=$(wildcard ./cpp/*.cpp)
-CXX_BRIDGE:=target/x86_64-apple-darwin/cxxbridge/td-rs/src/lib.rs.h target/x86_64-apple-darwin/cxxbridge/rust/cxx.h
-RUST_TARGET:=target/x86_64-apple-darwin/release/libtd_rs.a target/x86_64-apple-darwin/cxxbridge/td-rs/src/lib.rs.cc
+CXX_BRIDGE:=target/x86_64-apple-darwin/cxxbridge/td-rs/src/chop/mod.rs.h target/x86_64-apple-darwin/cxxbridge/rust/cxx.h
+RUST_TARGET:=target/x86_64-apple-darwin/release/lib$(plugin).a target/x86_64-apple-darwin/cxxbridge/td-rs/src/chop/mod.rs.cc
 
 .PHONY: build
 build: cpp/build/Release/RustCHOP.plugin
