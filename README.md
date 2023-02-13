@@ -8,7 +8,7 @@ wrapper plugin class.
 
 ## Structure
 
-Using `cxx`, we provide [a codegen ffi interface](./src/lib.rs.h) to our Rust
+Using `cxx`, we codegen a ffi interface to our Rust
 library. Each of our C repr functions exposed by `cxx` accepts [a wrapper](./src/BoxDynChop.h) 
 around a `std::uintptr_t` pointer that contains the location to our Rust dyn trait object
 representing the actual plugin. This wrapper manages calls across the ffi boundary,
