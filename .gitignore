@@ -3,3 +3,9 @@
 /target
 include/
 build/
+.vs/
+Debug/
+Release/
+cpp/cxx.h
+cpp/lib.rs.cc
+cpp/lib.rs.h
