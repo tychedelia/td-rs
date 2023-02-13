@@ -8,7 +8,7 @@ MS_BUILD='C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Curren
 else
 PLUGIN=build/Release/RustCHOP.plugin
 LIB_FILE=libtd_rs.a
-TARGET=x86_64-apple-darwin
+TARGET=aarch64-apple-darwin
 endif
 CXX_BRIDGE:=target/$(TARGET)/cxxbridge/rust/cxx.h target/$(TARGET)/cxxbridge/td-rs/src/lib.rs.h
 RUST_TARGET:=target/$(TARGET)/release/$(LIB_FILE)
