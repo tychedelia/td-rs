@@ -13,7 +13,7 @@ library. Each of our C repr functions exposed by `cxx` accepts [a wrapper](./src
 around a `std::uintptr_t` pointer that contains the location to our Rust dyn trait object
 representing the actual plugin. This wrapper manages calls across the ffi boundary,
 and provides a "normal" C++ class interface to the methods exposed by our trait. The [C++
-plugin class](./src/RustCHOP.cpp) which is ultimately instantiated by TouchDesigner holds 
+plugin class](td-rs-chop/src/RustCHOP.cpp) which is ultimately instantiated by TouchDesigner holds 
 a reference to this wrapper.
 
 Plugins can be written by implementing the [`Chop`](./src/chop/mod.rs) trait and overriding

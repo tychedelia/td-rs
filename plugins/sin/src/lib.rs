@@ -1,7 +1,6 @@
 use std::f64::consts::PI;
-use cxx::u;
-use crate::ffi::{ChopGeneralInfo, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams};
-use crate::{Chop, ChopChannel, NumericParameter, PuleParameter};
+use td_rs_chop::chop::{Chop, ChopInfo};
+use td_rs_chop::cxx::ffi::{ChopGeneralInfo, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, PuleParameter};
 
 /// Struct representing our CHOP's state
 pub struct SinChop {
@@ -15,8 +14,11 @@ impl SinChop {
     }
 }
 
-/// Chop implementation for our plugin
+impl ChopInfo for SinChop {
+}
+
 impl Chop for SinChop {
+
     fn on_reset(&mut self) {
         self.execute_count = 0;
     }
@@ -67,3 +69,5 @@ impl Chop for SinChop {
         }
     }
 }
+
+td_rs_chop::chop_plugin!(SinChop);

@@ -1,0 +1,11 @@
+[package]
+name = "sin"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "sin"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../td-rs-chop" }

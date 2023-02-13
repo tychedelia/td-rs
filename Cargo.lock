@@ -523,6 +523,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
 
 [[package]]
+name = "sin"
+version = "0.1.0"
+dependencies = [
+ "td-rs-chop",
+]
+
+[[package]]
 name = "slab"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -560,6 +567,19 @@ dependencies = [
  "libc",
  "monome-rs",
 ]
+
+[[package]]
+name = "td-rs-chop"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "libc",
+]
+
+[[package]]
+name = "td-rs-xtask"
+version = "0.1.0"
 
 [[package]]
 name = "termcolor"
