@@ -1,8 +1,6 @@
 use crate::{ChopGeneralInfo, ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, StringParameter};
 
 pub mod sin;
-pub mod arc;
-pub mod grid;
 pub mod lissa;
 
 /// Interface to implement a TouchDesigner CHOP Operator.

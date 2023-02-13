@@ -4,8 +4,6 @@ use crate::chop::Chop;
 use crate::ffi::*;
 use chop::sin::SinChop;
 use cxx::ExternType;
-use chop::arc::ArcChop;
-use chop::grid::GridChop;
 use crate::chop::lissa::Lissajous;
 
 unsafe impl ExternType for Box<dyn Chop> {
@@ -275,5 +273,5 @@ fn chop_get_operator_info() -> OperatorInfo {
 }
 
 fn chop_new() -> Box<dyn Chop> {
-    Box::new(SinChop::new())
+    Box::new(Lissajous::new())
 }

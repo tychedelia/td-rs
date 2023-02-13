@@ -8,22 +8,6 @@ wrapper plugin class.
 
 ## Structure
 
-```
-
-TouchDesigner --instantiates--> C++ Plugin Class
-                                        |
-                                        | calls
-                                        |
-                                        v
-                                C++ Wrapper to Bridge
-                                        |
-                                        | ffi
-                                        |
-                                        v
-                                Rust dyn trait object
-
-```
-
 Using `cxx`, we provide [a codegen ffi interface](./src/lib.rs.h) to our Rust
 library. Each of our C repr functions exposed by `cxx` accepts [a wrapper](./src/BoxDynChop.h) 
 around a `std::uintptr_t` pointer that contains the location to our Rust dyn trait object
@@ -35,20 +19,36 @@ a reference to this wrapper.
 A number of structs are implemented via `cxx` to map TouchDesigner data classes
 to structs that can be used by Rust. This currently introduces some performance overhead
 at the FFI boundary that could likely be reduced in the future by eliminating copies
-in favor of passing references to the underlying structs managed by TouchDesigner.
+in favor of passing references to the underlying structs managed by TouchDesigner where
+possible.
 
 ## Examples
 
 - [`sin_chop`](./src/sin_chop.rs) - A basic CHOP generator that outputs a sin wave on a single channel.
   ![example of sin chop](./sin.png)
+- [`lissa`](./src/lissa.rs) - A fancier version of an LFO that traces a Lissajous curve with
+  modifiable parameters.
+  ![example of lissa chop](./lissa.png)
+
 
 ## Build
 
+Running the project may require some modification to the respective MSVC and Xcode projects.
+
 ### Windows
 
-Update the project [Makefile](./Makefile) variable `MS_BUILD` to point to your MSVC toolchain, or pass
-it as a variable to Make. This will produce a DLL to `.\Release\` that can be loaded in touch desginer.
+#### Dependencies
+- MSVC toolchain.
+- Rust `x86_64-pc-windows-msvc` target using rustup.
+
+Update the project [Makefile](./Makefile) variable `MS_BUILD` to point to the correct `MSBuild.exe` for
+your installed version of Visual Studio, or pass it as a variable to Make. This will produce a DLL to 
+`.\Release\` that can be loaded in touch desginer.
 
 ### macOS
 
-TODO
+#### Dependencies
+- Xcode (installable from App Store).
+
+ Run make, which will preduce a `.plugin` file in `./build/` that can be loaded in TD. NB: the project
+ is configured for M1 ARM, and modifications to the Xcode project are necessary to build for x86.
