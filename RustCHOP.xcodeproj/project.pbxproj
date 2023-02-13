@@ -1,0 +1,341 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B9369E75274173B500EA7D98 /* target/x86_64-apple-darwin/release/libtd_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9369E732741736D00EA7D98 /* target/x86_64-apple-darwin/release/libtd_rs.a */; };
+		B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */ = {isa = PBXBuildFile; fileRef = B9369E76274177C500EA7D98 /* lib.rs.cc */; };
+		B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */; };
+		E23329E31DF092C90002B4FE /* BoxDynChop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23329E11DF092C90002B4FE /* BoxDynChop.cpp */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B9369E732741736D00EA7D98 /* target/x86_64-apple-darwin/release/libtd_rs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = "target/x86_64-apple-darwin/release/libtd_rs.a"; sourceTree = "<group>"; };
+		B9369E76274177C500EA7D98 /* lib.rs.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = lib.rs.cc; path = "target/x86_64-apple-darwin/cxxbridge/td-rs/src/lib.rs.cc"; sourceTree = "<group>"; };
+		B9369E782741832600EA7D98 /* cxx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cxx.h; path = "target/x86_64-apple-darwin/cxxbridge/rust/cxx.h"; sourceTree = "<group>"; };
+		B9BF86CF27481CA300D63C86 /* BoxDynChop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BoxDynChop.h; path = src/BoxDynChop.h; sourceTree = "<group>"; };
+		B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = BoxDynChop.cpp; path = src/BoxDynChop.cpp; sourceTree = "<group>"; };
+		E23329D61DF092AD0002B4FE /* RustCHOP.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RustCHOP.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
+		E23329D91DF092AD0002B4FE /* RustCHOP.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = RustCHOP.xcodeproj; sourceTree = SOURCE_ROOT; };
+		E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CHOP_CPlusPlusBase.h; path = src/CHOP_CPlusPlusBase.h; sourceTree = SOURCE_ROOT; };
+		E23329E01DF092C90002B4FE /* CPlusPlus_Common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CPlusPlus_Common.h; path = src/CPlusPlus_Common.h; sourceTree = SOURCE_ROOT; };
+		E23329E11DF092C90002B4FE /* BoxDynChop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = BoxDynChop.cpp; path = src/BoxDynChop.cpp; sourceTree = SOURCE_ROOT; };
+		E23329E21DF092C90002B4FE /* RustCHOP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RustCHOP.h; path = src/RustCHOP.h; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E23329D31DF092AD0002B4FE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9369E75274173B500EA7D98 /* target/x86_64-apple-darwin/release/libtd_rs.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		9ED7E4D12999EC72001F2445 /* Products */ = {
+			isa = PBXGroup;
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B9369E722741736D00EA7D98 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				B9369E732741736D00EA7D98 /* target/x86_64-apple-darwin/release/libtd_rs.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		E23329CD1DF092AD0002B4FE = {
+			isa = PBXGroup;
+			children = (
+				B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */,
+				B9BF86CF27481CA300D63C86 /* BoxDynChop.h */,
+				B9369E782741832600EA7D98 /* cxx.h */,
+				E23329F11DF1D64A0002B4FE /* CHOP */,
+				E23329D71DF092AD0002B4FE /* Products */,
+				B9369E722741736D00EA7D98 /* Frameworks */,
+			);
+			sourceTree = "<group>";
+		};
+		E23329D71DF092AD0002B4FE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E23329D61DF092AD0002B4FE /* RustCHOP.plugin */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		E23329F11DF1D64A0002B4FE /* CHOP */ = {
+			isa = PBXGroup;
+			children = (
+				B9369E76274177C500EA7D98 /* lib.rs.cc */,
+				E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */,
+				E23329E01DF092C90002B4FE /* CPlusPlus_Common.h */,
+				E23329E11DF092C90002B4FE /* BoxDynChop.cpp */,
+				E23329E21DF092C90002B4FE /* RustCHOP.h */,
+				E23329D91DF092AD0002B4FE /* RustCHOP.xcodeproj */,
+			);
+			name = CHOP;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		E23329D51DF092AD0002B4FE /* RustCHOP */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E23329DC1DF092AD0002B4FE /* Build configuration list for PBXNativeTarget "RustCHOP" */;
+			buildPhases = (
+				E23329D21DF092AD0002B4FE /* Sources */,
+				E23329D31DF092AD0002B4FE /* Frameworks */,
+				E23329D41DF092AD0002B4FE /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RustCHOP;
+			productName = RustCHOP;
+			productReference = E23329D61DF092AD0002B4FE /* RustCHOP.plugin */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E23329CE1DF092AD0002B4FE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 1130;
+				ORGANIZATIONNAME = Derivative;
+				TargetAttributes = {
+					E23329D51DF092AD0002B4FE = {
+						CreatedOnToolsVersion = 8.0;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = E23329D11DF092AD0002B4FE /* Build configuration list for PBXProject "RustCHOP" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = E23329CD1DF092AD0002B4FE;
+			productRefGroup = E23329D71DF092AD0002B4FE /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 9ED7E4D12999EC72001F2445 /* Products */;
+					ProjectRef = E23329D91DF092AD0002B4FE /* RustCHOP.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				E23329D51DF092AD0002B4FE /* RustCHOP */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		E23329D41DF092AD0002B4FE /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		E23329D21DF092AD0002B4FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */,
+				E23329E31DF092C90002B4FE /* BoxDynChop.cpp in Sources */,
+				B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		E23329DA1DF092AD0002B4FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		E23329DB1DF092AD0002B4FE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
+				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_SUSPICIOUS_MOVES = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		E23329DD1DF092AD0002B4FE /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
+				INSTALL_PATH = /;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/target/x86_64-apple-darwin/cxxbridge/**",
+				);
+				OTHER_CFLAGS = "-I$(PROJECT_DIR)/target/x86_64-apple-darwin/cxxbridge";
+				PRODUCT_BUNDLE_IDENTIFIER = ca.derivative.cpp.RustCHOP;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = plugin;
+			};
+			name = Debug;
+		};
+		E23329DE1DF092AD0002B4FE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = "$(SRCROOT)/Info.plist";
+				INSTALL_PATH = /;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/target/x86_64-apple-darwin/cxxbridge/**",
+				);
+				OTHER_CFLAGS = "-I$(PROJECT_DIR)/target/x86_64-apple-darwin/cxxbridge";
+				PRODUCT_BUNDLE_IDENTIFIER = ca.derivative.cpp.RustCHOP;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				WRAPPER_EXTENSION = plugin;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		E23329D11DF092AD0002B4FE /* Build configuration list for PBXProject "RustCHOP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E23329DA1DF092AD0002B4FE /* Debug */,
+				E23329DB1DF092AD0002B4FE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E23329DC1DF092AD0002B4FE /* Build configuration list for PBXNativeTarget "RustCHOP" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E23329DD1DF092AD0002B4FE /* Debug */,
+				E23329DE1DF092AD0002B4FE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E23329CE1DF092AD0002B4FE /* Project object */;
+}
