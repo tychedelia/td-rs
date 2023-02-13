@@ -14,3 +14,9 @@ cxx-build = "1"
 [lib]
 name = "td_rs"
 crate-type = ["staticlib"]
+
+[workspace]
+members = [
+    "td-rs-chop",
+    "td-rs-xtask"
+]
