@@ -60,7 +60,8 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
-    </ClCompile>
+	  <AdditionalIncludeDirectories>Include=".\target\x86_64-pc-windows-msvc\cxxbridge\"</AdditionalIncludeDirectories>
+	</ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
@@ -75,6 +76,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <AdditionalIncludeDirectories>.\target\x86_64-pc-windows-msvc\cxxbridge\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -82,21 +84,21 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
 	  <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;%(AdditionalDependencies)</AdditionalDependencies>
-	</Link>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include=".\cpp\BoxDynChop.h" />
-    <ClInclude Include=".\cpp\CHOP_CPlusPlusBase.h" />
-    <ClInclude Include=".\cpp\CPlusPlus_Common.h" />
-    <ClInclude Include=".\cpp\lib.rs.h" />
-	<ClInclude Include=".\cpp\cxx.h" />
-	<ClInclude Include=".\cpp\GL_Extensions.h" />
-    <ClInclude Include=".\cpp\RustCHOP.h" />
+    <ClInclude Include=".\src\BoxDynChop.h" />
+    <ClInclude Include=".\src\CHOP_CPlusPlusBase.h" />
+    <ClInclude Include=".\src\CPlusPlus_Common.h" />
+    <ClInclude Include=".\target\x86_64-pc-windows-msvc\cxxbridge\rust\cxx.h" />
+    <ClInclude Include=".\target\x86_64-pc-windows-msvc\cxxbridge\td-rs\src\lib.rs.h" />
+    <ClInclude Include=".\src\GL_Extensions.h" />
+    <ClInclude Include=".\src\RustCHOP.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include=".\cpp\RustCHOP.cpp" />
-	<ClInclude Include=".\cpp\lib.rs.cc" />
-	<ClCompile Include=".\cpp\BoxDynChop.cpp" /> 
+    <ClCompile Include=".\src\RustCHOP.cpp" />
+    <ClInclude Include=".\src\lib.rs.cc" />
+    <ClCompile Include=".\src\BoxDynChop.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

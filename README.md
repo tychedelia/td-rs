@@ -24,12 +24,12 @@ TouchDesigner --instantiates--> C++ Plugin Class
 
 ```
 
-Using `cxx`, we provide [a codegen ffi interface](./cpp/lib.rs.h) to our Rust
-library. Each of our C repr functions exposed by `cxx` accepts [a wrapper](./cpp/BoxDynChop.h) 
+Using `cxx`, we provide [a codegen ffi interface](./src/lib.rs.h) to our Rust
+library. Each of our C repr functions exposed by `cxx` accepts [a wrapper](./src/BoxDynChop.h) 
 around a `std::uintptr_t` pointer that contains the location to our Rust dyn trait object
 representing the actual plugin. This wrapper manages calls across the ffi boundary,
 and provides a "normal" C++ class interface to the methods exposed by our trait. The [C++
-plugin class](./cpp/RustCHOP.cpp) which is ultimately instantiated by TouchDesigner holds 
+plugin class](./src/RustCHOP.cpp) which is ultimately instantiated by TouchDesigner holds 
 a reference to this wrapper.
 
 A number of structs are implemented via `cxx` to map TouchDesigner data classes
@@ -44,8 +44,11 @@ in favor of passing references to the underlying structs managed by TouchDesigne
 
 ## Build
 
-Build currently has only been tested on a Mac. `cxx` outputs a `.a` and header files for our library and common bridge 
-structs to Rust's default build directory. We copy these into the [`./cpp`](./cpp) directory and build the project with
-Xcode to produce a `.plugin` file that can be used by TouchDesigner. Future work is needed to be able to provide this
-project as a crate that could be consumed by other projects without this manual work to bundle our Rust lib into the
-C++ project.
+### Windows
+
+Update the project [Makefile](./Makefile) variable `MS_BUILD` to point to your MSVC toolchain, or pass
+it as a variable to Make. This will produce a DLL to `.\Release\` that can be loaded in touch desginer.
+
+### macOS
+
+TODO

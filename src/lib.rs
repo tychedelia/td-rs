@@ -147,7 +147,7 @@ mod ffi {
     }
 
     extern "C++" {
-        include!("td-rs/cpp/BoxDynChop.h");
+        include!("td-rs/src/BoxDynChop.h");
         type BoxDynChop = Box<dyn crate::chop::Chop>;
         type PtrBoxDynChop = crate::PtrBoxDynChop;
     }
