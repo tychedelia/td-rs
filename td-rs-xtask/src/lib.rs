@@ -9,13 +9,13 @@ use std::env;
 use std::process::Command;
 use anyhow::Context;
 #[cfg(target_os = "windows")]
-use crate::windows::bundle;
+use crate::windows::build_plugin;
 #[cfg(target_os = "macos")]
-use crate::macos::bundle;
+use crate::macos::build_plugin;
+
 
 
 pub use anyhow::Result;
-
 pub fn build(packages: &[String], args: &[String]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
 
@@ -39,6 +39,6 @@ pub fn main() -> anyhow::Result<()> {
     if cmd != "build" {
         return Err(anyhow::anyhow!("command must be 'build'"))
     }
-    bundle(&plugin)?;
+    build_plugin(&plugin)?;
     Ok(())
 }

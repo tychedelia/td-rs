@@ -1,3 +1,3 @@
-pub(crate) fn bundle() -> anyhow::Result<()> {
+pub(crate) fn build_plugin() -> anyhow::Result<()> {
     Ok(())
 }
