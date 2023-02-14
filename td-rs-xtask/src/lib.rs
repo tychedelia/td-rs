@@ -1,14 +1,44 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+#![feature(fs_try_exists)]
+
+#[cfg(target_os = "windows")]
+mod windows;
+#[cfg(target_os = "macos")]
+mod macos;
+
+use std::env;
+use std::process::Command;
+use anyhow::Context;
+#[cfg(target_os = "windows")]
+use crate::windows::bundle;
+#[cfg(target_os = "macos")]
+use crate::macos::bundle;
+
+
+pub use anyhow::Result;
+
+pub fn build(packages: &[String], args: &[String]) -> Result<()> {
+    let package_args = packages.iter().flat_map(|package| ["-p", package]);
+
+    let mut cmd = Command::new("cargo")
+        .arg("build")
+        .args(package_args)
+        .args(args)
+        .spawn()
+        .with_context(|| format!("Could not call cargo to build {}", packages.join(", ")))?;
+    let status = cmd.wait()?;
+    if !status.success() {
+        anyhow::bail!("Could not build {}", packages.join(", "));
+    } else {
+        Ok(())
+    }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+pub fn main() -> anyhow::Result<()> {
+    let cmd = env::args().nth(1).with_context(|| "must provide command as first argument")?;
+    let plugin = env::args().nth(2).with_context(|| "must provide plugin as second argument")?;
+    if cmd != "build" {
+        return Err(anyhow::anyhow!("command must be 'build'"))
     }
+    bundle(&plugin)?;
+    Ok(())
 }

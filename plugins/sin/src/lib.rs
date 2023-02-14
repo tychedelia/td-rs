@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use td_rs_chop::chop::{Chop, ChopInfo};
-use td_rs_chop::cxx::ffi::{ChopGeneralInfo, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, PuleParameter};
+use td_rs_chop::cxx::ffi::*;
 
 /// Struct representing our CHOP's state
 pub struct SinChop {
