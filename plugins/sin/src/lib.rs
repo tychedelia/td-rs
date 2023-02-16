@@ -1,5 +1,6 @@
 use std::f64::consts::PI;
-use td_rs_chop::chop::{Chop, ChopInfo};
+use std::pin::Pin;
+use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput};
 use td_rs_chop::cxx::ffi::*;
 
 /// Struct representing our CHOP's state
@@ -45,15 +46,15 @@ impl Chop for SinChop {
     }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
-        for chan_index in 0..output.num_channels {
+        for chan_index in 0..output.num_channels() {
             let phase = (2.0 * PI) / (chan_index as f64 + 1.0);
 
-            for index in 0..output.num_samples {
-                let percent = (index as f64) / (output.num_samples as f64);
-                let timestep = (self.execute_count as f64) / output.sample_rate as f64;
+            for index in 0..output.num_samples() {
+                let percent = (index as f64) / (output.num_samples() as f64);
+                let timestep = (self.execute_count as f64) / output.sample_rate() as f64;
                 let val = (phase * percent + timestep).sin();
 
-                output.channels[chan_index as usize].data.push(val as f32);
+                output.channels_mut()[chan_index as usize][index as usize] = val as f32;
             }
         }
 

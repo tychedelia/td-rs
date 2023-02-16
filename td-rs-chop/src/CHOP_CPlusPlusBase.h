@@ -154,10 +154,6 @@ public:
 
 };
 
-
-
-
-
 class CHOP_Output
 {
 public:

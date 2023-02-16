@@ -1,3 +1,4 @@
+use std::pin::Pin;
 use crate::cxx::ffi::*;
 
 pub trait ChopInfo {
@@ -12,6 +13,47 @@ pub trait ChopInfo {
     const MINOR_VERSION: i32 = 0;
     const PYTHON_VERSION: &'static str = "";
     const COOK_ON_START: bool = false;
+}
+
+pub struct ChopOutput<'execute> {
+    output: Pin<&'execute mut crate::cxx::ffi::ChopOutput>,
+}
+
+impl <'execute> ChopOutput<'execute> {
+    pub fn new(output: Pin<&'execute mut crate::cxx::ffi::ChopOutput>) -> ChopOutput<'execute> {
+        Self {
+            output
+        }
+    }
+
+    pub fn num_channels(&self) -> u32 {
+        self.output.getNumChannels() as u32
+    }
+
+    pub fn num_samples(&self) -> u32 {
+        self.output.getNumSamples() as u32
+    }
+
+    pub fn sample_rate(&self) -> u32 {
+        self.output.getSampleRate() as u32
+    }
+
+    pub fn start_index(&self) -> usize {
+        self.output.getStartIndex()
+    }
+    pub fn channel_names(&self) -> &[&str] {
+        let channel_names = &*self.output.getChannelNames();
+        channel_names
+    }
+
+    pub fn channels_mut(&mut self) -> &mut[&mut [f32]] {
+        let channels = &mut *self.output.as_mut().getChannels();
+        channels
+    }
+
+    pub fn set_channel_output(&mut self, channel: usize, idx: usize, val: f32) {
+        self.output.as_mut().getChannels()[channel][idx] = val;
+    }
 }
 
 pub trait Chop {

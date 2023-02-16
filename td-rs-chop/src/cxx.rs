@@ -1,6 +1,8 @@
+use std::pin::Pin;
 use crate::chop::Chop;
 use crate::cxx::ffi::*;
 use cxx::ExternType;
+use crate::chop;
 
 unsafe impl ExternType for Box<dyn Chop> {
     type Id = cxx::type_id!("BoxDynChop");
@@ -109,14 +111,6 @@ pub mod ffi {
     }
 
     #[derive(Debug, Default)]
-    pub struct ChopOutput {
-        pub channels: Vec<ChopChannel>,
-        pub num_channels: i32,
-        pub num_samples: i32,
-        pub sample_rate: i32,
-    }
-
-    #[derive(Debug, Default)]
     pub struct ChopInfoChan {
         name: String,
         value: f32,
@@ -147,6 +141,17 @@ pub mod ffi {
         type PtrBoxDynChop = crate::cxx::PtrBoxDynChop;
     }
 
+    unsafe extern "C++" {
+        include!("td-rs-chop/src/ChopOutput.h");
+        pub(crate) type ChopOutput;
+        pub fn getNumChannels(&self) -> i32;
+        pub fn getNumSamples(&self) -> i32;
+        pub fn getSampleRate(&self) -> i32;
+        pub fn getStartIndex(&self) -> usize;
+        pub fn getChannelNames(&self) -> &[&str];
+        pub fn getChannels(self: Pin<&mut ChopOutput>) -> &mut [&mut [f32]];
+    }
+
     extern "Rust" {
         unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
         fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams;
@@ -170,9 +175,9 @@ pub mod ffi {
             num_entries: i32,
             entries: &mut ChopInfoDatEntries,
         );
-        fn chop_execute(
+       fn chop_execute(
             chop: &mut BoxDynChop,
-            output: &mut ChopOutput,
+            output: Pin<& mut ChopOutput>,
             inputs: &ChopOperatorInputs,
         );
         fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
@@ -227,8 +232,8 @@ fn chop_get_info_dat_entries(
     (**chop).get_info_dat_entries(index, num_entries, entries)
 }
 
-fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
-    (**chop).execute(output, inputs)
+fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, inputs: &ChopOperatorInputs) {
+    (**chop).execute(&mut chop::ChopOutput::new(output), inputs);
 }
 
 fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {

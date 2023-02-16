@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::ops::{Add, Div, Mul, Sub};
+use std::pin::Pin;
 use td_rs_chop::chop::{Chop, ChopInfo};
 use td_rs_chop::cxx::ffi::*;
 
@@ -112,7 +113,7 @@ impl Chop for Lissajous {
         true
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
+    fn execute(&mut self, output: Pin<&mut ChopOutput>, inputs: &ChopOperatorInputs) {
         self.map_params(inputs);
 
         for p_i in 0..self.point_count as usize {
