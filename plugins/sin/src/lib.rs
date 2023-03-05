@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
-use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput};
+use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput, ParameterManager};
 use td_rs_chop::cxx::ffi::*;
 
 /// Struct representing our CHOP's state
@@ -24,17 +24,13 @@ impl Chop for SinChop {
         self.execute_count = 0;
     }
 
-    fn get_params(&self) -> ChopParams {
-        ChopParams {
-            pulse_params: vec![
-                PuleParameter{
-                    name: "Reset".to_string(),
-                    label: "Reset".to_string(),
-                    ..Default::default()
-                }
-            ],
+    fn setup_params(&self, manager: &mut ParameterManager) {
+        manager.append_pulse(&mut NumericParameter {
+            name: "Reset".to_string(),
+            label: "Reset".to_string(),
             ..Default::default()
-        }
+        });
+
     }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {

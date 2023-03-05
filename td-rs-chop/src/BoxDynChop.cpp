@@ -11,8 +11,8 @@ BoxDynChop::~BoxDynChop() noexcept {
     }
 }
 
-ChopParams BoxDynChop::getParams() noexcept {
-    return chop_get_params(*this);
+void BoxDynChop::setupParams(ParameterManager* manager) noexcept {
+    chop_setup_params(*this, *manager);
 }
 
 void BoxDynChop::onReset() noexcept {

@@ -15,6 +15,7 @@
 #include "RustCHOP.h"
 #include "BoxDynChop.h"
 #include "ChopOutput.h"
+#include "ParameterManager.h"
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
 #include <stdio.h>
@@ -155,46 +156,8 @@ RustCHOP::getInfoDATEntries(int32_t index,
 
 void
 RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
-    for (auto param: chop->getParams().numeric_params) {
-        OP_NumericParameter np;
-
-        np.name = param.name.c_str();
-        np.label = param.label.c_str();
-        np.page = param.page.c_str();
-        std::copy(std::begin(param.default_values), std::end(param.default_values), std::begin(np.defaultValues));
-        std::copy(std::begin(param.max_values), std::end(param.max_values), std::begin(np.maxValues));
-        std::copy(std::begin(param.min_values), std::end(param.min_values), std::begin(np.minValues));
-        std::copy(std::begin(param.max_sliders), std::end(param.max_sliders), std::begin(np.maxSliders));
-        std::copy(std::begin(param.min_sliders), std::end(param.min_sliders), std::begin(np.minSliders));
-        std::copy(std::begin(param.clamp_maxes), std::end(param.clamp_maxes), std::begin(np.clampMaxes));
-        std::copy(std::begin(param.clamp_mins), std::end(param.clamp_mins), std::begin(np.clampMins));
-
-        OP_ParAppendResult res = manager->appendFloat(np);
-        assert(res == OP_ParAppendResult::Success);
-    }
-
-    for (auto param: chop->getParams().string_params) {
-        OP_StringParameter sp;
-
-        sp.name = param.name.c_str();
-        sp.label = param.label.c_str();
-        sp.page = param.page.c_str();
-        sp.defaultValue = param.default_value.c_str();
-
-        OP_ParAppendResult res = manager->appendString(sp);
-        assert(res == OP_ParAppendResult::Success);
-    }
-
-    for (auto param : chop->getParams().pulse_params) {
-        OP_NumericParameter np;
-
-        np.name = param.name.c_str();
-        np.label = param.label.c_str();
-        np.page = param.page.c_str();
-
-        OP_ParAppendResult res = manager->appendPulse(np);
-        assert(res == OP_ParAppendResult::Success);
-    }
+    auto m = new ParameterManager(manager);
+    chop->setupParams(m);
 }
 
 void

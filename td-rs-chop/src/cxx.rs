@@ -66,13 +66,6 @@ pub mod ffi {
     }
 
     #[derive(Debug, Default)]
-    pub struct ChopParams {
-        pub numeric_params: Vec<NumericParameter>,
-        pub string_params: Vec<StringParameter>,
-        pub pulse_params: Vec<PuleParameter>,
-    }
-
-    #[derive(Debug, Default)]
     pub struct ChopChannel {
         pub data: Vec<f32>,
     }
@@ -152,9 +145,16 @@ pub mod ffi {
         pub fn getChannels(self: Pin<&mut ChopOutput>) -> &mut [&mut [f32]];
     }
 
+    unsafe extern "C++" {
+        include!("td-rs-chop/src/ParameterManager.h");
+        pub(crate) type ParameterManager;
+        pub fn appendFloat(&self, np: &mut NumericParameter);
+        pub fn appendPulse(&self, np: &mut NumericParameter);
+    }
+
     extern "Rust" {
         unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
-        fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams;
+        fn chop_setup_params(chop: &mut BoxDynChop, manager: Pin<&mut ParameterManager>);
         fn chop_on_reset(chop: &mut BoxDynChop);
         fn chop_get_num_info_chop_chans(chop: &BoxDynChop) -> i32;
         fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan;
@@ -177,7 +177,7 @@ pub mod ffi {
         );
        fn chop_execute(
             chop: &mut BoxDynChop,
-            output: Pin<& mut ChopOutput>,
+            output: Pin<&mut ChopOutput>,
             inputs: &ChopOperatorInputs,
         );
         fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
@@ -190,9 +190,8 @@ pub mod ffi {
 }
 
 // FFI
-
-fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams {
-    (**chop).get_params()
+fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
+    (**chop).setup_params(&mut chop::ParameterManager::new(manager));
 }
 
 fn chop_on_reset(chop: &mut Box<dyn Chop>) {

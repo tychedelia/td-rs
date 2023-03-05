@@ -1,12 +1,12 @@
 #pragma once
 #include "ChopOutput.h"
+#include "ParameterManager.h"
 #include <array>
 #include <cstdint>
 #include <type_traits>
 #include <rust/cxx.h>
 
-// Forward declarations from lib.rs.h
-struct ChopParams;
+// Forward declarations from cxx.rs.h
 struct ChopOperatorInputs;
 struct ChopOutputInfo;
 struct OperatorInfo;
@@ -22,7 +22,7 @@ public:
     using IsRelocatable = std::true_type;
 
     void onReset() noexcept;
-    ChopParams getParams() noexcept;
+    void setupParams(ParameterManager* manager) noexcept;
     bool getOutputInfo(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept;
     int32_t getNumInfoChopChans() noexcept;
     ChopInfoChan getInfoChopChan(int32_t index) noexcept;
