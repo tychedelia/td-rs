@@ -148,8 +148,8 @@ pub mod ffi {
     unsafe extern "C++" {
         include!("td-rs-chop/src/ParameterManager.h");
         pub(crate) type ParameterManager;
-        pub fn appendFloat(&self, np: &mut NumericParameter);
-        pub fn appendPulse(&self, np: &mut NumericParameter);
+        pub fn appendFloat(&self, np: NumericParameter);
+        pub fn appendPulse(&self, np: NumericParameter);
     }
 
     extern "Rust" {

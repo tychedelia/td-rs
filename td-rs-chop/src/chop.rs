@@ -26,11 +26,11 @@ impl <'execute> ParameterManager<'execute> {
         }
     }
 
-    pub fn append_float(&self, param: &mut NumericParameter) {
+    pub fn append_float(&self, param: NumericParameter) {
         self.manager.appendFloat(param);
     }
 
-    pub fn append_pulse(&self, param: &mut NumericParameter) {
+    pub fn append_pulse(&self, param: NumericParameter) {
         self.manager.appendPulse(param);
     }
 }

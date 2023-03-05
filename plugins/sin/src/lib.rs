@@ -25,7 +25,7 @@ impl Chop for SinChop {
     }
 
     fn setup_params(&self, manager: &mut ParameterManager) {
-        manager.append_pulse(&mut NumericParameter {
+        manager.append_pulse(NumericParameter {
             name: "Reset".to_string(),
             label: "Reset".to_string(),
             ..Default::default()
