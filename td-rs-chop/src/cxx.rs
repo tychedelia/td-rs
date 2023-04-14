@@ -129,13 +129,13 @@ pub mod ffi {
     }
 
     extern "C++" {
-        include!("td-rs-chop/src/BoxDynChop.h");
+        include!("BoxDynChop.h");
         type BoxDynChop = Box<dyn crate::chop::Chop>;
         type PtrBoxDynChop = crate::cxx::PtrBoxDynChop;
     }
 
     unsafe extern "C++" {
-        include!("td-rs-chop/src/ChopOutput.h");
+        include!("ChopOutput.h");
         pub(crate) type ChopOutput;
         pub fn getNumChannels(&self) -> i32;
         pub fn getNumSamples(&self) -> i32;
@@ -146,7 +146,7 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("td-rs-chop/src/ParameterManager.h");
+        include!("ParameterManager.h");
         pub(crate) type ParameterManager;
         pub fn appendFloat(&self, np: NumericParameter);
         pub fn appendPulse(&self, np: NumericParameter);
