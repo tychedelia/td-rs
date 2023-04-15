@@ -1,5 +1,5 @@
 [package]
-name = "td-rs-param"
+name = "td-rs-base"
 version = "0.1.0"
 edition = "2021"
 

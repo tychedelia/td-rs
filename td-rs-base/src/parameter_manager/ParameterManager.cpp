@@ -1,8 +1,8 @@
 #include "ParameterManager.h"
-#include <td-rs-param/src/cxx.rs.h>
+#include <td-rs-base/src/cxx.rs.h>
 #include <rust/cxx.h>
 
-using namespace td_rs_param::ffi;
+using namespace td_rs_base::ffi;
 
 ParameterManager::ParameterManager(OP_ParameterManager *mgr) noexcept {
     manager = mgr;

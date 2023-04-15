@@ -2,8 +2,8 @@ use std::pin::Pin;
 use crate::chop::Chop;
 use crate::cxx::ffi::*;
 use cxx::ExternType;
-use td_rs_param::cxx::ffi::OperatorInput;
-use td_rs_param::cxx::ffi::ParameterManager;
+use td_rs_base::cxx::ffi::OperatorInput;
+use td_rs_base::cxx::ffi::ParameterManager;
 use crate::chop;
 
 unsafe impl ExternType for Box<dyn Chop> {
@@ -83,16 +83,16 @@ pub mod ffi {
         pub input_match_index: i32,
     }
 
-    #[namespace = "td_rs_param::ffi"]
+    #[namespace = "td_rs_base::ffi"]
     extern "C++" {
         include!("parameter_manager/ParameterManager.h");
-        type ParameterManager = td_rs_param::cxx::ffi::ParameterManager;
+        type ParameterManager = td_rs_base::cxx::ffi::ParameterManager;
     }
 
-    #[namespace = "td_rs_param::ffi"]
+    #[namespace = "td_rs_base::ffi"]
     extern "C++" {
         include!("operator_input/OperatorInput.h");
-        type OperatorInput = td_rs_param::cxx::ffi::OperatorInput;
+        type OperatorInput = td_rs_base::cxx::ffi::OperatorInput;
     }
 
     extern "C++" {
@@ -153,7 +153,7 @@ pub mod ffi {
 fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
     let params = (**chop).get_params_mut();
     if let Some(mut params) = params {
-        let mut mgr = td_rs_param::parameter_manager::ParameterManager::new(manager);
+        let mut mgr = td_rs_base::parameter_manager::ParameterManager::new(manager);
         params.register(&mut mgr);
     }
 }
@@ -175,12 +175,12 @@ fn chop_get_output_info(
     info: &mut ChopOutputInfo,
     input: Pin<&OperatorInput>,
 ) -> bool {
-    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
     (**chop).get_output_info(info, &input)
 }
 
 fn chop_get_channel_name(chop: &BoxDynChop, index: i32, input: Pin<&OperatorInput>) -> String {
-    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
     (**chop).get_channel_name(index, &input)
 }
 
@@ -198,7 +198,7 @@ fn chop_get_info_dat_entries(
 }
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: Pin<&OperatorInput>) {
-    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
     let params = (**chop).get_params_mut();
     if let Some(mut params) = params {
         params.update(&input);

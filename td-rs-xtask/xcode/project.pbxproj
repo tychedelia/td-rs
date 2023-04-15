@@ -19,7 +19,7 @@
 			<key>name</key>
 			<string>OperatorInput.h</string>
 			<key>path</key>
-			<string>td-rs-param/src/operator_input/OperatorInput.h</string>
+			<string>td-rs-base/src/operator_input/OperatorInput.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -32,7 +32,7 @@
 			<key>name</key>
 			<string>OperatorInput.cpp</string>
 			<key>path</key>
-			<string>td-rs-param/src/operator_input/OperatorInput.cpp</string>
+			<string>td-rs-base/src/operator_input/OperatorInput.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -52,7 +52,7 @@
 			<key>name</key>
 			<string>ParameterManager.cpp</string>
 			<key>path</key>
-			<string>td-rs-param/src/parameter_manager/ParameterManager.cpp</string>
+			<string>td-rs-base/src/parameter_manager/ParameterManager.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -65,7 +65,7 @@
 			<key>name</key>
 			<string>ParameterManager.h</string>
 			<key>path</key>
-			<string>td-rs-param/src/parameter_manager/ParameterManager.h</string>
+			<string>td-rs-base/src/parameter_manager/ParameterManager.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -722,7 +722,7 @@
 				<key>OTHER_CFLAGS</key>
 				<array>
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
-					<string>-I$(PROJECT_DIR)/td-rs-param/src</string>
+					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>
@@ -764,7 +764,7 @@
 				<key>OTHER_CFLAGS</key>
 				<array>
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
-					<string>-I$(PROJECT_DIR)/td-rs-param/src</string>
+					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>

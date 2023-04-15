@@ -10,14 +10,11 @@ use syn::{
     parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
     NestedMeta,
 };
-use td_rs_param::ParamOptions;
+use td_rs_base::ParamOptions;
 
-#[proc_macro_derive(Params)]
+#[proc_macro_derive(Params, attributes(label, page, min, max))]
 pub fn parameter_derive(input: TokenStream) -> TokenStream {
-    // Parse the input tokens into a syntax tree
     let input = parse_macro_input!(input as DeriveInput);
-
-    // Implement the macro
     impl_parameter(&input)
 }
 
@@ -99,7 +96,8 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                 register_code.push(code);
 
                 let update_field_code = quote! {
-                    Param::update(&mut self.#field_name, #field_name_upper, input);
+                    // TODO: Field name should be null terminated
+                    Param::update(&mut self.#field_name, &(#field_name_upper.to_string()), input);
                 };
 
                 update_code.push(update_field_code);

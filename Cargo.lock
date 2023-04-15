@@ -681,6 +681,7 @@ dependencies = [
 name = "sin"
 version = "0.1.0"
 dependencies = [
+ "rgb",
  "td-rs-chop",
  "td-rs-derive",
 ]
@@ -725,6 +726,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "td-rs-base"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "libc",
+ "rgb",
+]
+
+[[package]]
 name = "td-rs-chop"
 version = "0.1.0"
 dependencies = [
@@ -732,7 +743,7 @@ dependencies = [
  "cxx-build",
  "libc",
  "rgb",
- "td-rs-param",
+ "td-rs-base",
 ]
 
 [[package]]
@@ -743,18 +754,8 @@ dependencies = [
  "quote",
  "rgb",
  "syn",
- "td-rs-param",
+ "td-rs-base",
  "trybuild",
-]
-
-[[package]]
-name = "td-rs-param"
-version = "0.1.0"
-dependencies = [
- "cxx",
- "cxx-build",
- "libc",
- "rgb",
 ]
 
 [[package]]
