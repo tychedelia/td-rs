@@ -1,0 +1,11 @@
+[package]
+name = "td-rs-param"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "td_rs_param"
+path = "src/lib.rs"
+
+[dependencies]
+td-rs-chop = { path = "../td-rs-chop" }

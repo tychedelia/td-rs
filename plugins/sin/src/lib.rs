@@ -1,7 +1,13 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
-use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput, ParameterManager};
+use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput, ChopParams, ParameterManager};
 use td_rs_chop::cxx::ffi::*;
+use td_rs_derive::Params;
+
+#[derive(Params, Default)]
+struct SinChopParams {
+    divisor: f64,
+}
 
 /// Struct representing our CHOP's state
 pub struct SinChop {
@@ -18,19 +24,11 @@ impl SinChop {
 impl ChopInfo for SinChop {
 }
 
+
 impl Chop for SinChop {
 
     fn on_reset(&mut self) {
         self.execute_count = 0;
-    }
-
-    fn setup_params(&self, manager: &mut ParameterManager) {
-        manager.append_pulse(NumericParameter {
-            name: "Reset".to_string(),
-            label: "Reset".to_string(),
-            ..Default::default()
-        });
-
     }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, input: &OperatorInput) -> bool {
@@ -64,6 +62,12 @@ impl Chop for SinChop {
             timeslice: false,
             input_match_index: 0
         }
+    }
+
+    fn get_params(&self) -> Box<dyn ChopParams> {
+        Box::new(SinChopParams {
+            divisor: 0.0,
+        })
     }
 }
 

@@ -1,6 +1,11 @@
 use crate::cxx::ffi::*;
 use std::pin::Pin;
 
+pub trait ChopParams {
+    fn register(&mut self, parameter_manager: &mut ParameterManager);
+    fn update(&mut self, input: &OperatorInput);
+}
+
 pub trait ChopInfo {
     const OPERATOR_TYPE: &'static str = "";
     const OPERATOR_LABEL: &'static str = "";
@@ -27,6 +32,7 @@ impl<'execute> ParameterManager<'execute> {
     }
 
     pub fn append_float(&self, param: NumericParameter) {
+        println!("{:?}", param);
         self.manager.appendFloat(param);
     }
 
@@ -183,7 +189,7 @@ pub trait Chop {
     fn on_reset(&mut self) {}
 
     /// Called on plugin init to declare parameters required for plugin.
-    fn setup_params(&self, manager: &mut ParameterManager) {}
+    fn get_params(&self) -> Box<dyn ChopParams>;
 
     /// Called on plugin init to register the number of info chop channels.
     fn get_num_info_chop_chans(&self) -> i32 {

@@ -9,3 +9,4 @@ crate-type = ["staticlib"]
 
 [dependencies]
 td-rs-chop = { path = "../../td-rs-chop" }
+td-rs-derive = { path = "../../td-rs-derive" }

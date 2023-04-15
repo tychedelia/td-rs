@@ -1,6 +1,7 @@
 #include "ParameterManager.h"
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
+#include <iostream>
 
 ParameterManager::ParameterManager(OP_ParameterManager *mgr) noexcept {
     manager = mgr;
@@ -8,6 +9,7 @@ ParameterManager::ParameterManager(OP_ParameterManager *mgr) noexcept {
 
 void ParameterManager::appendFloat(NumericParameter np) const {
     OP_ParAppendResult res = manager->appendFloat(this->mapNumeric(np));
+    std::cout << static_cast<std::underlying_type<OP_ParAppendResult>::type>(res) << std::endl;
     assert(res == OP_ParAppendResult::Success);
 }
 
@@ -148,6 +150,11 @@ void ParameterManager::appendWH(NumericParameter np) const {
 OP_NumericParameter ParameterManager::mapNumeric(NumericParameter np) const {
     OP_NumericParameter param;
 
+
+    std::cout << np.name.c_str() << std::endl;
+    std::cout << np.label.c_str() << std::endl;
+    std::cout << np.page.c_str() << std::endl;
+
     param.name = np.name.c_str();
     param.label = np.label.c_str();
     param.page = np.page.c_str();
@@ -158,6 +165,7 @@ OP_NumericParameter ParameterManager::mapNumeric(NumericParameter np) const {
     std::copy(std::begin(np.min_sliders), std::end(np.min_sliders), std::begin(param.minSliders));
     std::copy(std::begin(np.clamp_maxes), std::end(np.clamp_maxes), std::begin(param.clampMaxes));
     std::copy(std::begin(np.clamp_mins), std::end(np.clamp_mins), std::begin(param.clampMins));
+
     return param;
 }
 
