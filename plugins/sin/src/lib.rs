@@ -12,14 +12,14 @@ struct SinChopParams {
 /// Struct representing our CHOP's state
 pub struct SinChop {
     execute_count: u64,
-    // params: SinChopParams,
+    params: SinChopParams,
 }
 
 /// Impl block providing default constructor for plugin
 impl SinChop {
     pub(crate) fn new() -> Self {
         Self { execute_count: 0,
-            // params: Default::default()
+            params: Default::default()
         }
     }
 }
@@ -29,9 +29,9 @@ impl ChopInfo for SinChop {
 }
 
 impl Chop for SinChop {
-    // fn get_params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-    //     Some(Box::new(&mut self.params))
-    // }
+    fn get_params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
+        Some(Box::new(&mut self.params))
+    }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, input: &OperatorInput) -> bool {
         info.num_channels = 3;

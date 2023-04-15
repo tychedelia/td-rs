@@ -75,12 +75,10 @@ macro_rules! impl_param_float {
     ( $t:ty ) => {
         impl Param for $t {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
-                println!("Registering {} with {}", options.name, self);
                 parameter_manager.append_float(options.into());
             }
 
             fn update(&mut self, name: &str, input: &OperatorInput) {
-                println!("Updating {} with {}", name, input.get_float(name, 0));
                 *self = input.get_float(name, 0) as $t;
             }
         }
