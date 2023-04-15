@@ -1,7 +1,6 @@
 #include "ParameterManager.h"
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
-#include <iostream>
 
 ParameterManager::ParameterManager(OP_ParameterManager *mgr) noexcept {
     manager = mgr;
@@ -9,7 +8,6 @@ ParameterManager::ParameterManager(OP_ParameterManager *mgr) noexcept {
 
 void ParameterManager::appendFloat(NumericParameter np) const {
     OP_ParAppendResult res = manager->appendFloat(this->mapNumeric(np));
-    std::cout << static_cast<std::underlying_type<OP_ParAppendResult>::type>(res) << std::endl;
     assert(res == OP_ParAppendResult::Success);
 }
 
@@ -149,11 +147,6 @@ void ParameterManager::appendWH(NumericParameter np) const {
 
 OP_NumericParameter ParameterManager::mapNumeric(NumericParameter np) const {
     OP_NumericParameter param;
-
-
-    std::cout << np.name.c_str() << std::endl;
-    std::cout << np.label.c_str() << std::endl;
-    std::cout << np.page.c_str() << std::endl;
 
     param.name = np.name.c_str();
     param.label = np.label.c_str();

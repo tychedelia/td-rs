@@ -20,6 +20,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let mut register_code = Vec::new();
+    let mut update_code = Vec::new(); // Add this line to store update code
 
     if let Data::Struct(data_struct) = &input.data {
         if let Fields::Named(named_fields) = &data_struct.fields {
@@ -91,6 +92,13 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                         }
                     };
                     register_code.push(code);
+
+                    let update_field_code = quote! {
+                        println!("{}", input.getParDouble(#field_name_upper, 0));
+                        self.#field_name = input.getParDouble(#field_name_upper, 0);
+                    };
+
+                    update_code.push(update_field_code); // Add this line to store the update code for the current field
                 }
             }
         }
@@ -105,8 +113,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
             }
 
             fn update(&mut self, input: &OperatorInput) {
-                // Update the parameter value
-                // ...
+                #(#update_code)*
             }
         }
     };

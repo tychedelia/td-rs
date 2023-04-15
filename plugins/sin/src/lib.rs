@@ -1,10 +1,11 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
+use std::sync::Arc;
 use td_rs_chop::chop::{Chop, ChopInfo, ChopOutput, ChopParams, ParameterManager};
 use td_rs_chop::cxx::ffi::*;
 use td_rs_derive::Params;
 
-#[derive(Params, Default)]
+#[derive(Params, Default, Clone)]
 struct SinChopParams {
     divisor: f64,
 }
@@ -12,21 +13,20 @@ struct SinChopParams {
 /// Struct representing our CHOP's state
 pub struct SinChop {
     execute_count: u64,
+    params: SinChopParams,
 }
 
 /// Impl block providing default constructor for plugin
 impl SinChop {
     pub(crate) fn new() -> Self {
-        Self { execute_count: 0 }
+        Self { execute_count: 0, params: Default::default() }
     }
 }
 
-impl ChopInfo for SinChop {
-}
+impl ChopInfo for SinChop {}
 
 
 impl Chop for SinChop {
-
     fn on_reset(&mut self) {
         self.execute_count = 0;
     }
@@ -45,7 +45,7 @@ impl Chop for SinChop {
 
             for index in 0..output.num_samples() {
                 let percent = (index as f64) / (output.num_samples() as f64);
-                let timestep = (self.execute_count as f64) / output.sample_rate() as f64;
+                let timestep = (self.execute_count as f64) / (output.sample_rate() as f64 * self.params.divisor);
                 let val = (phase * percent + timestep).sin();
 
                 output.channels_mut()[chan_index as usize][index as usize] = val as f32;
@@ -60,14 +60,12 @@ impl Chop for SinChop {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,
             timeslice: false,
-            input_match_index: 0
+            input_match_index: 0,
         }
     }
 
-    fn get_params(&self) -> Box<dyn ChopParams> {
-        Box::new(SinChopParams {
-            divisor: 0.0,
-        })
+    fn get_params_mut(&mut self) -> Box<&mut dyn ChopParams> {
+        Box::new(&mut self.params)
     }
 }
 
