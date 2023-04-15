@@ -2,8 +2,6 @@
 #include "CHOP_CPlusPlusBase.h"
 #include <rust/cxx.h>
 
-#include "OperatorInput.h"
-
 OperatorInput::OperatorInput(const OP_Inputs* inputs) noexcept {
     this->inputs = inputs;
 }
