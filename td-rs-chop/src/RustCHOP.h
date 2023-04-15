@@ -67,6 +67,4 @@ public:
 
 private:
    BoxDynChop* chop;
-
-   ChopOperatorInput    mapInput(const OP_CHOPInput* input);
 };

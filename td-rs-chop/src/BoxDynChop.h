@@ -1,13 +1,13 @@
 #pragma once
 #include "ChopOutput.h"
 #include "ParameterManager.h"
+#include "OperatorInput.h"
 #include <array>
 #include <cstdint>
 #include <type_traits>
 #include <rust/cxx.h>
 
 // Forward declarations from cxx.rs.h
-struct ChopOperatorInputs;
 struct ChopOutputInfo;
 struct OperatorInfo;
 struct ChopInfoChan;
@@ -23,13 +23,13 @@ public:
 
     void onReset() noexcept;
     void setupParams(ParameterManager* manager) noexcept;
-    bool getOutputInfo(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept;
+    bool getOutputInfo(ChopOutputInfo* info, OperatorInput* input) noexcept;
     int32_t getNumInfoChopChans() noexcept;
     ChopInfoChan getInfoChopChan(int32_t index) noexcept;
-    rust::String getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept;
+    rust::String getChannelName(int32_t index, OperatorInput* input) noexcept;
     bool getInfoDatSize(ChopInfoDatSize* size) noexcept;
     void getInfoDATEntries(int32_t index, int32_t nEntries, ChopInfoDatEntries* entries) noexcept;
-    void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
+    void execute(ChopOutput* output, OperatorInput* input) noexcept;
     ChopGeneralInfo getGeneralInfo() noexcept;
     rust::String getWarningString() noexcept;
     rust::String getErrorString() noexcept;

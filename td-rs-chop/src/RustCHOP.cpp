@@ -80,14 +80,8 @@ RustCHOP::getGeneralInfo(CHOP_GeneralInfo *ginfo, const OP_Inputs *inputs, void 
 bool
 RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *reserved1) {
     ChopOutputInfo ci;
-    ChopOperatorInputs opIn;
-    for (auto i = 0; i < inputs->getNumInputs(); i++) {
-        auto ci = inputs->getInputCHOP(i);
-        auto in = mapInput(ci);
-        opIn.inputs.push_back(in);
-    }
-
-    auto is_output = chop->getOutputInfo(&ci, &opIn);
+    auto in = new OperatorInput(inputs);
+    auto is_output = chop->getOutputInfo(&ci, in);
 
     info->numChannels = ci.num_channels;
     info->sampleRate = ci.sample_rate;
@@ -99,22 +93,17 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *re
 
 void
 RustCHOP::getChannelName(int32_t index, OP_String *name, const OP_Inputs *inputs, void *reserved1) {
-    ChopOperatorInputs opIn;
-    for (auto i = 0; i < inputs->getNumInputs(); i++) {
-        auto ci = inputs->getInputCHOP(i);
-        auto in = mapInput(ci);
-        opIn.inputs.push_back(in);
-    }
-    name->setString(chop->getChannelName(index, &opIn).c_str());
+    auto in = new OperatorInput(inputs);
+    name->setString(chop->getChannelName(index, in).c_str());
 }
 
 void
 RustCHOP::execute(CHOP_Output *output,
                   const OP_Inputs *inputs,
                   void *reserved) {
-    ChopOperatorInputs ins;
     auto out = new ChopOutput(output);
-    chop->execute(out, &ins);
+    auto in = new OperatorInput(inputs);
+    chop->execute(out, in);
 }
 
 int32_t
@@ -181,28 +170,3 @@ RustCHOP::pulsePressed(const char *name, void *reserved1) {
         chop->onReset();
     }
 }
-
-ChopOperatorInput
-RustCHOP::mapInput(const OP_CHOPInput *input) {
-    ChopOperatorInput chop;
-    chop.id = input->opId;
-    chop.path = input->opPath;
-    chop.num_channels = input->numChannels;
-    chop.num_samples = input->numSamples;
-    chop.sample_rate = input->sampleRate;
-    chop.start_index = input->startIndex;
-    chop.channels = rust::Vec<ChopChannel>();
-    int ind = 0;
-    for (auto i = 0; i < input->numChannels; i++) {
-        ChopChannel chan;
-        chan.data = rust::Vec<float>();
-        for (auto j = 0; j < input->numSamples; j++) {
-            chan.data.push_back(input->getChannelData(i)[ind]);
-            ind++;
-            ind = ind % input->numSamples;
-        }
-        chop.channels.push_back(chan);
-    }
-    return chop;
-}
-

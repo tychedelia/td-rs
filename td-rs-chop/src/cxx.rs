@@ -11,6 +11,7 @@ unsafe impl ExternType for Box<dyn Chop> {
 
 #[repr(transparent)]
 pub struct PtrBoxDynChop(*mut Box<dyn Chop>);
+
 unsafe impl ExternType for PtrBoxDynChop {
     type Id = cxx::type_id!("PtrBoxDynChop");
     type Kind = cxx::kind::Trivial;
@@ -75,24 +76,6 @@ pub mod ffi {
         pub name: String,
         pub str_value: String,
         pub double_value: f64,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopOperatorInputs {
-        pub num_inputs: i32,
-        pub inputs: Vec<ChopOperatorInput>,
-        pub params: Vec<ParamValue>,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopOperatorInput {
-        pub path: String,
-        pub id: u32,
-        pub num_channels: u32,
-        pub num_samples: u32,
-        pub sample_rate: f64,
-        pub start_index: f64,
-        pub channels: Vec<ChopChannel>,
     }
 
     #[derive(Debug, Default)]
@@ -178,6 +161,20 @@ pub mod ffi {
         pub fn appendWH(&self, np: NumericParameter);
     }
 
+    unsafe extern "C++" {
+        include!("OperatorInput.h");
+        pub(crate) type OperatorInput;
+        pub fn getParDouble(&self, name: &str, index: i32) -> f64;
+        pub fn getParDouble2(&self, name: &str) -> &[f64];
+        pub fn getParDouble3(&self, name: &str) -> &[f64];
+        pub fn getParDouble4(&self, name: &str) -> &[f64];
+        pub fn getParInt(&self, name: &str, index: i32) -> i32;
+        pub fn getParInt2(&self, name: &str) -> &[i32];
+        pub fn getParInt3(&self, name: &str) -> &[i32];
+        pub fn getParInt4(&self, name: &str) -> &[i32];
+        pub fn getParString(&self, name: &str) -> &str;
+    }
+
     extern "Rust" {
         unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
         fn chop_setup_params(chop: &mut BoxDynChop, manager: Pin<&mut ParameterManager>);
@@ -187,12 +184,12 @@ pub mod ffi {
         fn chop_get_output_info(
             chop: &mut BoxDynChop,
             info: &mut ChopOutputInfo,
-            inputs: &ChopOperatorInputs,
+            input: &OperatorInput,
         ) -> bool;
         fn chop_get_channel_name(
             chop: &BoxDynChop,
             index: i32,
-            inputs: &ChopOperatorInputs,
+            input: &OperatorInput,
         ) -> String;
         fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
         fn chop_get_info_dat_entries(
@@ -201,10 +198,10 @@ pub mod ffi {
             num_entries: i32,
             entries: &mut ChopInfoDatEntries,
         );
-       fn chop_execute(
+        fn chop_execute(
             chop: &mut BoxDynChop,
             output: Pin<&mut ChopOutput>,
-            inputs: &ChopOperatorInputs,
+            input: &OperatorInput,
         );
         fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
         fn chop_get_info(chop: &BoxDynChop) -> String;
@@ -235,13 +232,13 @@ fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan {
 fn chop_get_output_info(
     chop: &mut Box<dyn Chop>,
     info: &mut ChopOutputInfo,
-    inputs: &ChopOperatorInputs,
+    input: &OperatorInput,
 ) -> bool {
-    (**chop).get_output_info(info, inputs)
+    (**chop).get_output_info(info, input)
 }
 
-fn chop_get_channel_name(chop: &BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String {
-    (**chop).get_channel_name(index, inputs)
+fn chop_get_channel_name(chop: &BoxDynChop, index: i32, input: &OperatorInput) -> String {
+    (**chop).get_channel_name(index, input)
 }
 
 fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool {
@@ -257,8 +254,8 @@ fn chop_get_info_dat_entries(
     (**chop).get_info_dat_entries(index, num_entries, entries)
 }
 
-fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, inputs: &ChopOperatorInputs) {
-    (**chop).execute(&mut chop::ChopOutput::new(output), inputs);
+fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: &OperatorInput) {
+    (**chop).execute(&mut chop::ChopOutput::new(output), input);
 }
 
 fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {

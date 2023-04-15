@@ -33,7 +33,7 @@ impl Chop for SinChop {
 
     }
 
-    fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
+    fn get_output_info(&self, info: &mut ChopOutputInfo, input: &OperatorInput) -> bool {
         info.num_channels = 3;
         info.num_samples = 100;
         info.start_index = 0;
@@ -41,7 +41,7 @@ impl Chop for SinChop {
         true
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
+    fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput) {
         for chan_index in 0..output.num_channels() {
             let phase = (2.0 * PI) / (chan_index as f64 + 1.0);
 
