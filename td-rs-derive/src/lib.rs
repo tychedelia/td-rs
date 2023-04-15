@@ -2,9 +2,15 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
+use std::any::Any;
 
-use quote::quote;
-use syn::{AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue, NestedMeta, parse_macro_input};
+use quote::{quote, ToTokens};
+use syn::spanned::Spanned;
+use syn::{
+    parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
+    NestedMeta,
+};
+use td_rs_param::ParamOptions;
 
 #[proc_macro_derive(Params)]
 pub fn parameter_derive(input: TokenStream) -> TokenStream {
@@ -28,17 +34,25 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                 let field_name = field.ident.as_ref().unwrap();
                 let field_type = &field.ty;
 
+                if let syn::Type::Path(type_path) = field_type {
+                    println!("field_type: {:?}", type_path.path.to_token_stream());
+                }
+
                 let mut label = None;
                 let mut page = None;
                 let mut min = None;
                 let mut max = None;
-                let mut default = None;
 
                 for attr in &field.attrs {
                     if attr.path.is_ident("parameter") {
                         if let Ok(Meta::List(meta_list)) = attr.parse_meta() {
                             for nested_meta in meta_list.nested.iter() {
-                                if let NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. })) = nested_meta {
+                                if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
+                                    path,
+                                    lit,
+                                    ..
+                                })) = nested_meta
+                                {
                                     if path.is_ident("label") {
                                         if let Lit::Str(lit_str) = lit {
                                             label = Some(lit_str.value());
@@ -55,10 +69,6 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                                         if let Lit::Float(lit_float) = lit {
                                             max = Some(lit_float.base10_parse().unwrap());
                                         }
-                                    } else if path.is_ident("default") {
-                                        if let Lit::Float(lit_float) = lit {
-                                            default = Some(lit_float.base10_parse().unwrap());
-                                        }
                                     }
                                 }
                             }
@@ -66,40 +76,33 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                     }
                 }
 
-                if is_numeric_type(field_type) {
-                    let field_name_upper = capitalize_first(&field_name.to_string()); // Capitalize the field name
-                    let default_label = format!("{}", field_name);
-                    let label = label.unwrap_or_else(|| default_label);
-                    let default_page = "Custom".to_string();
-                    let page = page.unwrap_or_else(|| default_page);
-                    let min_values = array_to_tokens(&[min.unwrap_or(0.0); 4]);
-                    let max_values = array_to_tokens(&[max.unwrap_or(0.0); 4]);
-                    let default_values = array_to_tokens(&[default.unwrap_or(0.0); 4]);
+                let field_name_upper = capitalize_first(&field_name.to_string());
+                let default_label = format!("{}", field_name);
+                let label = label.unwrap_or_else(|| default_label);
+                let default_page = "Custom".to_string();
+                let page = page.unwrap_or_else(|| default_page);
+                let min = min.unwrap_or(0.0);
+                let max = max.unwrap_or(0.0);
 
-                    let code = quote! {
-                        {
-                            use td_rs_chop::cxx::ffi::NumericParameter;
-                            let mut np = NumericParameter {
-                                name: #field_name_upper.to_string(),
-                                label: #label.to_string(),
-                                page: #page.to_string(),
-                                min_values: #min_values,
-                                max_values: #max_values,
-                                default_values: #default_values,
-                                ..Default::default()
-                            };
-                            parameter_manager.append_float(np);
-                        }
-                    };
-                    register_code.push(code);
+                let code = quote! {
+                    {
+                        let options = ParamOptions {
+                            name: #field_name_upper.to_string(),
+                            label: #label.to_string(),
+                            page: #page.to_string(),
+                            min: #min,
+                            max: #max,
+                        };
+                        Param::register(&self.#field_name, options, parameter_manager);
+                    }
+                };
+                register_code.push(code);
 
-                    let update_field_code = quote! {
-                        println!("{}", input.getParDouble(#field_name_upper, 0));
-                        self.#field_name = input.getParDouble(#field_name_upper, 0);
-                    };
+                let update_field_code = quote! {
+                    Param::update(&mut self.#field_name, #field_name_upper, input);
+                };
 
-                    update_code.push(update_field_code); // Add this line to store the update code for the current field
-                }
+                update_code.push(update_field_code);
             }
         }
     }
@@ -107,7 +110,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
     let register_code = quote! { #(#register_code)* };
 
     let gen = quote! {
-        impl #impl_generics ChopParams for #struct_name #ty_generics #where_clause {
+        impl #impl_generics OperatorParams for #struct_name #ty_generics #where_clause {
             fn register(&mut self, parameter_manager: &mut ParameterManager) {
                 #register_code
             }
@@ -118,24 +121,6 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
         }
     };
     gen.into()
-}
-
-
-fn is_numeric_type(field_type: &syn::Type) -> bool {
-    // Add more numeric types as necessary
-    let numeric_types = [
-        "f32",
-        "f64",
-    ];
-
-    for numeric_type in numeric_types.iter() {
-        if let syn::Type::Path(type_path) = field_type {
-            if type_path.path.is_ident(numeric_type) {
-                return true;
-            }
-        }
-    }
-    false
 }
 
 fn array_to_tokens(array: &[f64; 4]) -> TokenStream2 {

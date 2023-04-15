@@ -1,6 +1,8 @@
 #pragma once
-#include <CPlusPlus_Common.h>
+#include "../CPlusPlus_Common.h"
 #include <rust/cxx.h>
+
+namespace td_rs_param::ffi {
 
 class OperatorInput {
 public:
@@ -20,3 +22,5 @@ public:
 private:
     const OP_Inputs *inputs;
 };
+
+}

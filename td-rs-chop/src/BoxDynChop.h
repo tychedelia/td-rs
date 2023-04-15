@@ -1,7 +1,7 @@
 #pragma once
 #include "ChopOutput.h"
-#include "ParameterManager.h"
-#include "OperatorInput.h"
+#include "parameter_manager/ParameterManager.h"
+#include "operator_input/OperatorInput.h"
 #include <array>
 #include <cstdint>
 #include <type_traits>
@@ -22,14 +22,14 @@ public:
     using IsRelocatable = std::true_type;
 
     void onReset() noexcept;
-    void setupParams(ParameterManager* manager) noexcept;
-    bool getOutputInfo(ChopOutputInfo* info, OperatorInput* input) noexcept;
+    void setupParams(td_rs_param::ffi::ParameterManager* manager) noexcept;
+    bool getOutputInfo(ChopOutputInfo* info, td_rs_param::ffi::OperatorInput* input) noexcept;
     int32_t getNumInfoChopChans() noexcept;
     ChopInfoChan getInfoChopChan(int32_t index) noexcept;
-    rust::String getChannelName(int32_t index, OperatorInput* input) noexcept;
+    rust::String getChannelName(int32_t index, td_rs_param::ffi::OperatorInput* input) noexcept;
     bool getInfoDatSize(ChopInfoDatSize* size) noexcept;
     void getInfoDATEntries(int32_t index, int32_t nEntries, ChopInfoDatEntries* entries) noexcept;
-    void execute(ChopOutput* output, OperatorInput* input) noexcept;
+    void execute(ChopOutput* output, td_rs_param::ffi::OperatorInput* input) noexcept;
     ChopGeneralInfo getGeneralInfo() noexcept;
     rust::String getWarningString() noexcept;
     rust::String getErrorString() noexcept;

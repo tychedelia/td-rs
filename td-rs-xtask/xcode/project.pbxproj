@@ -10,7 +10,7 @@
 	<string>46</string>
 	<key>objects</key>
 	<dict>
-		<key>6A8B50EF29EA13CA000197C7</key>
+		<key>6A8B515129EB2083000197C7</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
@@ -19,11 +19,11 @@
 			<key>name</key>
 			<string>OperatorInput.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/OperatorInput.h</string>
+			<string>td-rs-param/src/operator_input/OperatorInput.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B50F029EA13CA000197C7</key>
+		<key>6A8B515229EB2083000197C7</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
@@ -32,14 +32,47 @@
 			<key>name</key>
 			<string>OperatorInput.cpp</string>
 			<key>path</key>
-			<string>td-rs-chop/src/OperatorInput.cpp</string>
+			<string>td-rs-param/src/operator_input/OperatorInput.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B50F229EA14AF000197C7</key>
+		<key>6A8B515329EB208A000197C7</key>
 		<dict>
 			<key>fileRef</key>
-			<string>6A8B50F029EA13CA000197C7</string>
+			<string>6A8B515229EB2083000197C7</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>6A8B515429EB209E000197C7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>ParameterManager.cpp</string>
+			<key>path</key>
+			<string>td-rs-param/src/parameter_manager/ParameterManager.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A8B515529EB209E000197C7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>ParameterManager.h</string>
+			<key>path</key>
+			<string>td-rs-param/src/parameter_manager/ParameterManager.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A8B515629EB20A1000197C7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6A8B515429EB209E000197C7</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -60,39 +93,6 @@
 		<dict>
 			<key>fileRef</key>
 			<string>9E4ACB8B299AC54200A2B1CE</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>9E574B7B29B5499F00705349</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>ParameterManager.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/ParameterManager.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>9E574B7C29B5499F00705349</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>ParameterManager.h</string>
-			<key>path</key>
-			<string>td-rs-chop/src/ParameterManager.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>9E574B7F29B54A0200705349</key>
-		<dict>
-			<key>fileRef</key>
-			<string>9E574B7B29B5499F00705349</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -266,10 +266,10 @@
 		<dict>
 			<key>children</key>
 			<array>
-				<string>6A8B50F029EA13CA000197C7</string>
-				<string>6A8B50EF29EA13CA000197C7</string>
-				<string>9E574B7B29B5499F00705349</string>
-				<string>9E574B7C29B5499F00705349</string>
+				<string>6A8B515429EB209E000197C7</string>
+				<string>6A8B515529EB209E000197C7</string>
+				<string>6A8B515229EB2083000197C7</string>
+				<string>6A8B515129EB2083000197C7</string>
 				<string>9E99107F299DBE1200C64465</string>
 				<string>9E991080299DBE1200C64465</string>
 				<string>B9BF86D027481CA300D63C86</string>
@@ -360,12 +360,12 @@
 			<string>2147483647</string>
 			<key>files</key>
 			<array>
-				<string>6A8B50F229EA14AF000197C7</string>
 				<string>B9BF86D12748762600D63C86</string>
+				<string>6A8B515629EB20A1000197C7</string>
 				<string>B9369E77274177C500EA7D98</string>
 				<string>9EBB2640299DC28000352B6C</string>
-				<string>9E574B7F29B54A0200705349</string>
 				<string>9ED7E4F1299A01F5001F2445</string>
+				<string>6A8B515329EB208A000197C7</string>
 			</array>
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>
@@ -698,8 +698,12 @@
 		<dict>
 			<key>buildSettings</key>
 			<dict>
+				<key>ALWAYS_SEARCH_USER_PATHS</key>
+				<string>YES</string>
 				<key>ARCHS</key>
 				<string>arm64</string>
+				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
+				<string>c++17</string>
 				<key>COMBINE_HIDPI_IMAGES</key>
 				<string>YES</string>
 				<key>DEAD_CODE_STRIPPING</key>
@@ -716,7 +720,10 @@
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/release</string>
 				</array>
 				<key>OTHER_CFLAGS</key>
-				<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
+				<array>
+					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
+					<string>-I$(PROJECT_DIR)/td-rs-param/src</string>
+				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>
 				<key>PRODUCT_NAME</key>
@@ -733,8 +740,12 @@
 		<dict>
 			<key>buildSettings</key>
 			<dict>
+				<key>ALWAYS_SEARCH_USER_PATHS</key>
+				<string>YES</string>
 				<key>ARCHS</key>
 				<string>arm64</string>
+				<key>CLANG_CXX_LANGUAGE_STANDARD</key>
+				<string>c++17</string>
 				<key>COMBINE_HIDPI_IMAGES</key>
 				<string>YES</string>
 				<key>DEAD_CODE_STRIPPING</key>
@@ -751,7 +762,10 @@
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/release</string>
 				</array>
 				<key>OTHER_CFLAGS</key>
-				<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
+				<array>
+					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
+					<string>-I$(PROJECT_DIR)/td-rs-param/src</string>
+				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>
 				<key>PRODUCT_NAME</key>

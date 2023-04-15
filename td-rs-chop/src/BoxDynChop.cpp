@@ -1,6 +1,8 @@
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
 
+using namespace td_rs_param::ffi;
+
 BoxDynChop::BoxDynChop(BoxDynChop &&other) noexcept : repr(other.repr) {
     other.repr = {0, 0};
 }

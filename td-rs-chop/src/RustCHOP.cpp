@@ -24,6 +24,8 @@
 #include <assert.h>
 #include <functional>
 
+using namespace td_rs_param::ffi;
+
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
 // The DLLEXPORT prefix is needed so the compile exports these functions from the .dll

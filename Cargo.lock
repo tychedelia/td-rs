@@ -36,6 +36,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
+name = "bytemuck"
+version = "1.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "17febce684fd15d89027105661fec94afb475cb995fbc59d2865198446ba2eea"
+
+[[package]]
 name = "byteorder"
 version = "1.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -578,6 +584,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "41cc0f7e4d5d4544e8861606a285bb08d3e70712ccc7d2b84d7c0ccfaf4b05ce"
 
 [[package]]
+name = "rgb"
+version = "0.8.36"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20ec2d3e3fc7a92ced357df9cebd5a10b6fb2aa1ee797bf7e9ce2f17dffc8f59"
+dependencies = [
+ "bytemuck",
+]
+
+[[package]]
 name = "rosc"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -716,6 +731,8 @@ dependencies = [
  "cxx",
  "cxx-build",
  "libc",
+ "rgb",
+ "td-rs-param",
 ]
 
 [[package]]
@@ -724,9 +741,20 @@ version = "0.1.0"
 dependencies = [
  "proc-macro2",
  "quote",
+ "rgb",
  "syn",
- "td-rs-chop",
+ "td-rs-param",
  "trybuild",
+]
+
+[[package]]
+name = "td-rs-param"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-build",
+ "libc",
+ "rgb",
 ]
 
 [[package]]

@@ -13,6 +13,7 @@ impl<'execute> ParameterManager<'execute> {
     }
 
     pub fn append_float(&self, param: NumericParameter) {
+        println!("append_float: {:?}", param);
         self.manager.appendFloat(param);
     }
 

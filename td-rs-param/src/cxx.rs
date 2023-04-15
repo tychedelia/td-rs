@@ -1,4 +1,4 @@
-#[cxx::bridge]
+#[cxx::bridge(namespace = "td_rs_param::ffi")]
 pub mod ffi {
     #[derive(Debug, Default)]
     pub struct NumericParameter {
@@ -26,7 +26,7 @@ pub mod ffi {
 
     unsafe extern "C++" {
         include!("parameter_manager/ParameterManager.h");
-        pub(crate) type ParameterManager;
+        pub type ParameterManager;
         pub fn appendFloat(&self, np: NumericParameter);
         pub fn appendPulse(&self, np: NumericParameter);
         pub fn appendInt(&self, np: NumericParameter);

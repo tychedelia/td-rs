@@ -2,6 +2,8 @@ use std::pin::Pin;
 use crate::chop::Chop;
 use crate::cxx::ffi::*;
 use cxx::ExternType;
+use td_rs_param::cxx::ffi::OperatorInput;
+use td_rs_param::cxx::ffi::ParameterManager;
 use crate::chop;
 
 unsafe impl ExternType for Box<dyn Chop> {
@@ -20,29 +22,6 @@ unsafe impl ExternType for PtrBoxDynChop {
 
 #[cxx::bridge]
 pub mod ffi {
-    #[derive(Debug, Default)]
-    pub struct NumericParameter {
-        pub name: String,
-        pub label: String,
-        pub page: String,
-
-        pub default_values: [f64; 4],
-        pub min_values: [f64; 4],
-        pub max_values: [f64; 4],
-        pub clamp_mins: [bool; 4],
-        pub clamp_maxes: [bool; 4],
-
-        pub min_sliders: [f64; 4],
-        pub max_sliders: [f64; 4],
-    }
-
-    #[derive(Debug, Default)]
-    pub struct StringParameter {
-        pub name: String,
-        pub label: String,
-        pub page: String,
-        pub default_value: String,
-    }
 
     #[derive(Debug, Default)]
     pub struct OperatorInfo {
@@ -104,6 +83,18 @@ pub mod ffi {
         pub input_match_index: i32,
     }
 
+    #[namespace = "td_rs_param::ffi"]
+    extern "C++" {
+        include!("parameter_manager/ParameterManager.h");
+        type ParameterManager = td_rs_param::cxx::ffi::ParameterManager;
+    }
+
+    #[namespace = "td_rs_param::ffi"]
+    extern "C++" {
+        include!("operator_input/OperatorInput.h");
+        type OperatorInput = td_rs_param::cxx::ffi::OperatorInput;
+    }
+
     extern "C++" {
         include!("BoxDynChop.h");
         type BoxDynChop = Box<dyn crate::chop::Chop>;
@@ -121,53 +112,6 @@ pub mod ffi {
         pub fn getChannels(self: Pin<&mut ChopOutput>) -> &mut [&mut [f32]];
     }
 
-    unsafe extern "C++" {
-        include!("ParameterManager.h");
-        pub(crate) type ParameterManager;
-        pub fn appendFloat(&self, np: NumericParameter);
-        pub fn appendPulse(&self, np: NumericParameter);
-        pub fn appendInt(&self, np: NumericParameter);
-        pub fn appendXY(&self, np: NumericParameter);
-        pub fn appendXYZ(&self, np: NumericParameter);
-        pub fn appendUV(&self, np: NumericParameter);
-        pub fn appendUVW(&self, np: NumericParameter);
-        pub fn appendRGB(&self, np: NumericParameter);
-        pub fn appendRGBA(&self, np: NumericParameter);
-        pub fn appendToggle(&self, np: NumericParameter);
-        pub fn appendString(&self, sp: StringParameter);
-        pub fn appendFile(&self, sp: StringParameter);
-        pub fn appendFolder(&self, sp: StringParameter);
-        pub fn appendDAT(&self, sp: StringParameter);
-        pub fn appendCHOP(&self, sp: StringParameter);
-        pub fn appendTOP(&self, sp: StringParameter);
-        pub fn appendObject(&self, sp: StringParameter);
-        pub fn appendMenu(&self, sp: StringParameter, names: &[&str], labels: &[&str]);
-        pub fn appendStringMenu(&self, sp: StringParameter, names: &[&str], labels: &[&str]);
-        pub fn appendSOP(&self, sp: StringParameter);
-        pub fn appendPython(&self, sp: StringParameter);
-        pub fn appendOP(&self, sp: StringParameter);
-        pub fn appendCOMP(&self, sp: StringParameter);
-        pub fn appendMAT(&self, sp: StringParameter);
-        pub fn appendPanelCOMP(&self, sp: StringParameter);
-        pub fn appendHeader(&self, sp: StringParameter);
-        pub fn appendMomentary(&self, np: NumericParameter);
-        pub fn appendWH(&self, np: NumericParameter);
-    }
-
-    unsafe extern "C++" {
-        include!("OperatorInput.h");
-        pub type OperatorInput;
-        pub fn getParDouble(&self, name: &str, index: i32) -> f64;
-        pub fn getParDouble2(&self, name: &str) -> &[f64];
-        pub fn getParDouble3(&self, name: &str) -> &[f64];
-        pub fn getParDouble4(&self, name: &str) -> &[f64];
-        pub fn getParInt(&self, name: &str, index: i32) -> i32;
-        pub fn getParInt2(&self, name: &str) -> &[i32];
-        pub fn getParInt3(&self, name: &str) -> &[i32];
-        pub fn getParInt4(&self, name: &str) -> &[i32];
-        pub fn getParString(&self, name: &str) -> &str;
-    }
-
     extern "Rust" {
         unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
         fn chop_setup_params(chop: &mut BoxDynChop, manager: Pin<&mut ParameterManager>);
@@ -177,12 +121,12 @@ pub mod ffi {
         fn chop_get_output_info(
             chop: &mut BoxDynChop,
             info: &mut ChopOutputInfo,
-            input: &OperatorInput,
+            input: Pin<&OperatorInput>,
         ) -> bool;
         fn chop_get_channel_name(
             chop: &BoxDynChop,
             index: i32,
-            input: &OperatorInput,
+            input: Pin<&OperatorInput>,
         ) -> String;
         fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
         fn chop_get_info_dat_entries(
@@ -194,7 +138,7 @@ pub mod ffi {
         fn chop_execute(
             chop: &mut BoxDynChop,
             output: Pin<&mut ChopOutput>,
-            input: &OperatorInput,
+            input: Pin<&OperatorInput>,
         );
         fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
         fn chop_get_info(chop: &BoxDynChop) -> String;
@@ -207,9 +151,11 @@ pub mod ffi {
 
 // FFI
 fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
-    let mut params = (**chop).get_params_mut();
-    let mut mgr = chop::ParameterManager::new(manager);
-    params.register(&mut mgr);
+    let params = (**chop).get_params_mut();
+    if let Some(mut params) = params {
+        let mut mgr = td_rs_param::parameter_manager::ParameterManager::new(manager);
+        params.register(&mut mgr);
+    }
 }
 
 fn chop_on_reset(chop: &mut Box<dyn Chop>) {
@@ -227,13 +173,15 @@ fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan {
 fn chop_get_output_info(
     chop: &mut Box<dyn Chop>,
     info: &mut ChopOutputInfo,
-    input: &OperatorInput,
+    input: Pin<&OperatorInput>,
 ) -> bool {
-    (**chop).get_output_info(info, input)
+    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    (**chop).get_output_info(info, &input)
 }
 
-fn chop_get_channel_name(chop: &BoxDynChop, index: i32, input: &OperatorInput) -> String {
-    (**chop).get_channel_name(index, input)
+fn chop_get_channel_name(chop: &BoxDynChop, index: i32, input: Pin<&OperatorInput>) -> String {
+    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    (**chop).get_channel_name(index, &input)
 }
 
 fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool {
@@ -249,10 +197,13 @@ fn chop_get_info_dat_entries(
     (**chop).get_info_dat_entries(index, num_entries, entries)
 }
 
-fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: &OperatorInput) {
-    let mut params = (**chop).get_params_mut();
-    params.update(input);
-    (**chop).execute(&mut chop::ChopOutput::new(output), input);
+fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: Pin<&OperatorInput>) {
+    let mut input = td_rs_param::operator_input::OperatorInput::new(input);
+    let params = (**chop).get_params_mut();
+    if let Some(mut params) = params {
+        params.update(&input);
+    }
+    (**chop).execute(&mut chop::ChopOutput::new(output), &input);
 }
 
 fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {
