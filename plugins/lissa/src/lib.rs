@@ -7,17 +7,17 @@ use td_rs_derive::Params;
 
 #[derive(Params, Default)]
 pub struct Lissajous {
-    #[label = "Point Count"]
+    #[param(label = "Point Count", min = 1.0, max = 1000.0)]
     point_count: f64,
-    #[label = "Frequency X"]
+    #[param(label = "Frequency X", min = 0.0, max = 10.0)]
     freq_x: f64,
-    #[label = "Frequency Y"]
+    #[param(label = "Frequency Y", min = 0.0, max = 10.0)]
     freq_y: f64,
-    #[label = "Mod Frequency X"]
+    #[param(label = "Mod Frequency X", min = 0.0, max = 10.0)]
     mod_freq_x: f64,
-    #[label = "Mod Frequency Y"]
+    #[param(label = "Mod Frequency Y", min = 0.0, max = 10.0)]
     mod_freq_y: f64,
-    #[label = "Phi"]
+    #[param(label = "Phi", min = 0.0, max = 360.0)]
     phi: f64,
 }
 
@@ -26,7 +26,14 @@ where
     Self: Chop,
 {
     pub fn new() -> Self {
-        Default::default()
+        Self {
+            point_count: 100.0,
+            freq_x: 4.0,
+            freq_y: 5.0,
+            mod_freq_x: 3.0,
+            mod_freq_y: 2.0,
+            phi: 15.0,
+        }
     }
 }
 
