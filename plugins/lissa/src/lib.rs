@@ -16,7 +16,8 @@ pub struct Lissajous {
 }
 
 impl Lissajous
-    where Self: Chop
+where
+    Self: Chop,
 {
     pub fn new() -> Self {
         Default::default()
@@ -90,20 +91,18 @@ impl Chop for Lissajous {
                     ..Default::default()
                 },
             ],
-            pulse_params: vec![
-                PuleParameter{
-                    name: "Reset".to_string(),
-                    label: "Reset".to_string(),
-                    ..Default::default()
-                }
-            ],
+            pulse_params: vec![PuleParameter {
+                name: "Reset".to_string(),
+                label: "Reset".to_string(),
+                ..Default::default()
+            }],
             ..Default::default()
         }
     }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
         info.num_channels = 2; // x + y
-        info.num_samples =  1000; //self.point_count as u32;
+        info.num_samples = 1000; //self.point_count as u32;
         info.start_index = 0;
         info.sample_rate = 60.0;
         true
@@ -114,7 +113,8 @@ impl Chop for Lissajous {
 
         for p_i in 0..self.point_count as usize {
             let angle = map_range((0.0, self.point_count as f64), (0.0, PI * 2.0), p_i as f64);
-            let x = f64::sin(self.phi.to_radians()  + (angle * self.freq_x)) * f64::cos(angle * self.mod_freq_x);
+            let x = f64::sin(self.phi.to_radians() + (angle * self.freq_x))
+                * f64::cos(angle * self.mod_freq_x);
             let y = f64::sin(angle * self.freq_y) * f64::cos(angle * self.mod_freq_y);
 
             output.channels[0].data.push(x as f32);
@@ -127,14 +127,14 @@ impl Chop for Lissajous {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,
             timeslice: false,
-            input_match_index: 0
+            input_match_index: 0,
         }
     }
 }
 
-
-fn map_range<T>(from_range: (T, T), to_range: (T, T), s: T) ->  T
-    where T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Div<Output = T>,
+fn map_range<T>(from_range: (T, T), to_range: (T, T), s: T) -> T
+where
+    T: Copy + Add<Output = T> + Sub<Output = T> + Mul<Output = T> + Div<Output = T>,
 {
     to_range.0 + (s - from_range.0) * (to_range.1 - to_range.0) / (from_range.1 - from_range.0)
 }

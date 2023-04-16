@@ -1,10 +1,10 @@
-use std::pin::Pin;
+use crate::chop;
 use crate::chop::Chop;
 use crate::cxx::ffi::*;
 use cxx::ExternType;
+use std::pin::Pin;
 use td_rs_base::cxx::ffi::OperatorInput;
 use td_rs_base::cxx::ffi::ParameterManager;
-use crate::chop;
 
 unsafe impl ExternType for Box<dyn Chop> {
     type Id = cxx::type_id!("BoxDynChop");
@@ -18,7 +18,6 @@ unsafe impl ExternType for PtrBoxDynChop {
     type Id = cxx::type_id!("PtrBoxDynChop");
     type Kind = cxx::kind::Trivial;
 }
-
 
 #[cxx::bridge]
 pub mod ffi {
@@ -197,7 +196,11 @@ fn chop_get_info_dat_entries(
     (**chop).get_info_dat_entries(index, num_entries, entries)
 }
 
-fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: Pin<&OperatorInput>) {
+fn chop_execute(
+    chop: &mut Box<dyn Chop>,
+    output: Pin<&mut ChopOutput>,
+    input: Pin<&OperatorInput>,
+) {
     let mut input = td_rs_base::operator_input::OperatorInput::new(input);
     let params = (**chop).get_params_mut();
     if let Some(mut params) = params {
@@ -226,7 +229,7 @@ unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop) {
     std::ptr::drop_in_place(ptr.0);
 }
 
-extern {
+extern "C" {
     fn chop_get_operator_info_impl() -> OperatorInfo;
     fn chop_new_impl() -> Box<dyn Chop>;
 }

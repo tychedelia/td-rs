@@ -1,6 +1,6 @@
-pub mod parameter_manager;
-pub mod operator_input;
 pub mod cxx;
+pub mod operator_input;
+pub mod parameter_manager;
 
 pub use operator_input::OperatorInput;
 pub use parameter_manager::ParameterManager;
@@ -21,7 +21,7 @@ pub struct ParamOptions {
 }
 
 impl From<ParamOptions> for NumericParameter {
-    fn from(options : ParamOptions) -> Self {
+    fn from(options: ParamOptions) -> Self {
         NumericParameter {
             name: options.name,
             label: options.label,
@@ -60,7 +60,7 @@ macro_rules! impl_param_int {
                 *self = input.get_int(name, 0) as $t;
             }
         }
-    }
+    };
 }
 
 impl_param_int!(i8);
@@ -87,7 +87,7 @@ macro_rules! impl_param_float {
                 *self = input.get_float(name, 0) as $t;
             }
         }
-    }
+    };
 }
 
 impl_param_float!(f32);
