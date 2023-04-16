@@ -18,12 +18,27 @@ pub trait ChopInfo {
     const COOK_ON_START: bool = false;
 }
 
-pub struct ChopInput<'execute> {
-    input: Pin<&'execute mut crate::cxx::ffi::ChopInput>,
+pub struct ChopOperatorInput<'execute> {
+    input: Pin<&'execute crate::cxx::ffi::ChopOperatorInput>,
 }
 
-impl <'execute> ChopInput<'execute> {
-    pub fn new(input: Pin<&'execute mut crate::cxx::ffi::ChopInput>) -> ChopInput<'execute> {
+impl <'execute> ChopOperatorInput<'execute> {
+    pub fn new(input: Pin<&'execute crate::cxx::ffi::ChopOperatorInput>) -> ChopOperatorInput<'execute> {
+        Self { input }
+    }
+
+    pub fn get_input(&self, idx: usize) -> Option<ChopInput> {
+        let input = self.input.getInput(idx);
+        Some(ChopInput::new(input))
+    }
+}
+
+pub struct ChopInput {
+    input: cxx::UniquePtr<crate::cxx::ffi::ChopInput>,
+}
+
+impl  ChopInput {
+    pub fn new(input: cxx::UniquePtr<crate::cxx::ffi::ChopInput>) -> ChopInput {
         Self { input }
     }
 
@@ -113,12 +128,12 @@ pub trait Chop {
     }
 
     /// Called on plugin init to register output channels, if any.
-    fn get_output_info(&self, info: &mut ChopOutputInfo, input: &OperatorInput) -> bool {
+    fn get_output_info(&self, info: &mut ChopOutputInfo, input: &ChopOperatorInput) -> bool {
         false
     }
 
     /// Called for each channel to get the channel's name.
-    fn get_channel_name(&self, index: i32, input: &OperatorInput) -> String {
+    fn get_channel_name(&self, index: i32, input: &ChopOperatorInput) -> String {
         format!("chan{}", index)
     }
 
@@ -134,7 +149,7 @@ pub trait Chop {
     }
 
     /// Execute the chop, filling the output channels.
-    fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput);
+    fn execute(&mut self, output: &mut ChopOutput, input: &ChopOperatorInput);
 
     /// Called on plugin init for the chop's general info.
     fn get_general_info(&self) -> ChopGeneralInfo {

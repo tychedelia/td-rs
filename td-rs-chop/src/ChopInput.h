@@ -1,8 +1,9 @@
+#pragma once
 #include <rust/cxx.h>
 
 class ChopInput {
 public:
-  ChopInput(OP_CHOPInput* input) noexcept;
+  ChopInput(const OP_CHOPInput* input) noexcept;
 
   rust::Str getPath() const;
   uint32_t getId() const;
@@ -17,5 +18,5 @@ public:
   int64_t getTotalCooks() const;
 
 private:
-  OP_CHOPInput* input;
+  const OP_CHOPInput* input;
 };

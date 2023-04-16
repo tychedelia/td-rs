@@ -73,7 +73,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                     }
                 }
 
-                let field_name_upper = capitalize_first(&field_name.to_string());
+                let field_name_upper = format_name(&field_name.to_string());
                 let default_label = format!("{}", field_name);
                 let label = label.unwrap_or_else(|| default_label);
                 let default_page = "Custom".to_string();
@@ -126,10 +126,19 @@ fn array_to_tokens(array: &[f64; 4]) -> TokenStream2 {
     quote! { [#(#elems),*] }
 }
 
+fn format_name(name: &str) -> String {
+    let name = remove_underscores(name);
+    capitalize_first(&name)
+}
+
 fn capitalize_first(s: &str) -> String {
     let mut chars = s.chars();
     match chars.next() {
         None => String::new(),
         Some(first) => first.to_uppercase().chain(chars).collect(),
     }
+}
+
+fn remove_underscores(s: &str) -> String {
+    s.replace("_", "")
 }

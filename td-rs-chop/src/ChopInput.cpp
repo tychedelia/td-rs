@@ -1,7 +1,7 @@
 #include "CHOP_CPlusPlusBase.h"
 #include "ChopInput.h"
 
-ChopInput::ChopInput(OP_CHOPInput* in) noexcept {
+ChopInput::ChopInput(const OP_CHOPInput* in) noexcept {
     input = in;
 }
 

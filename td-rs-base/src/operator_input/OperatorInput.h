@@ -8,7 +8,6 @@ class OperatorInput {
 public:
     OperatorInput(const OP_Inputs* inputs) noexcept;
     virtual int32_t		getNumInputs();
-
     virtual double		            getParDouble(rust::Str, int32_t index) const;
     virtual rust::Slice<const double>		getParDouble2(rust::Str) const;
     virtual rust::Slice<const double>		getParDouble3(rust::Str) const;
