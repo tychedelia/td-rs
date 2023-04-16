@@ -18,6 +18,40 @@ pub trait ChopInfo {
     const COOK_ON_START: bool = false;
 }
 
+pub struct ChopInput<'execute> {
+    input: Pin<&'execute mut crate::cxx::ffi::ChopInput>,
+}
+
+impl <'execute> ChopInput<'execute> {
+    pub fn new(input: Pin<&'execute mut crate::cxx::ffi::ChopInput>) -> ChopInput<'execute> {
+        Self { input }
+    }
+
+    pub fn num_channels(&self) -> u32 {
+        self.input.getNumChannels() as u32
+    }
+
+    pub fn num_samples(&self) -> u32 {
+        self.input.getNumSamples() as u32
+    }
+
+    pub fn sample_rate(&self) -> u32 {
+        self.input.getSampleRate() as u32
+    }
+
+    pub fn start_index(&self) -> usize {
+        self.input.getStartIndex() as usize
+    }
+
+    pub fn channel_name(&self, idx: usize) -> &[&str] {
+        self.input.getChannelNames()
+    }
+
+    pub fn channels(&mut self) -> &[&[f32]] {
+        self.input.getChannels()
+    }
+}
+
 pub struct ChopOutput<'execute> {
     output: Pin<&'execute mut crate::cxx::ffi::ChopOutput>,
 }
