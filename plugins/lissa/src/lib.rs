@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::ops::{Add, Div, Mul, Sub};
+use std::path::PathBuf;
 use std::pin::Pin;
 use td_rs_chop::*;
 use td_rs_derive::Params;
@@ -19,6 +20,7 @@ pub struct Lissajous {
     mod_freq_y: f64,
     #[param(label = "Phi", min = 0.0, max = 360.0)]
     phi: f64,
+    file: PathBuf,
 }
 
 impl Lissajous
@@ -33,6 +35,7 @@ where
             mod_freq_x: 3.0,
             mod_freq_y: 2.0,
             phi: 15.0,
+            file: Default::default(),
         }
     }
 }
