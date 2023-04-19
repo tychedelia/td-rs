@@ -1,10 +1,7 @@
-#include "ChopOperatorInput.h"
+#include "SopOperatorInput.h"
 
-ChopOperatorInput::ChopOperatorInput(const OP_Inputs* inputs) noexcept {
-    this->inputs = inputs;
-}
-
-std::unique_ptr<ChopInput> ChopOperatorInput::getInput(std::size_t index) const {
-    auto in = inputs->getInputCHOP(index);
-    return std::make_unique<ChopInput>(ChopInput(in));
+namespace td_rs_sop {
+    SopOperatorInput::SopOperatorInput(const OP_Inputs *inputs) noexcept {
+        this->inputs = inputs;
+    }
 }

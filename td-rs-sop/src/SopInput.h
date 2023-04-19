@@ -1,22 +1,14 @@
 #pragma once
 #include <rust/cxx.h>
 
-class ChopInput {
-public:
-  ChopInput(const OP_CHOPInput* input) noexcept;
+namespace td_rs_sop {
 
-  rust::Str getPath() const;
-  uint32_t getId() const;
+    class SopInput {
+    public:
+        SopInput(const OP_SOPInput *input) noexcept;
 
-  int32_t getNumChannels() const;
-  int32_t getNumSamples() const;
-  double getSampleRate() const;
-  double getStartIndex() const;
+    private:
+        const OP_SOPInput *input;
+    };
 
-  rust::Slice<const rust::Slice<const float>> getChannels() const;
-  rust::Slice<const rust::Str> getChannelNames() const;
-  int64_t getTotalCooks() const;
-
-private:
-  const OP_CHOPInput* input;
-};
+}

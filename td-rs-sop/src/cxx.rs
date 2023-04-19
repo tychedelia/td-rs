@@ -7,7 +7,7 @@ use td_rs_base::cxx::ffi::OperatorInput;
 use td_rs_base::cxx::ffi::ParameterManager;
 
 unsafe impl ExternType for Box<dyn Sop> {
-    type Id = cxx::type_id!("BoxDynSop");
+    type Id = cxx::type_id!("td_rs_sop::BoxDynSop");
     type Kind = cxx::kind::Trivial;
 }
 
@@ -15,12 +15,53 @@ unsafe impl ExternType for Box<dyn Sop> {
 pub struct PtrBoxDynSop(*mut Box<dyn Sop>);
 
 unsafe impl ExternType for PtrBoxDynSop {
-    type Id = cxx::type_id!("PtrBoxDynSop");
+    type Id = cxx::type_id!("td_rs_sop::PtrBoxDynSop");
     type Kind = cxx::kind::Trivial;
 }
 
-#[cxx::bridge]
+#[cxx::bridge(namespace = "td_rs_sop")]
 pub mod ffi {
+
+    #[derive(Debug, Default)]
+    pub struct Position {
+        x: f32,
+        y: f32,
+        z: f32,
+    }
+
+    #[derive(Debug, Default)]
+    pub struct Vec3 {
+        x: f32,
+        y: f32,
+        z: f32,
+    }
+
+    #[derive(Debug, Default)]
+    pub struct RGBA {
+        r: f32,
+        g: f32,
+        b: f32,
+        a: f32,
+    }
+
+    #[derive(Debug, Default)]
+    pub struct UVW {
+        u: f32,
+        v: f32,
+        w: f32,
+    }
+
+    #[derive(Debug)]
+    pub enum GroupType {
+        Point = 0,
+        Primitive,
+    }
+
+    #[derive(Debug, Default)]
+    pub struct BoundingBox {
+        min: Position,
+        max: Position,
+    }
 
     #[derive(Debug, Default)]
     pub struct OperatorInfo {
@@ -56,18 +97,21 @@ pub mod ffi {
         type OperatorInput = td_rs_base::cxx::ffi::OperatorInput;
     }
 
+    #[namespace = "td_rs_sop"]
     extern "C++" {
         include!("BoxDynSop.h");
         type BoxDynSop = Box<dyn crate::sop::Sop>;
         type PtrBoxDynSop = crate::cxx::PtrBoxDynSop;
     }
 
+    #[namespace = "td_rs_sop"]
     unsafe extern "C++" {
         include!("SopOperatorInput.h");
         pub(crate) type SopOperatorInput;
         // pub fn getInput(&self, idx: usize) -> UniquePtr<sopInput>;
     }
 
+    #[namespace = "td_rs_sop"]
     unsafe extern "C++" {
         include!("SopInput.h");
         pub(crate) type SopInput;
@@ -82,6 +126,7 @@ pub mod ffi {
         // pub fn getTotalCooks(&self) -> i64;
     }
 
+    #[namespace = "td_rs_sop"]
     unsafe extern "C++" {
         include!("SopOutput.h");
         pub(crate) type SopOutput;

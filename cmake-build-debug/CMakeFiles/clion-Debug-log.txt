@@ -1,0 +1,13 @@
+/Applications/CLion.app/Contents/bin/cmake/mac/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/Applications/CLion.app/Contents/bin/ninja/mac/ninja -G Ninja -S /Users/char/src/github.com/tychedelia/td-rs -B /Users/char/src/github.com/tychedelia/td-rs/cmake-build-debug
+-- Configuring done
+CMake Error at CMakeLists.txt:21 (add_executable):
+  Cannot find source file:
+
+    my_header.h
+
+
+CMake Error at CMakeLists.txt:21 (add_executable):
+  No SOURCES given to target: td_rs
+
+
+CMake Generate step failed.  Build files cannot be regenerated correctly.

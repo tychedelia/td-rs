@@ -1,0 +1,3 @@
+/Users/char/src/github.com/tychedelia/td-rs/cmake-build-debug/CMakeFiles/td_rs.dir
+/Users/char/src/github.com/tychedelia/td-rs/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/char/src/github.com/tychedelia/td-rs/cmake-build-debug/CMakeFiles/rebuild_cache.dir

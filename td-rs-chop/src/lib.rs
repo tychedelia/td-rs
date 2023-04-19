@@ -1,5 +1,5 @@
 pub mod chop;
-pub mod cxx;
+pub(crate) mod cxx;
 pub use chop::*;
 pub use td_rs_base::{OperatorInput, OperatorParams, Param, ParamOptions, ParameterManager};
 

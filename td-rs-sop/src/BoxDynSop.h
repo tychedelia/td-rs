@@ -7,27 +7,29 @@
 #include <type_traits>
 #include <rust/cxx.h>
 
-// Forward declarations from cxx.rs.h
-//struct SopOutputInfo;
-//struct OperatorInfo;
-//struct SopInfoChan;
-//struct SopInfoDatSize;
-//struct SopInfoDatEntries;
-//struct SopGeneralInfo;
+namespace td_rs_sop {
+    struct SopGeneralInfo;
 
-class BoxDynSop {
-public:
-    BoxDynSop(BoxDynSop &&) noexcept;
-    ~BoxDynSop() noexcept;
+    class BoxDynSop {
+    public:
+        BoxDynSop(BoxDynSop &&) noexcept;
 
-    void setupParams(td_rs_base::ffi::ParameterManager* manager) noexcept;
-    void execute(SopOutput* output, td_rs_base::ffi::OperatorInput* input, SopOperatorInput* sopInput) noexcept;
-    void executeVBO(SopOutput* output, td_rs_base::ffi::OperatorInput* input, SopOperatorInput* sopInput) noexcept;
-    SopGeneralInfo getGeneralInfo() noexcept;
-    rust::String getWarningString() noexcept;
+        ~BoxDynSop() noexcept;
+        using IsRelocatable = std::true_type;
 
-private:
-    std::array<std::uintptr_t, 2> repr;
-};
+        void setupParams(td_rs_base::ffi::ParameterManager *manager) noexcept;
 
-using PtrBoxDynSop = BoxDynSop*;
+        void execute(SopOutput *output, td_rs_base::ffi::OperatorInput *input, SopOperatorInput *sopInput) noexcept;
+
+        void executeVBO(SopOutput *output, td_rs_base::ffi::OperatorInput *input, SopOperatorInput *sopInput) noexcept;
+
+        SopGeneralInfo getGeneralInfo() noexcept;
+
+        rust::String getWarningString() noexcept;
+
+    private:
+        std::array<std::uintptr_t, 2> repr;
+    };
+
+    using PtrBoxDynSop = BoxDynSop *;
+}

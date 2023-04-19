@@ -18,8 +18,6 @@ pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     println!("Writing xcode project to {:?}", path);
 
     write_sop_xcodeproj(&target, &plugin, &path)?;
-
-
     println!("Building xcode project");
     build_xcode(&plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
@@ -78,16 +76,21 @@ fn write_chop_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::R
         "path".to_string(),
         Value::String(format!("target/{target}/release/lib{plugin}.a")),
     );
-    let mut bundle = objs.get_mut(BUNDLE_KEY).unwrap().as_dictionary_mut().unwrap();
+    let mut bundle = objs
+        .get_mut(BUNDLE_KEY)
+        .unwrap()
+        .as_dictionary_mut()
+        .unwrap();
     bundle.insert(
         "name".to_string(),
         Value::String(format!("{plugin}.plugin")),
     );
-    let mut bundle_config =  objs.get_mut(BUNDLE_CONFIGURATION_KEY).unwrap().as_dictionary_mut().unwrap();
-    bundle_config.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}")),
-    );
+    let mut bundle_config = objs
+        .get_mut(BUNDLE_CONFIGURATION_KEY)
+        .unwrap()
+        .as_dictionary_mut()
+        .unwrap();
+    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
     bundle_config.insert(
         "productName".to_string(),
         Value::String(format!("{plugin}")),
@@ -116,16 +119,21 @@ fn write_sop_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Re
         "path".to_string(),
         Value::String(format!("target/{target}/release/lib{plugin}.a")),
     );
-    let mut bundle = objs.get_mut(BUNDLE_KEY).unwrap().as_dictionary_mut().unwrap();
+    let mut bundle = objs
+        .get_mut(BUNDLE_KEY)
+        .unwrap()
+        .as_dictionary_mut()
+        .unwrap();
     bundle.insert(
         "name".to_string(),
         Value::String(format!("{plugin}.plugin")),
     );
-    let mut bundle_config =  objs.get_mut(BUNDLE_CONFIGURATION_KEY).unwrap().as_dictionary_mut().unwrap();
-    bundle_config.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}")),
-    );
+    let mut bundle_config = objs
+        .get_mut(BUNDLE_CONFIGURATION_KEY)
+        .unwrap()
+        .as_dictionary_mut()
+        .unwrap();
+    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
     bundle_config.insert(
         "productName".to_string(),
         Value::String(format!("{plugin}")),

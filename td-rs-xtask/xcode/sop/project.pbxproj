@@ -421,7 +421,7 @@
 			<key>lastKnownFileType</key>
 			<string>wrapper.pb-project</string>
 			<key>path</key>
-			<string>RustCHOP.xcodeproj</string>
+			<string>RustSOP.xcodeproj</string>
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>
@@ -691,7 +691,7 @@
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>io.github.tychedelia.RustCHOP</string>
+				<string>io.github.tychedelia.RustSOP</string>
 				<key>PRODUCT_NAME</key>
 				<string>$(TARGET_NAME)</string>
 				<key>WRAPPER_EXTENSION</key>
@@ -733,7 +733,7 @@
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>io.github.tychedelia.RustCHOP</string>
+				<string>io.github.tychedelia.RustSOP</string>
 				<key>PRODUCT_NAME</key>
 				<string>$(TARGET_NAME)</string>
 				<key>WRAPPER_EXTENSION</key>
@@ -755,7 +755,7 @@
 			<key>name</key>
 			<string>CPlusPlus_Common.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/CPlusPlus_Common.h</string>
+			<string>td-rs-base/src/CPlusPlus_Common.h</string>
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>
