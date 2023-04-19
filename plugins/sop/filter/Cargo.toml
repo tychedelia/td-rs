@@ -1,0 +1,12 @@
+[package]
+name = "filter"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "filter"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-sop = { path = "../../../td-rs-sop" }
+td-rs-derive = { path = "../../../td-rs-derive" }
