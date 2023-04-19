@@ -16,7 +16,6 @@ use std::process::Command;
 pub use anyhow::Result;
 pub fn build(packages: &[String], args: &[String]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
-
     let mut cmd = Command::new("cargo")
         .arg("build")
         .args(package_args)
