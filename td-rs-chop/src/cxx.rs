@@ -245,7 +245,7 @@ extern "C" {
     fn chop_new_impl() -> Box<dyn Chop>;
 }
 
-fn chop_get_operator_info() -> OperatorInfo {
+nfn chop_get_operator_info() -> OperatorInfo {
     unsafe { chop_get_operator_info_impl() }
 }
 

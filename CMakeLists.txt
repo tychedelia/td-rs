@@ -32,13 +32,7 @@ add_executable(td_rs
         td-rs-chop/src/BoxDynChop.cpp
         td-rs-chop/src/BoxDynChop.h
         td-rs-chop/src/CHOP_CPlusPlusBase.h
-        td-rs-chop/src/ChopInput.cpp
-        td-rs-chop/src/ChopInput.h
-        td-rs-chop/src/ChopOperatorInput.cpp
-        td-rs-chop/src/ChopOperatorInput.h
-        td-rs-chop/src/ChopOutput.cpp
-        td-rs-chop/src/ChopOutput.h
-        td-rs-chop/src/RustCHOP.cpp
+        td-rs-chop/src/RustChopPlugin.cpp
         td-rs-chop/src/RustCHOP.h
         td-rs-sop/src/BoxDynSop.cpp
         td-rs-sop/src/BoxDynSop.h
@@ -51,4 +45,5 @@ add_executable(td_rs
         td-rs-sop/src/SopOperatorInput.h
         td-rs-sop/src/SopOutput.cpp
         td-rs-sop/src/SopOutput.h
-        my_header.h)
+        td-rs-chop-autocxx/src/RustChopPlugin.h
+        td-rs-chop-autocxx/src/RustChopPlugin.cpp)

@@ -4,8 +4,7 @@ fn main() -> miette::Result<()> {
         .auto_allowlist(true)
         .build()?;
     b.flag_if_supported("-std=c++17")
-        // .file("src/input.cc")
-        .compile("autocxx-cpp-calling-rust-example");
+        .compile("td-rs-base");
     println!("cargo:rerun-if-changed=src/main.rs");
     println!("cargo:rerun-if-changed=src/input.cc");
     println!("cargo:rerun-if-changed=src/input.h");

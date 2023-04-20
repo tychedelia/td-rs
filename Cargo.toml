@@ -18,9 +18,11 @@ crate-type = ["staticlib"]
 [workspace]
 members = [
     "td-rs-chop",
+    "td-rs-chop-autocxx",
     "td-rs-sop",
     "td-rs-xtask",
     "td-rs-base",
+    "td-rs-base-autocxx",
     "td-rs-derive",
     "plugins/chop/sin",
     "plugins/chop/lissa",
