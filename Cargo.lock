@@ -76,11 +76,21 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 [[package]]
 name = "autocxx"
 version = "0.25.0"
+dependencies = [
+ "aquamarine",
+ "autocxx-macro 0.25.0",
+ "cxx",
+ "moveit",
+]
+
+[[package]]
+name = "autocxx"
+version = "0.25.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9a19c80ba8384f11f11024462523829c2989a3fd7afb8ac70637abdd25bd3b8a"
 dependencies = [
  "aquamarine",
- "autocxx-macro",
+ "autocxx-macro 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cxx",
  "moveit",
 ]
@@ -111,13 +121,51 @@ dependencies = [
 [[package]]
 name = "autocxx-build"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37823c07a43c1a8d09aaad7ba8785df1b3160dcf0ee1c4e7e83177e9ebc2d804"
 dependencies = [
- "autocxx-engine",
+ "autocxx-engine 0.25.0",
  "env_logger",
  "indexmap",
  "syn 1.0.107",
+]
+
+[[package]]
+name = "autocxx-build"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37823c07a43c1a8d09aaad7ba8785df1b3160dcf0ee1c4e7e83177e9ebc2d804"
+dependencies = [
+ "autocxx-engine 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "env_logger",
+ "indexmap",
+ "syn 1.0.107",
+]
+
+[[package]]
+name = "autocxx-engine"
+version = "0.25.0"
+dependencies = [
+ "aquamarine",
+ "autocxx-bindgen",
+ "autocxx-parser 0.25.0",
+ "cc",
+ "cxx-gen",
+ "indexmap",
+ "indoc",
+ "itertools 0.10.5",
+ "log",
+ "miette",
+ "once_cell",
+ "prettyplease",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustversion",
+ "serde_json",
+ "strum_macros",
+ "syn 1.0.107",
+ "tempfile",
+ "thiserror",
+ "version_check",
 ]
 
 [[package]]
@@ -128,7 +176,7 @@ checksum = "aa19cbb6614361e61806db4526bd373415dfe0cb95f6bf811a2ddbd6fa4a8115"
 dependencies = [
  "aquamarine",
  "autocxx-bindgen",
- "autocxx-parser",
+ "autocxx-parser 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cc",
  "cxx-gen",
  "indexmap",
@@ -153,14 +201,41 @@ dependencies = [
 [[package]]
 name = "autocxx-macro"
 version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7313f823cd7e017cf80b46254d9bd78e4cb86b33b7e2cd08e1af312ee7bc77cf"
 dependencies = [
- "autocxx-parser",
+ "autocxx-parser 0.25.0",
  "proc-macro-error",
  "proc-macro2",
  "quote",
  "syn 1.0.107",
+]
+
+[[package]]
+name = "autocxx-macro"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7313f823cd7e017cf80b46254d9bd78e4cb86b33b7e2cd08e1af312ee7bc77cf"
+dependencies = [
+ "autocxx-parser 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.107",
+]
+
+[[package]]
+name = "autocxx-parser"
+version = "0.25.0"
+dependencies = [
+ "indexmap",
+ "itertools 0.10.5",
+ "log",
+ "once_cell",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "serde_json",
+ "syn 1.0.107",
+ "thiserror",
 ]
 
 [[package]]
@@ -523,14 +598,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51093e27b0797c359783294ca4f0a911c270184cb10f85783b118614a1501be"
 dependencies = [
  "instant",
-]
-
-[[package]]
-name = "filter"
-version = "0.1.0"
-dependencies = [
- "td-rs-derive",
- "td-rs-sop",
 ]
 
 [[package]]
@@ -1388,42 +1455,22 @@ dependencies = [
 name = "td-rs-base"
 version = "0.1.0"
 dependencies = [
- "cxx",
- "cxx-build",
- "libc",
- "rgb",
-]
-
-[[package]]
-name = "td-rs-base-autocxx"
-version = "0.1.0"
-dependencies = [
- "autocxx",
- "autocxx-build",
+ "autocxx 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "autocxx-build 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "cxx",
  "miette",
+ "rgb",
 ]
 
 [[package]]
 name = "td-rs-chop"
 version = "0.1.0"
 dependencies = [
- "cxx",
- "cxx-build",
- "libc",
- "rgb",
- "td-rs-base",
-]
-
-[[package]]
-name = "td-rs-chop-autocxx"
-version = "0.1.0"
-dependencies = [
- "autocxx",
- "autocxx-build",
+ "autocxx 0.25.0",
+ "autocxx-build 0.25.0",
  "cxx",
  "miette",
- "td-rs-base-autocxx",
+ "td-rs-base",
 ]
 
 [[package]]
@@ -1436,16 +1483,6 @@ dependencies = [
  "syn 1.0.107",
  "td-rs-base",
  "trybuild",
-]
-
-[[package]]
-name = "td-rs-sop"
-version = "0.1.0"
-dependencies = [
- "cxx",
- "cxx-build",
- "libc",
- "td-rs-base",
 ]
 
 [[package]]

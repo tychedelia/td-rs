@@ -29,7 +29,7 @@ stays the same, otherwise changes won't be backwards compatible
 	#include "GL_Extensions.h"
 	#define DLLEXPORT __declspec (dllexport)
 #else
-	#include <OpenGL/gltypes.h>
+	#include "gltypes.h"
 	#define DLLEXPORT
 #endif
 
@@ -1253,25 +1253,25 @@ class OP_NumericParameter
 {
 public:
 
-	OP_NumericParameter(const char* iname = nullptr)
-	{
-		name = iname;
-		label = page = nullptr;
-
-		for (int i = 0; i<4; i++)
-		{
-			defaultValues[i] = 0.0;
-
-			minSliders[i] = 0.0;
-			maxSliders[i] = 1.0;
-
-			minValues[i] = 0.0;
-			maxValues[i] = 1.0;
-
-			clampMins[i] = false;
-			clampMaxes[i] = false;
-		}
-	}
+//	OP_NumericParameter(const char* iname = nullptr)
+//	{
+//		name = iname;
+//		label = page = nullptr;
+//
+//		for (int i = 0; i<4; i++)
+//		{
+//			defaultValues[i] = 0.0;
+//
+//			minSliders[i] = 0.0;
+//			maxSliders[i] = 1.0;
+//
+//			minValues[i] = 0.0;
+//			maxValues[i] = 1.0;
+//
+//			clampMins[i] = false;
+//			clampMaxes[i] = false;
+//		}
+//	}
 
 	// Any char* values passed are copied immediately by the append parameter functions,
 	// and do not need to be retained by the calling function.

@@ -17,7 +17,7 @@ pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     )?;
     println!("Writing xcode project to {:?}", path);
 
-    write_sop_xcodeproj(&target, &plugin, &path)?;
+    write_chop_xcodeproj(&target, &plugin, &path)?;
     println!("Building xcode project");
     build_xcode(&plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);

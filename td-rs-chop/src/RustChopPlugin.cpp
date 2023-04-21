@@ -1,139 +1,27 @@
-#include "RustCHOP.h"
-#include "BoxDynChop.h"
-#include "ChopOperatorInput.h"
-#include "ChopOutput.h"
-#include "ParameterManager.h"
-#include <assert.h>
-#include <cmath>
-#include <functional>
-#include <stdio.h>
-#include <string.h>
-#include <rust/cxx.h>
-#include <td-rs-chop/src/cxx.rs.h>
+#include "CPlusPlus_Common.h"
+#include "RustChopPlugin.h"
+#include <iostream>
 
-using namespace td_rs_base::ffi;
-
-// These functions are basic C function, which the DLL loader can find
-// much easier than finding a C++ Class.
-// The DLLEXPORT prefix is needed so the compile exports these functions from
-// the .dll you are creating
 extern "C" {
+
+RustChopPlugin *chop_new();
+void chop_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
 void FillCHOPPluginInfo(CHOP_PluginInfo *info) {
-  OperatorInfo chopInfo = chop_get_operator_info();
-  info->apiVersion = CHOPCPlusPlusAPIVersion;
-  info->customOPInfo.opType->setString(chopInfo.operator_type.c_str());
-  info->customOPInfo.opLabel->setString(chopInfo.operator_label.c_str());
-  info->customOPInfo.authorName->setString(chopInfo.author_name.c_str());
-  info->customOPInfo.authorEmail->setString(chopInfo.author_email.c_str());
-  info->customOPInfo.minInputs = chopInfo.min_inputs;
-  info->customOPInfo.maxInputs = chopInfo.max_inputs;
+    info->apiVersion = CHOPCPlusPlusAPIVersion;
+    auto opInfo = &info->customOPInfo;
+    chop_get_plugin_info_impl(*opInfo);
 }
 
 DLLEXPORT
 CHOP_CPlusPlusBase *CreateCHOPInstance(const OP_NodeInfo *info) {
-  return new RustCHOP(info);
+    return chop_new();
 }
 
 DLLEXPORT
 void DestroyCHOPInstance(CHOP_CPlusPlusBase *instance) {
-  delete (RustCHOP*) instance;
-}
-};
-
-RustCHOP::RustCHOP(const OP_NodeInfo *info) {
-  chop = new BoxDynChop(chop_new());
+    delete (RustChopPlugin *) instance;
 }
 
-RustCHOP::~RustCHOP() { dyn_chop_drop_in_place(chop); }
-
-void RustCHOP::getGeneralInfo(CHOP_GeneralInfo *ginfo, const OP_Inputs *inputs,
-                              void *reserved1) {
-  auto info = chop->getGeneralInfo();
-  ginfo->cookEveryFrameIfAsked = info.cook_every_frame_if_asked;
-  ginfo->cookEveryFrame = info.cook_every_frame;
-  ginfo->timeslice = info.timeslice;
-  ginfo->inputMatchIndex = info.input_match_index;
-}
-
-bool RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs,
-                             void *reserved1) {
-  ChopOutputInfo ci;
-  auto in = new ChopOperatorInput(inputs);
-  auto is_output = chop->getOutputInfo(&ci, in);
-
-  info->numChannels = ci.num_channels;
-  info->sampleRate = ci.sample_rate;
-  info->numSamples = ci.num_samples;
-  info->startIndex = ci.start_index;
-
-  return is_output;
-}
-
-void RustCHOP::getChannelName(int32_t index, OP_String *name,
-                              const OP_Inputs *inputs, void *reserved1) {
-  auto in = new ChopOperatorInput(inputs);
-  name->setString(chop->getChannelName(index, in).c_str());
-}
-
-void RustCHOP::execute(CHOP_Output *output, const OP_Inputs *inputs,
-                       void *reserved) {
-  auto out = new ChopOutput(output);
-  auto in = new OperatorInput(inputs);
-  auto chopIn = new ChopOperatorInput(inputs);
-  chop->execute(out, in, chopIn);
-}
-
-int32_t RustCHOP::getNumInfoCHOPChans(void *reserved1) {
-  return chop->getNumInfoChopChans();
-}
-
-void RustCHOP::getInfoCHOPChan(int32_t index, OP_InfoCHOPChan *chan,
-                               void *reserved1) {
-  auto c = chop->getInfoChopChan(index);
-  chan->name->setString(c.name.c_str());
-  c.value = c.value;
-}
-
-bool RustCHOP::getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) {
-  ChopInfoDatSize datSize;
-  return chop->getInfoDatSize(&datSize);
-}
-
-void RustCHOP::getInfoDATEntries(int32_t index, int32_t nEntries,
-                                 OP_InfoDATEntries *entries, void *reserved1) {
-
-  ChopInfoDatEntries ents;
-  chop->getInfoDATEntries(index, nEntries, &ents);
-
-  assert(nEntries == ents.values.size());
-
-  for (auto i = 0; i < nEntries; i++) {
-    auto e = ents.values[i];
-    entries->values[i]->setString(e.c_str());
-  }
-}
-
-void RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
-  auto m = new ParameterManager(manager);
-  chop->setupParams(m);
-}
-
-void RustCHOP::getWarningString(OP_String *warning, void *reserved1) {
-  warning->setString(chop->getWarningString().c_str());
-}
-
-void RustCHOP::getErrorString(OP_String *error, void *reserved1) {
-  error->setString(chop->getErrorString().c_str());
-}
-
-void RustCHOP::getInfoPopupString(OP_String *info, void *reserved1) {
-  info->setString(chop->getInfoString().c_str());
-}
-
-void RustCHOP::pulsePressed(const char *name, void *reserved1) {
-  if (!strcmp(name, "Reset")) {
-    chop->onReset();
-  }
 }

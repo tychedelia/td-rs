@@ -77,7 +77,7 @@ impl Chop for Lissajous {
         }
     }
 
-    fn get_general_info(&self) -> ChopGeneralInfo {
+    fn general_info(&self) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,
