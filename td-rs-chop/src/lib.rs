@@ -270,6 +270,7 @@ macro_rules! chop_plugin {
 
         #[no_mangle]
         pub extern "C" fn chop_new_impl() -> Box<dyn Chop> {
+            println!("chop_new_impl");
             Box::new(<$plugin_ty>::new())
         }
     };

@@ -2,7 +2,6 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
-use std::any::Any;
 
 use quote::{quote, ToTokens};
 use syn::spanned::Spanned;

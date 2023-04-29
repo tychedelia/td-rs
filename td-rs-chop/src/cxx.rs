@@ -4,12 +4,18 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::pin::Pin;
 use std::rc::Rc;
+use cxx::memory::UniquePtrTarget;
 use crate::{Chop, OperatorInfo};
 
 include_cpp! {
     #include "CHOP_CPlusPlusBase.h"
     #include "RustChopPlugin.h"
     safety!(unsafe)
+    // generate!("OP_Inputs")
+    // generate_pod!("OP_InfoCHOPChan")
+    // generate_pod!("OP_InfoDATSize")
+    // generate_pod!("OP_InfoDATEntries")
+    // generate!("OP_ParameterManager")
     generate_pod!("CHOP_PluginInfo")
     generate_pod!("CHOP_GeneralInfo")
     generate_pod!("CHOP_OutputInfo")
@@ -24,32 +30,22 @@ extern "C" {
 pub use ffi::*;
 use td_rs_base::OperatorInput;
 
-#[subclass(superclass("RustChopPlugin"))]
+#[subclass(superclass("RustChopPluginWrapper"))]
 pub struct RustChopPluginImpl {
     inner: Box<dyn Chop>,
 }
 
 impl Default for RustChopPluginImpl {
     fn default() -> Self {
+        println!("RustChopPluginImpl::default");
         unsafe {
             Self {
                 inner: chop_new_impl(),
-                ..Default::default()
+                cpp_peer: Default::default(),
             }
         }
     }
 }
-//
-// impl RustChopPluginImpl {
-//     fn new() -> UniquePtr<Self> {
-//         unsafe {
-//             Self::new_cpp_owned(Self {
-//                 inner: chop_new_impl(),
-//                 cpp_peer: Default::default(),
-//             })
-//         }
-//     }
-// }
 
 #[autocxx::extern_rust::extern_rust_function]
 pub fn chop_get_plugin_info(chop_info: Pin<&mut CHOP_PluginInfo>) {
@@ -59,57 +55,66 @@ pub fn chop_get_plugin_info(chop_info: Pin<&mut CHOP_PluginInfo>) {
 }
 
 #[no_mangle]
-extern "C" fn chop_new() -> UniquePtr<RustChopPluginImplCpp> {
-    RustChopPluginImpl::default_cpp_owned()
+extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
+    println!("chop_new");
+    RustChopPluginImpl::default_cpp_owned().into_raw()
 }
 
-impl RustChopPlugin_methods for RustChopPluginImpl {
-    fn getGeneralInfo1(&mut self, _info: Pin<&mut CHOP_GeneralInfo>, _input: &OP_Inputs) {}
+impl RustChopPluginWrapper_methods for RustChopPluginImpl {
+    fn getGeneralInfo(&mut self, _info: Pin<&mut CHOP_GeneralInfo>, _input: &OP_Inputs) {
+        println!("getGeneralInfo1");
+    }
 
-    fn getOutputInfo1(&mut self, info: Pin<&mut CHOP_OutputInfo>, _input: &OP_Inputs) -> bool{
+    fn getOutputInfo(&mut self, info: Pin<&mut CHOP_OutputInfo>, _input: &OP_Inputs) -> bool {
+        println!("getOutputInfo1");
         true
     }
 
-    fn getChannelName1(&mut self, index: i32, name: Pin<&mut OP_String>, _input: &OP_Inputs) {
-        // unimplemented!()
+    fn getChannelName(&mut self, index: i32, name: Pin<&mut OP_String>, _input: &OP_Inputs) {
+        println!("getChannelName1");
     }
 
 
-    fn execute1(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
-        println!("{}", output.numSamples);
+    fn execute(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
+        println!("execute1");
     }
 
-    fn getNumInfoCHOPChans1(&mut self) -> i32 {
-        0
+    fn getNumInfoCHOPChans(&mut self) -> i32 {
+        println!("getNumInfoCHOPChans1");
+        666
     }
 
-    fn getInfoCHOPChan1(&mut self, _index: i32, _info: Pin<&mut OP_InfoCHOPChan>) {}
+    fn getInfoCHOPChan(&mut self, _index: i32, _info: Pin<&mut OP_InfoCHOPChan>) {
+        println!("getInfoCHOPChan1");
+    }
 
-    fn getInfoDATSize1(&mut self, _info: Pin<&mut OP_InfoDATSize>) -> bool {
+    fn getInfoDATSize(&mut self, _info: Pin<&mut OP_InfoDATSize>) -> bool {
+        println!("getInfoDATSize1");
         false
     }
 
-    fn getInfoDATEntries1(&mut self, index: i32, nEntries: i32, entries: Pin<&mut OP_InfoDATEntries>) {
-
+    fn getInfoDATEntries(&mut self, index: i32, nEntries: i32, entries: Pin<&mut OP_InfoDATEntries>) {
+        println!("getInfoDATEntries1");
     }
 
-    fn getWarningString1(&mut self, warning: Pin<&mut OP_String>) {
+    fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
         // warning.setString(self.inner.warning_string());
     }
 
-    fn getErrorString1(&mut self, error: Pin<&mut OP_String>) {
+    fn getErrorString(&mut self, error: Pin<&mut OP_String>) {
         // error.setString(self.inner.error_string());
     }
 
-    fn getInfoPopupString1(&mut self, info: Pin<&mut OP_String>) {
+    fn getInfoPopupString(&mut self, info: Pin<&mut OP_String>) {
         // info.setString(self.inner.info_popup_string());
     }
 
-    fn setupParameters1(&mut self, _parameters: Pin<&mut OP_ParameterManager>) {
-
+    fn setupParameters(&mut self, _parameters: Pin<&mut OP_ParameterManager>) {
+        println!("setupParameters1");
     }
 
-    unsafe fn pulsePressed1(&mut self, name: *const std::ffi::c_char) {
+    unsafe fn pulsePressed(&mut self, name: *const std::ffi::c_char) {
+        println!("pulsePressed1");
         // self.inner.pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
     }
 }

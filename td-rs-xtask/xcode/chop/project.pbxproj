@@ -47,6 +47,15 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>6A99B74229FD9B9700197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Products</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>9E4ACB8B299AC54200A2B1CE</key>
 		<dict>
 			<key>isa</key>
@@ -101,54 +110,15 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>B9369E76274177C500EA7D98</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>cxx.rs.cc</string>
-			<key>path</key>
-			<string>target/aarch64-apple-darwin/cxxbridge/td-rs-chop/src/cxx.rs.cc</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>B9369E77274177C500EA7D98</key>
-		<dict>
-			<key>fileRef</key>
-			<string>B9369E76274177C500EA7D98</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>B9369E782741832600EA7D98</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>cxx.h</string>
-			<key>path</key>
-			<string>target/aarch64-apple-darwin/cxxbridge/rust/cxx.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
 		<key>E23329CD1DF092AD0002B4FE</key>
 		<dict>
 			<key>children</key>
 			<array>
 				<string>6A99B73F29FD8AD100197036</string>
 				<string>6A99B74029FD8AD100197036</string>
-				<string>B9369E76274177C500EA7D98</string>
 				<string>E23329DF1DF092C90002B4FE</string>
 				<string>E23329E01DF092C90002B4FE</string>
 				<string>E23329D91DF092AD0002B4FE</string>
-				<string>B9369E782741832600EA7D98</string>
 				<string>E23329D71DF092AD0002B4FE</string>
 				<string>B9369E722741736D00EA7D98</string>
 			</array>
@@ -197,6 +167,15 @@
 			<string>E23329D71DF092AD0002B4FE</string>
 			<key>projectDirPath</key>
 			<string></string>
+			<key>projectReferences</key>
+			<array>
+				<dict>
+					<key>ProductGroup</key>
+					<string>6A99B74229FD9B9700197036</string>
+					<key>ProjectRef</key>
+					<string>E23329D91DF092AD0002B4FE</string>
+				</dict>
+			</array>
 			<key>projectRoot</key>
 			<string></string>
 			<key>targets</key>
@@ -225,7 +204,6 @@
 			<key>files</key>
 			<array>
 				<string>6A99B74129FD8AD100197036</string>
-				<string>B9369E77274177C500EA7D98</string>
 			</array>
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>

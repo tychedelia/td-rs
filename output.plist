@@ -47,6 +47,15 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>6A99B74229FD9B9700197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Products</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
 		<key>9E4ACB8B299AC54200A2B1CE</key>
 		<dict>
 			<key>isa</key>
@@ -158,6 +167,15 @@
 			<string>E23329D71DF092AD0002B4FE</string>
 			<key>projectDirPath</key>
 			<string></string>
+			<key>projectReferences</key>
+			<array>
+				<dict>
+					<key>ProductGroup</key>
+					<string>6A99B74229FD9B9700197036</string>
+					<key>ProjectRef</key>
+					<string>E23329D91DF092AD0002B4FE</string>
+				</dict>
+			</array>
 			<key>projectRoot</key>
 			<string></string>
 			<key>targets</key>
