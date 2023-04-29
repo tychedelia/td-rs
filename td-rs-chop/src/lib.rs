@@ -1,9 +1,9 @@
 use std::pin::Pin;
 use std::sync::Arc;
-use td_rs_base::OperatorInput;
 use autocxx::prelude::*;
+pub use td_rs_base::{OperatorInput, OperatorParams, Param, ParamOptions, ParameterManager};
 
-mod cxx;
+pub mod cxx;
 #[derive(Debug, Default)]
 pub struct OperatorInfo {
     pub operator_type: String,
@@ -122,56 +122,60 @@ pub trait ChopInfo {
 //     }
 // }
 //
-// /// A wrapper around a `ChopOutput` that provides a safe interface to the
-// /// underlying C++ object and writing to the output buffer.
-// pub struct ChopOutput<'execute> {
-//     output: Pin<&'execute mut cxx::CHOP_Output>,
-// }
-//
-// impl<'execute> ChopOutput<'execute> {
-//     /// Create a new `ChopOutput` from a pinning reference to a
-//     /// `ChopOutput`.
-//     pub fn new(output: Pin<&'execute mut cxx::CHOP_Output>) -> ChopOutput<'execute> {
-//         Self { output }
-//     }
-//
-//     /// Get the number of channels in the output buffer.
-//     pub fn num_channels(&self) -> u32 {
-//         self.output.getNumChannels() as u32
-//     }
-//
-//     /// Get the number of samples in the output buffer.
-//     pub fn num_samples(&self) -> u32 {
-//         self.output.getNumSamples() as u32
-//     }
-//
-//     /// Get the sample rate of the output buffer.
-//     pub fn sample_rate(&self) -> u32 {
-//         self.output.getSampleRate() as u32
-//     }
-//
-//     /// Get the start index of the output buffer.
-//     pub fn start_index(&self) -> usize {
-//         self.output.getStartIndex()
-//     }
-//
-//     /// Get the channel names of the output buffer.
-//     pub fn channel_names(&self) -> &[&str] {
-//         let channel_names = &*self.output.getChannelNames();
-//         channel_names
-//     }
-//
-//     /// Get the output buffer.
-//     pub fn channels_mut(&mut self) -> &mut [&mut [f32]] {
-//         let channels = &mut *self.output.as_mut().getChannels();
-//         channels
-//     }
-//
-//     /// Set a value in the output buffer.
-//     pub fn set_channel_output(&mut self, channel: usize, idx: usize, val: f32) {
-//         self.output.as_mut().getChannels()[channel][idx] = val;
-//     }
-// }
+/// A wrapper around a `ChopOutput` that provides a safe interface to the
+/// underlying C++ object and writing to the output buffer.
+pub struct ChopOutput<'execute> {
+    output: Pin<&'execute mut cxx::CHOP_Output>,
+}
+
+impl<'execute> ChopOutput<'execute> {
+    /// Create a new `ChopOutput` from a pinning reference to a
+    /// `ChopOutput`.
+    pub fn new(output: Pin<&'execute mut cxx::CHOP_Output>) -> ChopOutput<'execute> {
+        Self { output }
+    }
+
+    /// Get the number of channels in the output buffer.
+    pub fn num_channels(&self) -> u32 {
+        // cxx::CHOP_Output {
+        //   numChannels: 10
+        // };
+        // self.output.numChannels
+        0
+    }
+    //
+    // /// Get the number of samples in the output buffer.
+    // pub fn num_samples(&self) -> u32 {
+    //     self.output.getNumSamples() as u32
+    // }
+    //
+    // /// Get the sample rate of the output buffer.
+    // pub fn sample_rate(&self) -> u32 {
+    //     self.output.getSampleRate() as u32
+    // }
+    //
+    // /// Get the start index of the output buffer.
+    // pub fn start_index(&self) -> usize {
+    //     self.output.getStartIndex()
+    // }
+    //
+    // /// Get the channel names of the output buffer.
+    // pub fn channel_names(&self) -> &[&str] {
+    //     let channel_names = &*self.output.getChannelNames();
+    //     channel_names
+    // }
+    //
+    // /// Get the output buffer.
+    // pub fn channels_mut(&mut self) -> &mut [&mut [f32]] {
+    //     let channels = &mut *self.output.as_mut().getChannels();
+    //     channels
+    // }
+    //
+    // /// Set a value in the output buffer.
+    // pub fn set_channel_output(&mut self, channel: usize, idx: usize, val: f32) {
+    //     self.output.as_mut().getChannels()[channel][idx] = val;
+    // }
+}
 
 /// Trait for defining a custom operator.
 pub trait Chop {
@@ -237,4 +241,36 @@ pub trait Chop {
     // fn get_error(&self) -> String {
     //     "".to_string()
     // }
+    fn get_params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>>;
+}
+
+#[macro_export]
+macro_rules! chop_plugin {
+    ($plugin_ty:ty) => {
+        use td_rs_chop::cxx::CHOP_PluginInfo;
+
+        #[no_mangle]
+        pub extern "C" fn chop_get_plugin_info_impl(chop_info: Pin<&mut CHOP_PluginInfo>) {
+            // plugin_info.opType.setString(<$plugin_ty>::OPERATOR_TYPE.to_string());
+
+            // OperatorInfo {
+            //     operator_type: <$plugin_ty>::OPERATOR_TYPE.to_string(),
+            //     operator_label: <$plugin_ty>::OPERATOR_LABEL.to_string(),
+            //     operator_icon: <$plugin_ty>::OPERATOR_ICON.to_string(),
+            //     min_inputs: <$plugin_ty>::MIN_INPUTS,
+            //     max_inputs: <$plugin_ty>::MAX_INPUTS,
+            //     author_name: <$plugin_ty>::AUTHOR_NAME.to_string(),
+            //     author_email: <$plugin_ty>::AUTHOR_EMAIL.to_string(),
+            //     major_version: <$plugin_ty>::MAJOR_VERSION,
+            //     minor_version: <$plugin_ty>::MINOR_VERSION,
+            //     python_version: <$plugin_ty>::PYTHON_VERSION.to_string(),
+            //     cook_on_start: <$plugin_ty>::COOK_ON_START,
+            // }
+        }
+
+        #[no_mangle]
+        pub extern "C" fn chop_new_impl() -> Box<dyn Chop> {
+            Box::new(<$plugin_ty>::new())
+        }
+    };
 }

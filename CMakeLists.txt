@@ -45,5 +45,4 @@ add_executable(td_rs
         td-rs-sop/src/SopOperatorInput.h
         td-rs-sop/src/SopOutput.cpp
         td-rs-sop/src/SopOutput.h
-        td-rs-chop-autocxx/src/RustChopPlugin.h
-        td-rs-chop-autocxx/src/RustChopPlugin.cpp)
+        td-rs-chop-autocxx/src/RustChopPlugin.h)

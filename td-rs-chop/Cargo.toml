@@ -8,10 +8,10 @@ name = "td_rs_chop"
 crate-type = ["lib", "staticlib"]
 
 [dependencies]
-autocxx = "0.25.0"
+autocxx = { path = "../../../google/autocxx" }
 cxx = "1.0.78"
 td-rs-base = { path = "../td-rs-base" }
 
 [build-dependencies]
-autocxx-build = "0.25.0"
+autocxx-build = { path = "../../../google/autocxx/gen/build" }
 miette = { version="5", features = [ "fancy" ] }
