@@ -1,3 +1,4 @@
+#include "BoxDynChop.h"
 #include <algorithm>
 #include <array>
 #include <cassert>
@@ -689,6 +690,43 @@ std::size_t align_of() {
 }
 #endif // CXXBRIDGE1_LAYOUT
 
+#ifndef CXXBRIDGE1_RELOCATABLE
+#define CXXBRIDGE1_RELOCATABLE
+namespace detail {
+template <typename... Ts>
+struct make_void {
+  using type = void;
+};
+
+template <typename... Ts>
+using void_t = typename make_void<Ts...>::type;
+
+template <typename Void, template <typename...> class, typename...>
+struct detect : std::false_type {};
+template <template <typename...> class T, typename... A>
+struct detect<void_t<T<A...>>, T, A...> : std::true_type {};
+
+template <template <typename...> class T, typename... A>
+using is_detected = detect<void, T, A...>;
+
+template <typename T>
+using detect_IsRelocatable = typename T::IsRelocatable;
+
+template <typename T>
+struct get_IsRelocatable
+    : std::is_same<typename T::IsRelocatable, std::true_type> {};
+} // namespace detail
+
+template <typename T>
+struct IsRelocatable
+    : std::conditional<
+          detail::is_detected<detail::detect_IsRelocatable, T>::value,
+          detail::get_IsRelocatable<T>,
+          std::integral_constant<
+              bool, std::is_trivially_move_constructible<T>::value &&
+                        std::is_trivially_destructible<T>::value>>::type {};
+#endif // CXXBRIDGE1_RELOCATABLE
+
 namespace detail {
 template <typename T, typename = void *>
 struct operator_new {
@@ -702,6 +740,13 @@ struct operator_new<T, decltype(T::operator new(sizeof(T)))> {
 } // namespace detail
 
 template <typename T>
+union ManuallyDrop {
+  T value;
+  ManuallyDrop(T &&value) : value(::std::move(value)) {}
+  ~ManuallyDrop() {}
+};
+
+template <typename T>
 union MaybeUninit {
   T value;
   void *operator new(::std::size_t sz) { return detail::operator_new<T>{}(sz); }
@@ -713,7 +758,7 @@ union MaybeUninit {
 
 struct NumericParameter;
 struct OperatorInfo;
-struct Chop;
+struct ChopParams;
 struct ChopChannel;
 struct ChopOperatorInputs;
 struct ChopOperatorInput;
@@ -757,15 +802,14 @@ struct OperatorInfo final {
 };
 #endif // CXXBRIDGE1_STRUCT_OperatorInfo
 
-#ifndef CXXBRIDGE1_STRUCT_Chop
-#define CXXBRIDGE1_STRUCT_Chop
-struct Chop final {
-  ::OperatorInfo info;
+#ifndef CXXBRIDGE1_STRUCT_ChopParams
+#define CXXBRIDGE1_STRUCT_ChopParams
+struct ChopParams final {
   ::rust::Vec<::NumericParameter> params;
 
   using IsRelocatable = ::std::true_type;
 };
-#endif // CXXBRIDGE1_STRUCT_Chop
+#endif // CXXBRIDGE1_STRUCT_ChopParams
 
 #ifndef CXXBRIDGE1_STRUCT_ChopChannel
 #define CXXBRIDGE1_STRUCT_ChopChannel
@@ -824,32 +868,62 @@ struct ChopOutput final {
 };
 #endif // CXXBRIDGE1_STRUCT_ChopOutput
 
+static_assert(
+    ::rust::IsRelocatable<::BoxDynChop>::value,
+    "type BoxDynChop should be trivially move constructible and trivially destructible in C++ to be used as a return value of `chop_new` or non-pinned mutable reference in signature of `chop_get_params`, `chop_on_reset`, `chop_get_output_info` in Rust");
+static_assert(
+    ::rust::IsRelocatable<::PtrBoxDynChop>::value,
+    "type PtrBoxDynChop should be trivially move constructible and trivially destructible in C++ to be used as an argument of `dyn_chop_drop_in_place` in Rust");
+
 extern "C" {
-void cxxbridge1$on_reset(const ::Chop &chop) noexcept;
+void cxxbridge1$dyn_chop_drop_in_place(::PtrBoxDynChop *ptr) noexcept;
 
-void cxxbridge1$get_chop(::Chop *return$) noexcept;
+void cxxbridge1$chop_get_operator_info(::OperatorInfo *return$) noexcept;
 
-bool cxxbridge1$get_output_info(::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+void cxxbridge1$chop_get_params(::BoxDynChop &chop, ::ChopParams *return$) noexcept;
 
-void cxxbridge1$chop_execute(::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+void cxxbridge1$chop_on_reset(::BoxDynChop &chop) noexcept;
+
+bool cxxbridge1$chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+
+void cxxbridge1$chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+
+void cxxbridge1$chop_new(::BoxDynChop *return$) noexcept;
 } // extern "C"
 
-void on_reset(const ::Chop &chop) noexcept {
-  cxxbridge1$on_reset(chop);
+void dyn_chop_drop_in_place(::PtrBoxDynChop ptr) noexcept {
+  ::rust::ManuallyDrop<::PtrBoxDynChop> ptr$(::std::move(ptr));
+  cxxbridge1$dyn_chop_drop_in_place(&ptr$.value);
 }
 
-::Chop get_chop() noexcept {
-  ::rust::MaybeUninit<::Chop> return$;
-  cxxbridge1$get_chop(&return$.value);
+::OperatorInfo chop_get_operator_info() noexcept {
+  ::rust::MaybeUninit<::OperatorInfo> return$;
+  cxxbridge1$chop_get_operator_info(&return$.value);
   return ::std::move(return$.value);
 }
 
-bool get_output_info(::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept {
-  return cxxbridge1$get_output_info(info, inputs);
+::ChopParams chop_get_params(::BoxDynChop &chop) noexcept {
+  ::rust::MaybeUninit<::ChopParams> return$;
+  cxxbridge1$chop_get_params(chop, &return$.value);
+  return ::std::move(return$.value);
 }
 
-void chop_execute(::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept {
-  cxxbridge1$chop_execute(output, inputs);
+void chop_on_reset(::BoxDynChop &chop) noexcept {
+  cxxbridge1$chop_on_reset(chop);
+}
+
+bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept {
+  return cxxbridge1$chop_get_output_info(chop, info, inputs);
+}
+
+void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept {
+  cxxbridge1$chop_execute(chop, output, inputs);
+}
+
+::BoxDynChop chop_new() noexcept {
+  ::rust::MaybeUninit<::BoxDynChop> return$;
+  cxxbridge1$chop_new(&return$.value);
+  return ::std::move(return$.value);
 }
 
 extern "C" {

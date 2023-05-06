@@ -1,5 +1,22 @@
-use std::process::Output;
+mod chop;
+mod sin_chop;
+
+use cxx::ExternType;
 use crate::ffi::*;
+use crate::chop::Chop;
+use crate::sin_chop::SinChop;
+
+unsafe impl ExternType for Box<dyn Chop> {
+    type Id = cxx::type_id!("BoxDynChop");
+    type Kind = cxx::kind::Trivial;
+}
+
+#[repr(transparent)]
+pub struct PtrBoxDynChop(*mut Box<dyn Chop>);
+unsafe impl ExternType for PtrBoxDynChop {
+    type Id = cxx::type_id!("PtrBoxDynChop");
+    type Kind = cxx::kind::Trivial;
+}
 
 #[cxx::bridge]
 mod ffi {
@@ -35,8 +52,7 @@ mod ffi {
     }
 
     #[derive(Debug, Default)]
-    struct Chop {
-        pub info: OperatorInfo,
+    pub struct ChopParams {
         pub params: Vec<NumericParameter>,
     }
 
@@ -77,47 +93,47 @@ mod ffi {
         pub sample_rate: i32,
     }
 
+    extern "C++" {
+        include!("td-rs/cpp/BoxDynChop.h");
+        type BoxDynChop = Box<dyn crate::chop::Chop>;
+        type PtrBoxDynChop = crate::PtrBoxDynChop;
+    }
+
     extern "Rust" {
-        fn on_reset(chop: &Chop);
-        fn get_chop() -> Chop;
-        fn get_output_info(info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool;
-        fn chop_execute(output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+        unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
+        fn chop_get_operator_info() -> OperatorInfo;
+        fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams;
+        fn chop_on_reset(chop: &mut BoxDynChop);
+        fn chop_get_output_info(chop: &mut BoxDynChop, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool;
+        fn chop_execute(chop: &mut BoxDynChop, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+        fn chop_new() -> BoxDynChop;
     }
 }
 
-fn on_reset(chop: &Chop) {
-    println!("Reset!!");
+fn chop_get_operator_info() -> OperatorInfo {
+   todo!()
 }
 
-fn get_chop() -> Chop {
-    let mut c = Chop::default();
-    let mut n = NumericParameter::default();
-    n.name = "Speed".to_string();
-    n.label = "Speed".to_string();
-    n.page = "Custom".to_string();
-    n.default_values[0] = 1.0;
-    n.min_sliders[0] = -10.0;
-    n.max_sliders[0] = 10.0;
-    c.params.push(n);
-
-    c.info.operator_type = "test1".to_string();
-    c
+fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams {
+    (**chop).get_params()
 }
 
-fn get_output_info(info: &mut ChopOutputInfo, chop: &ChopOperatorInputs) -> bool {
-    info.sample_rate = 60.0;
-    info.num_samples = 60;
-    info.num_channels = 1;
-    true
+fn chop_on_reset(chop: &mut Box<dyn Chop>) {
+    (**chop).on_reset();
 }
 
-fn chop_execute(output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
-    for i in 0..output.num_channels {
-        let mut chan = ChopChannel::default();
-        for j in 0..output.sample_rate {
-            chan.data.push(j as f32 * 10.0);
-        }
-        output.channels.push(chan);
-    }
-    println!("{:?} {:?}", output, inputs);
+fn chop_get_output_info(chop: &mut Box<dyn Chop>, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
+    (**chop).get_output_info(info, inputs)
+}
+
+fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
+    (**chop).execute(output, inputs)
+}
+
+unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop) {
+    std::ptr::drop_in_place(ptr.0);
+}
+
+fn chop_new() -> Box<dyn Chop> {
+    Box::new(SinChop::new())
 }
