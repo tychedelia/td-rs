@@ -117,6 +117,21 @@ RustCHOP::execute(CHOP_Output *output,
         auto in = mapInput(cinput);
         ins.inputs.push_back(in);
     }
+    ins.params = rust::Vec<ParamValue>();
+    for (auto param: chop->getParams().numeric_params) {
+        ParamValue val;
+        val.name = param.name;
+        val.double_value = inputs->getParDouble(param.name.c_str());
+        ins.params.push_back(val);
+    }
+
+    for (auto param: chop->getParams().string_params) {
+        ParamValue val;
+        val.name = param.name;
+        val.str_value = rust::String(inputs->getParString(param.name.c_str()));
+        ins.params.push_back(val);
+    }
+
 
     ChopOutput out;
     out.channels = rust::Vec<ChopChannel>();
@@ -185,7 +200,7 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
         std::copy(std::begin(param.max_sliders), std::end(param.max_sliders), std::begin(np.maxSliders));
         std::copy(std::begin(param.min_sliders), std::end(param.min_sliders), std::begin(np.minSliders));
         std::copy(std::begin(param.clamp_maxes), std::end(param.clamp_maxes), std::begin(np.clampMaxes));
-        std::copy(std::begin(param.clamp_mins), std::end(param.clamp_mins), std::begin(np.clampMaxes));
+        std::copy(std::begin(param.clamp_mins), std::end(param.clamp_mins), std::begin(np.clampMins));
 
         OP_ParAppendResult res = manager->appendFloat(np);
         assert(res == OP_ParAppendResult::Success);

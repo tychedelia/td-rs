@@ -1,14 +1,12 @@
 mod chop;
-mod sin_chop;
-mod arc_chop;
-pub mod grid_chop;
 
 use crate::chop::Chop;
 use crate::ffi::*;
-use crate::sin_chop::SinChop;
+use chop::sin::SinChop;
 use cxx::ExternType;
-use crate::arc_chop::ArcChop;
-use crate::grid_chop::GridChop;
+use chop::arc::ArcChop;
+use chop::grid::GridChop;
+use crate::chop::lissa::Lissajous;
 
 unsafe impl ExternType for Box<dyn Chop> {
     type Id = cxx::type_id!("BoxDynChop");
@@ -83,9 +81,17 @@ mod ffi {
     }
 
     #[derive(Debug, Default)]
+    pub struct ParamValue {
+        pub name: String,
+        pub str_value: String,
+        pub double_value: f64,
+    }
+
+    #[derive(Debug, Default)]
     pub struct ChopOperatorInputs {
         pub num_inputs: i32,
         pub inputs: Vec<ChopOperatorInput>,
+        pub params: Vec<ParamValue>,
     }
 
     #[derive(Debug, Default)]
@@ -269,5 +275,5 @@ fn chop_get_operator_info() -> OperatorInfo {
 }
 
 fn chop_new() -> Box<dyn Chop> {
-    Box::new(GridChop::new())
+    Box::new( Lissajous::new())
 }

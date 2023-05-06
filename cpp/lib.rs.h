@@ -699,6 +699,7 @@ struct StringParameter;
 struct OperatorInfo;
 struct ChopParams;
 struct ChopChannel;
+struct ParamValue;
 struct ChopOperatorInputs;
 struct ChopOperatorInput;
 struct ChopOutputInfo;
@@ -788,11 +789,23 @@ struct ChopChannel final {
 };
 #endif // CXXBRIDGE1_STRUCT_ChopChannel
 
+#ifndef CXXBRIDGE1_STRUCT_ParamValue
+#define CXXBRIDGE1_STRUCT_ParamValue
+struct ParamValue final {
+  ::rust::String name;
+  ::rust::String str_value;
+  double double_value;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ParamValue
+
 #ifndef CXXBRIDGE1_STRUCT_ChopOperatorInputs
 #define CXXBRIDGE1_STRUCT_ChopOperatorInputs
 struct ChopOperatorInputs final {
   ::std::int32_t num_inputs;
   ::rust::Vec<::ChopOperatorInput> inputs;
+  ::rust::Vec<::ParamValue> params;
 
   using IsRelocatable = ::std::true_type;
 };
