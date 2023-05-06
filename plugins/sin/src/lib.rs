@@ -6,8 +6,7 @@ use td_rs_derive::Params;
 
 #[derive(Params, Default, Clone)]
 struct SinChopParams {
-    divisor: f64,
-    rgb: rgb::RGBA8,
+    scale: f64,
 }
 
 /// Struct representing our CHOP's state
@@ -50,7 +49,7 @@ impl Chop for SinChop {
             for index in 0..output.num_samples() {
                 let percent = (index as f64) / (output.num_samples() as f64);
                 let timestep = (self.execute_count as f64)
-                    / (output.sample_rate() as f64 * self.params.divisor);
+                    / (output.sample_rate() as f64 * self.params.scale);
                 let val = (phase * percent + timestep).sin();
 
                 output.channels_mut()[chan_index as usize][index as usize] = val as f32;
