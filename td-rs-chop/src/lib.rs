@@ -2,24 +2,9 @@ use std::ops::{Index, IndexMut};
 use std::pin::Pin;
 use std::sync::Arc;
 use autocxx::prelude::*;
-pub use td_rs_base::{OperatorInput, OperatorParams, Param, ParamOptions, ParameterManager};
+pub use td_rs_base::*;
 
 pub mod cxx;
-
-#[derive(Debug, Default)]
-pub struct OperatorInfo {
-    pub operator_type: String,
-    pub operator_label: String,
-    pub operator_icon: String,
-    pub min_inputs: i32,
-    pub max_inputs: i32,
-    pub author_name: String,
-    pub author_email: String,
-    pub major_version: i32,
-    pub minor_version: i32,
-    pub python_version: String,
-    pub cook_on_start: bool,
-}
 
 #[derive(Debug, Default)]
 pub struct ChopOutputInfo {
@@ -63,9 +48,9 @@ pub trait ChopInfo {
     /// The icon of the operator.
     const OPERATOR_ICON: &'static str = "";
     /// The minimum number of inputs the operator accepts.
-    const MIN_INPUTS: i32 = 0;
+    const MIN_INPUTS: usize = 0;
     /// The maximum number of inputs the operator accepts.
-    const MAX_INPUTS: i32 = 0;
+    const MAX_INPUTS: usize = 0;
     /// The author name of the operator.
     const AUTHOR_NAME: &'static str = "";
     /// The author email of the operator.
@@ -139,13 +124,13 @@ impl<'execute> ChopOutput<'execute> {
     }
 
     /// Get the number of channels in the output buffer.
-    pub fn num_channels(&self) -> u32 {
-        self.output.numChannels as u32
+    pub fn num_channels(&self) -> usize {
+        self.output.numChannels as usize
     }
 
     /// Get the number of samples in the output buffer.
-    pub fn num_samples(&self) -> u32 {
-        self.output.numSamples as u32
+    pub fn num_samples(&self) -> usize {
+        self.output.numSamples as usize
     }
 
     /// Get the sample rate of the output buffer.
@@ -159,7 +144,7 @@ impl<'execute> ChopOutput<'execute> {
     }
 
     pub fn channel(&self, index: usize) -> &[f32] {
-        if (index as u32) >= self.num_channels() {
+        if index >= self.num_channels() {
             panic!("Channel index out of bounds");
         }
 
@@ -170,7 +155,7 @@ impl<'execute> ChopOutput<'execute> {
     }
 
     pub fn channel_mut(&mut self, index: usize) -> &mut [f32] {
-        if (index as u32) >= self.num_channels() {
+        if index >= self.num_channels() {
             panic!("Channel index out of bounds");
         }
 
@@ -196,43 +181,13 @@ impl IndexMut<usize> for ChopOutput<'_> {
 }
 
 /// Trait for defining a custom operator.
-pub trait Chop {
-    fn pulse_pressed(&mut self, name: &str) {}
-
+pub trait Chop: Plugin {
     fn channel_name(&self, index: usize, input: &OperatorInput) -> String {
         String::from("")
     }
 
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
-    }
-
-    fn num_info_chop_chans(&self) -> u32 {
-        0
-    }
-
-    fn info_popup_string(&self) -> String {
-        String::from("")
-    }
-
-    fn error_string(&self) -> String {
-        String::from("")
-    }
-
-    fn warning_string(&self) -> String {
-        String::from("")
-    }
-
-    fn info_dat_entry(&self, index: usize, entry_index: usize) -> String {
-        String::from("")
-    }
-
-    fn info_dat_size(&self) -> (u32, u32) {
-        (0, 0)
-    }
-
-    fn info_chop_chan(&self, index: usize) -> (String, f32) {
-        unimplemented!()
     }
 
     fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput);
@@ -261,8 +216,8 @@ macro_rules! chop_plugin {
                 let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_ICON).unwrap();
                 let new_string_ptr = new_string.as_ptr();
                 td_rs_chop::cxx::setString(op_info.opIcon, new_string_ptr);
-                op_info.minInputs = <$plugin_ty>::MIN_INPUTS;
-                op_info.maxInputs = <$plugin_ty>::MAX_INPUTS;
+                op_info.minInputs = <$plugin_ty>::MIN_INPUTS as i32;
+                op_info.maxInputs = <$plugin_ty>::MAX_INPUTS as i32;
                 let new_string = std::ffi::CString::new(<$plugin_ty>::AUTHOR_NAME).unwrap();
                 let new_string_ptr = new_string.as_ptr();
                 td_rs_chop::cxx::setString(op_info.authorName, new_string_ptr);

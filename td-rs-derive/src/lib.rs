@@ -74,7 +74,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                 let default_page = "Custom".to_string();
                 let page = page.unwrap_or_else(|| default_page);
                 let min = min.unwrap_or(0.0);
-                let max = max.unwrap_or(0.0);
+                let max = max.unwrap_or(1.0);
 
                 let code = quote! {
                     {

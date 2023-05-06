@@ -1,12 +1,10 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
 use std::sync::Arc;
-use td_rs_sop::*;
 use td_rs_derive::Params;
+use td_rs_sop::*;
 
-pub struct Filter {
-
-}
+pub struct Filter {}
 
 impl Filter {
     pub fn new() -> Self {
@@ -19,11 +17,19 @@ impl SopInfo for Filter {
 }
 
 impl Sop for Filter {
-    fn execute(&mut self, output: &mut td_rs_sop::cxx::ffi::SopOutput, input: &td_rs_sop::cxx::ffi::SopOperatorInput) {
+    fn execute(
+        &mut self,
+        output: &mut td_rs_sop::cxx::ffi::SopOutput,
+        input: &td_rs_sop::cxx::ffi::SopOperatorInput,
+    ) {
         todo!()
     }
 
-    fn execute_vbo(&mut self, output: &mut td_rs_sop::cxx::ffi::SopOutput, input: &td_rs_sop::cxx::ffi::SopOperatorInput) {
+    fn execute_vbo(
+        &mut self,
+        output: &mut td_rs_sop::cxx::ffi::SopOutput,
+        input: &td_rs_sop::cxx::ffi::SopOperatorInput,
+    ) {
         todo!()
     }
 

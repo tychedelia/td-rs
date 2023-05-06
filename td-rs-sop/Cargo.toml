@@ -1,17 +1,16 @@
 [package]
-name = "td-rs-base"
+name = "td-rs-sop"
 version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "td_rs_base"
+name = "td_rs_sop"
 crate-type = ["lib", "staticlib"]
 
 [dependencies]
 autocxx = { path = "../../../google/autocxx" }
 cxx = "1.0.78"
-rgb = "0.8.36"
-ref-cast = "1.0"
+td-rs-base = { path = "../td-rs-base" }
 
 [build-dependencies]
 autocxx-build = { path = "../../../google/autocxx/gen/build" }

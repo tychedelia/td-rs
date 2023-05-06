@@ -10,13 +10,15 @@ const PLUGIN_HOME: &'static str = "target/plugin";
 
 pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
-    let path = pbxproj_path(plugin);
     build(
         &[plugin.to_string(), "td-rs-chop".to_string()],
         &["--release".to_string(), format!("--target={target}")],
     )?;
-    println!("Writing xcode project to {:?}", path);
 
+    let plugin = &plugin.replace("-", "_");
+    let path = pbxproj_path(plugin);
+
+    println!("Writing xcode project to {:?}", path);
     write_chop_xcodeproj(&target, &plugin, &path)?;
     println!("Building xcode project");
     build_xcode(&plugin)?;
@@ -70,7 +72,7 @@ fn write_chop_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::R
     let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
     lib.insert(
         "name".to_string(),
-        Value::String(format!("lib{}.a", plugin)),
+        Value::String(format!("lib{plugin}.a")),
     );
     lib.insert(
         "path".to_string(),

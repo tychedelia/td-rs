@@ -1,48 +1,40 @@
 #include <memory>
-#include "CHOP_CPlusPlusBase.h"
+#include "SOP_CPlusPlusBase.h"
 #include "CPlusPlus_Common.h"
 #include <iostream>
 
-#ifndef TD_RS_RUSTCHOP_H
-#define TD_RS_RUSTCHOP_H
+#ifndef TD_RS_RUSTSOP_H
+#define TD_RS_RUSTSOP_H
 
-class ChopPlugin : public CHOP_CPlusPlusBase {
+class SopPlugin : public SOP_CPlusPlusBase {
 public:
-    virtual ~ChopPlugin() {};
+    virtual ~SopPlugin() {};
 
-    void getGeneralInfo(CHOP_GeneralInfo *info, const OP_Inputs *inputs, void *reserved1) override {
+    void getGeneralInfo(SOP_GeneralInfo *info, const OP_Inputs *inputs, void *reserved1) {
         this->getGeneralInfo(*info, *inputs);
     }
 
-    virtual void getGeneralInfo(CHOP_GeneralInfo &info, const OP_Inputs &inputs) {}
+    virtual void getGeneralInfo(SOP_GeneralInfo &info, const OP_Inputs &inputs) {}
 
-    bool getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *reserved1) override {
-        return this->getOutputInfo(*info, *inputs);
-    }
 
-    virtual bool getOutputInfo(CHOP_OutputInfo &info, const OP_Inputs &inputs) {
-        return false;
-    }
-
-    void getChannelName(int32_t index, OP_String *name, const OP_Inputs *inputs, void *reserved1) override {
-        this->getChannelName(index, *name, *inputs);
-    }
-
-    virtual void getChannelName(int32_t index, OP_String &name, const OP_Inputs &inputs) {}
-
-    void execute(CHOP_Output *outputs, const OP_Inputs *inputs, void *reserved1) override {
+    void execute(SOP_Output *outputs, const OP_Inputs *inputs, void *reserved1) {
         this->execute(*outputs, *inputs);
+    }
+
+    virtual void execute(SOP_Output &outputs, const OP_Inputs &inputs) {}
+
+    void executeVBO(SOP_VBOOutput *output, const OP_Inputs *inputs, void *reserved1) {
+        this->executeVBO(*output, *inputs);
     };
 
-    virtual void execute(CHOP_Output &outputs, const OP_Inputs &inputs) {}
+    virtual void executeVBO(SOP_VBOOutput &output, const OP_Inputs &inputs) {}
 
-    virtual int32_t getNumInfoCHOPChans(void *reserved1) override {
+
+    int32_t getNumInfoCHOPChans(void *reserved1) {
         return this->getNumInfoCHOPChans();
     }
 
-    virtual int32_t getNumInfoCHOPChans() {
-        return 0;
-    }
+    virtual int32_t getNumInfoCHOPChans() {}
 
     void getInfoCHOPChan(int32_t index, OP_InfoCHOPChan *chan, void *reserved1) override {
         OP_String *name = chan->name;
@@ -55,13 +47,11 @@ public:
 
     virtual void getInfoCHOPChan(int32_t index, OP_String &name, float &value) {}
 
-    bool getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) override {
+    bool getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) {
         return this->getInfoDATSize(*infoSize);
     }
 
-    virtual bool getInfoDATSize(OP_InfoDATSize &infoSize) {
-        return false;
-    }
+    virtual bool getInfoDATSize(OP_InfoDATSize &infoSize) {}
 
     void getInfoDATEntries(int32_t index, int32_t nEntries, OP_InfoDATEntries *entries, void *reserved1) override {
         for (int i = 0; i < nEntries; i++) {
@@ -103,17 +93,15 @@ public:
     virtual void pulsePressed(const char *name) {}
 };
 
-class RustChopPlugin : public ChopPlugin {
+class RustSopPlugin : public SopPlugin {
 public:
-    virtual ~RustChopPlugin() {};
+    virtual ~RustSopPlugin() {};
 
-    virtual void getGeneralInfo(CHOP_GeneralInfo &info, const OP_Inputs &inputs) = 0;
+    virtual void getGeneralInfo(SOP_GeneralInfo &info, const OP_Inputs &inputs) = 0;
 
-    virtual bool getOutputInfo(CHOP_OutputInfo &info, const OP_Inputs &inputs) = 0;
+    virtual void execute(SOP_Output &outputs, const OP_Inputs &inputs) = 0;
 
-    virtual void getChannelName(int32_t index, OP_String &name, const OP_Inputs &inputs) = 0;
-
-    virtual void execute(CHOP_Output &outputs, const OP_Inputs &inputs) = 0;
+    virtual void executeVBO(SOP_VBOOutput &output, const OP_Inputs &inputs) = 0;
 
     virtual int32_t getNumInfoCHOPChans() = 0;
 
@@ -134,4 +122,4 @@ public:
     virtual void pulsePressed(const char *name) = 0;
 };
 
-#endif //TD_RS_RUSTCHOP_H
+#endif //TD_RS_RUSTSOP_H

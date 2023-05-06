@@ -24,25 +24,8 @@ add_executable(td_rs
         target/aarch64-apple-darwin/release/build/link-cplusplus-0be262bd7c8e367d/out/dummy.cc
         target/cxxbridge/rust/cxx.h
         target/tests/trybuild/cxxbridge/rust/cxx.h
-        td-rs-base/src/operator_input/OperatorInput.cpp
-        td-rs-base/src/operator_input/OperatorInput.h
-        td-rs-base/src/parameter_manager/ParameterManager.cpp
-        td-rs-base/src/parameter_manager/ParameterManager.h
         td-rs-base/src/CPlusPlus_Common.h
-        td-rs-chop/src/BoxDynChop.cpp
-        td-rs-chop/src/BoxDynChop.h
         td-rs-chop/src/CHOP_CPlusPlusBase.h
         td-rs-chop/src/RustChopPlugin.cpp
-        td-rs-chop/src/RustCHOP.h
-        td-rs-sop/src/BoxDynSop.cpp
-        td-rs-sop/src/BoxDynSop.h
-        td-rs-sop/src/RustSOP.cpp
-        td-rs-sop/src/RustSOP.h
-        td-rs-sop/src/SOP_CPlusPlusBase.h
-        td-rs-sop/src/SopInput.cpp
-        td-rs-sop/src/SopInput.h
-        td-rs-sop/src/SopOperatorInput.cpp
-        td-rs-sop/src/SopOperatorInput.h
-        td-rs-sop/src/SopOutput.cpp
-        td-rs-sop/src/SopOutput.h
-        td-rs-chop-autocxx/src/RustChopPlugin.h)
+        td-rs-chop-autocxx/src/RustChopPlugin.h
+        td-rs-base/src/RustBase.h td-rs-sop/src/RustSopPlugin.h)

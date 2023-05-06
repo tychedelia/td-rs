@@ -1,0 +1,12 @@
+[package]
+name = "generator-chop"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "generator_chop"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../../td-rs-chop" }
+td-rs-derive = { path = "../../../td-rs-derive" }

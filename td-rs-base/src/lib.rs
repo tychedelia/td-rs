@@ -1,12 +1,46 @@
 pub mod cxx;
 
 use std::ffi;
-use std::ops::{Deref, DerefMut};
+use std::ops::{Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
 use autocxx::cxx::UniquePtr;
+use crate::cxx::OP_CHOPInput;
+use ref_cast::RefCast;
 
-#[derive(Debug, Default)]
+pub trait Plugin {
+    fn num_info_chop_chans(&self) -> usize {
+        0
+    }
+
+    fn info_popup_string(&self) -> String {
+        String::from("")
+    }
+
+    fn error_string(&self) -> String {
+        String::from("")
+    }
+
+    fn warning_string(&self) -> String {
+        String::from("")
+    }
+
+    fn info_dat_entry(&self, index: usize, entry_index: usize) -> String {
+        String::from("")
+    }
+
+    fn info_dat_size(&self) -> (u32, u32) {
+        (0, 0)
+    }
+
+    fn info_chop_chan(&self, index: usize) -> (String, f32) {
+        unimplemented!()
+    }
+
+    fn pulse_pressed(&mut self, name: &str) {}
+}
+
+#[derive(Debug)]
 pub struct NumericParameter {
     pub name: String,
     pub label: String,
@@ -17,9 +51,25 @@ pub struct NumericParameter {
     pub max_values: [f64; 4],
     pub clamp_mins: [bool; 4],
     pub clamp_maxes: [bool; 4],
-
     pub min_sliders: [f64; 4],
     pub max_sliders: [f64; 4],
+}
+
+impl Default for NumericParameter {
+    fn default() -> Self {
+        Self {
+            name: "".to_string(),
+            label: "".to_string(),
+            page: "".to_string(),
+            default_values: [0.0; 4],
+            min_values: [0.0; 4],
+            max_values: [1.0; 4],
+            clamp_mins: [false; 4],
+            clamp_maxes: [false; 4],
+            min_sliders: [0.0; 4],
+            max_sliders: [1.0; 4],
+        }
+    }
 }
 
 impl From<NumericParameter> for cxx::OP_NumericParameter {
@@ -241,8 +291,62 @@ impl<'execute> OperatorInput<'execute> {
             ffi::CStr::from_ptr(res).to_str().unwrap()
         }
     }
+
+    pub fn get_toggle(&self, name: &str) -> bool {
+        unsafe { self.input.getParInt(ffi::CString::new(name).unwrap().into_raw(), 0) != 0 }
+    }
+
+    pub fn enable_param(&self, name: &str, enable: bool) {
+        unsafe {
+            self.input.enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
+        }
+    }
+
+    pub fn num_inputs(&self) -> usize {
+        self.input.getNumInputs() as usize
+    }
 }
 
+#[repr(transparent)]
+#[derive(RefCast)]
+pub struct ChopInput {
+    input: OP_CHOPInput,
+}
+
+impl ChopInput {
+    pub fn num_channels(&self) -> usize {
+        self.input.numChannels as usize
+    }
+
+    pub fn channel(&self, index: usize) -> &[f32] {
+        if index >= self.num_channels() {
+            panic!("index out of bounds");
+        }
+
+        unsafe { std::slice::from_raw_parts(*self.input.channelData.offset(index as isize), self.input.numSamples as usize) }
+    }
+}
+
+impl<'execute> Index<usize> for OperatorInput<'execute> {
+    type Output = ChopInput;
+
+    fn index(&self, index: usize) -> &'execute Self::Output {
+        if index >= self.num_inputs() {
+            panic!("index out of bounds");
+        }
+
+        let input = unsafe { &*self.input.getInputCHOP(index as i32) };
+        ChopInput::ref_cast(input)
+    }
+}
+
+impl Index<usize> for ChopInput {
+    type Output = [f32];
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.channel(index)
+    }
+}
 
 /// Trait for defining operator parameters.
 pub trait OperatorParams {
@@ -269,10 +373,8 @@ impl From<ParamOptions> for NumericParameter {
             name: options.name,
             label: options.label,
             page: options.page,
-            min_values: [options.min, 0.0, 0.0, 0.0],
-            max_values: [options.max, 0.0, 0.0, 0.0],
-            min_sliders: [options.min, 0.0, 0.0, 0.0],
-            max_sliders: [options.max, 0.0, 0.0, 0.0],
+            min_values: [options.min; 4],
+            max_values: [options.max; 4],
             ..Default::default()
         }
     }
@@ -509,5 +611,17 @@ impl Param for PathBuf {
 
     fn update(&mut self, name: &str, input: &OperatorInput) {
         *self = PathBuf::from(input.get_string(name));
+    }
+}
+
+impl Param for bool {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let mut param: NumericParameter = options.into();
+        param.default_values[0] = true as usize as f64;
+        parameter_manager.append_toggle(param);
+    }
+
+    fn update(&mut self, name: &str, input: &OperatorInput) {
+        *self = input.get_toggle(name);
     }
 }
