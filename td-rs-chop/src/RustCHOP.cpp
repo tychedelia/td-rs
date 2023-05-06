@@ -15,6 +15,7 @@
 #include "RustCHOP.h"
 #include "BoxDynChop.h"
 #include "ChopOutput.h"
+#include "ChopOperatorInput.h"
 #include "ParameterManager.h"
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
@@ -81,7 +82,7 @@ RustCHOP::getGeneralInfo(CHOP_GeneralInfo *ginfo, const OP_Inputs *inputs, void 
 bool
 RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *reserved1) {
     ChopOutputInfo ci;
-    auto in = new OperatorInput(inputs);
+    auto in = new ChopOperatorInput(inputs);
     auto is_output = chop->getOutputInfo(&ci, in);
 
     info->numChannels = ci.num_channels;
@@ -94,7 +95,7 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *re
 
 void
 RustCHOP::getChannelName(int32_t index, OP_String *name, const OP_Inputs *inputs, void *reserved1) {
-    auto in = new OperatorInput(inputs);
+    auto in = new ChopOperatorInput(inputs);
     name->setString(chop->getChannelName(index, in).c_str());
 }
 
@@ -104,7 +105,8 @@ RustCHOP::execute(CHOP_Output *output,
                   void *reserved) {
     auto out = new ChopOutput(output);
     auto in = new OperatorInput(inputs);
-    chop->execute(out, in);
+    auto chopIn = new ChopOperatorInput(inputs);
+    chop->execute(out, in, chopIn);
 }
 
 int32_t

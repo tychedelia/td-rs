@@ -1,12 +1,10 @@
-#include "operator_input/OperatorInput.h"
-#include "ChopInput.h"
+#include "ChopOperatorInput.h"
 
-using namespace td_rs_base::ffi;
+ChopOperatorInput::ChopOperatorInput(const OP_Inputs* inputs) noexcept {
+    this->inputs = inputs;
+}
 
-class ChopOperatorInput : public OperatorInput {
-
-public:
-ChopOperatorInput(const OP_Inputs* inputs) noexcept;
-
-virtual ChopInput getChopInput(int32_t index) const;
+std::unique_ptr<ChopInput> ChopOperatorInput::getInput(std::size_t index) const {
+    auto in = inputs->getInputCHOP(index);
+    return std::make_unique<ChopInput>(ChopInput(in));
 }

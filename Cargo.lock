@@ -378,6 +378,7 @@ name = "lissa"
 version = "0.1.0"
 dependencies = [
  "td-rs-chop",
+ "td-rs-derive",
 ]
 
 [[package]]

@@ -2,16 +2,22 @@ use std::collections::HashMap;
 use std::f64::consts::PI;
 use std::ops::{Add, Div, Mul, Sub};
 use std::pin::Pin;
-use td_rs_chop::chop::{Chop, ChopInfo};
-use td_rs_chop::cxx::ffi::*;
+use td_rs_chop::*;
+use td_rs_derive::Params;
 
-#[derive(Default)]
+#[derive(Params, Default)]
 pub struct Lissajous {
+    #[label = "Point Count"]
     point_count: f64,
+    #[label = "Frequency X"]
     freq_x: f64,
+    #[label = "Frequency Y"]
     freq_y: f64,
+    #[label = "Mod Frequency X"]
     mod_freq_x: f64,
+    #[label = "Mod Frequency Y"]
     mod_freq_y: f64,
+    #[label = "Phi"]
     phi: f64,
 }
 
@@ -21,15 +27,6 @@ where
 {
     pub fn new() -> Self {
         Default::default()
-    }
-
-    fn map_params(&mut self, input: &OperatorInput) {
-        self.point_count = params[&"Points".to_string()].double_value;
-        self.freq_x = params[&"Xfreq".to_string()].double_value;
-        self.freq_y = params[&"Yfreq".to_string()].double_value;
-        self.mod_freq_x = params[&"Xmod".to_string()].double_value;
-        self.mod_freq_y = params[&"Ymod".to_string()].double_value;
-        self.phi = params[&"Phi".to_string()].double_value;
     }
 }
 
@@ -45,62 +42,12 @@ struct LissajousParams {
 impl ChopInfo for Lissajous {}
 
 impl Chop for Lissajous {
-    fn setup_params(&self) -> ChopParams {
-        ChopParams {
-            numeric_params: vec![
-                NumericParameter {
-                    name: "Points".to_string(),
-                    label: "Point Count".to_string(),
-                    default_values: [1000.0, 0.0, 0.0, 0.0],
-                    max_values: [1000.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-                NumericParameter {
-                    name: "Xfreq".to_string(),
-                    label: "X Frequency".to_string(),
-                    default_values: [4.0, 0.0, 0.0, 0.0],
-                    max_values: [255.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-                NumericParameter {
-                    name: "Yfreq".to_string(),
-                    label: "Y Frequency".to_string(),
-                    default_values: [7.0, 0.0, 0.0, 0.0],
-                    max_values: [255.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-                NumericParameter {
-                    name: "Xmod".to_string(),
-                    label: "X Mod".to_string(),
-                    default_values: [3.0, 0.0, 0.0, 0.0],
-                    max_values: [255.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-                NumericParameter {
-                    name: "Ymod".to_string(),
-                    label: "Y Mod".to_string(),
-                    default_values: [2.0, 0.0, 0.0, 0.0],
-                    max_values: [255.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-                NumericParameter {
-                    name: "Phi".to_string(),
-                    label: "Phi".to_string(),
-                    default_values: [15.0, 0.0, 0.0, 0.0],
-                    max_values: [255.0, 0.0, 0.0, 0.0],
-                    ..Default::default()
-                },
-            ],
-            pulse_params: vec![PuleParameter {
-                name: "Reset".to_string(),
-                label: "Reset".to_string(),
-                ..Default::default()
-            }],
-            ..Default::default()
-        }
+    fn get_params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
+        Some(Box::new(self))
     }
 
-    fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
+
+    fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInput) -> bool {
         info.num_channels = 2; // x + y
         info.num_samples = 1000; //self.point_count as u32;
         info.start_index = 0;
@@ -108,17 +55,15 @@ impl Chop for Lissajous {
         true
     }
 
-    fn execute(&mut self, output: Pin<&mut ChopOutput>, inputs: &ChopOperatorInputs) {
-        self.map_params(inputs);
-
+    fn execute(&mut self, output: &mut ChopOutput, input: &ChopOperatorInput) {
         for p_i in 0..self.point_count as usize {
             let angle = map_range((0.0, self.point_count as f64), (0.0, PI * 2.0), p_i as f64);
             let x = f64::sin(self.phi.to_radians() + (angle * self.freq_x))
                 * f64::cos(angle * self.mod_freq_x);
             let y = f64::sin(angle * self.freq_y) * f64::cos(angle * self.mod_freq_y);
 
-            output.channels[0].data.push(x as f32);
-            output.channels[1].data.push(y as f32);
+            output.channels_mut()[0][p_i] = x as f32;
+            output.channels_mut()[1][p_i] = y as f32;
         }
     }
 
@@ -139,4 +84,4 @@ where
     to_range.0 + (s - from_range.0) * (to_range.1 - to_range.0) / (from_range.1 - from_range.0)
 }
 
-td_rs_chop::chop_plugin!(Lissajous);
+chop_plugin!(Lissajous);

@@ -101,6 +101,12 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("ChopOperatorInput.h");
+        pub(crate) type ChopOperatorInput;
+        pub fn getInput(&self, idx: usize) -> UniquePtr<ChopInput>;
+    }
+
+    unsafe extern "C++" {
         include!("ChopInput.h");
         pub(crate) type ChopInput;
         pub fn getPath(&self) -> &str;
@@ -134,12 +140,12 @@ pub mod ffi {
         fn chop_get_output_info(
             chop: &mut BoxDynChop,
             info: &mut ChopOutputInfo,
-            input: Pin<&OperatorInput>,
+            chop_input: Pin<&ChopOperatorInput>,
         ) -> bool;
         fn chop_get_channel_name(
             chop: &BoxDynChop,
             index: i32,
-            input: Pin<&OperatorInput>,
+            chop_input: Pin<&ChopOperatorInput>,
         ) -> String;
         fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
         fn chop_get_info_dat_entries(
@@ -152,6 +158,7 @@ pub mod ffi {
             chop: &mut BoxDynChop,
             output: Pin<&mut ChopOutput>,
             input: Pin<&OperatorInput>,
+            chop_input: Pin<&ChopOperatorInput>,
         );
         fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
         fn chop_get_info(chop: &BoxDynChop) -> String;
@@ -186,15 +193,15 @@ fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan {
 fn chop_get_output_info(
     chop: &mut Box<dyn Chop>,
     info: &mut ChopOutputInfo,
-    input: Pin<&OperatorInput>,
+    chop_input: Pin<&ChopOperatorInput>,
 ) -> bool {
-    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
-    (**chop).get_output_info(info, &input)
+    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
+    (**chop).get_output_info(info, &chop_input)
 }
 
-fn chop_get_channel_name(chop: &BoxDynChop, index: i32, input: Pin<&OperatorInput>) -> String {
-    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
-    (**chop).get_channel_name(index, &input)
+fn chop_get_channel_name(chop: &BoxDynChop, index: i32, chop_input: Pin<&ChopOperatorInput>) -> String {
+    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
+    (**chop).get_channel_name(index, &chop_input)
 }
 
 fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool {
@@ -214,13 +221,15 @@ fn chop_execute(
     chop: &mut Box<dyn Chop>,
     output: Pin<&mut ChopOutput>,
     input: Pin<&OperatorInput>,
+    chop_input: Pin<&ChopOperatorInput>,
 ) {
     let mut input = td_rs_base::operator_input::OperatorInput::new(input);
     let params = (**chop).get_params_mut();
     if let Some(mut params) = params {
         params.update(&input);
     }
-    (**chop).execute(&mut chop::ChopOutput::new(output), &input);
+    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
+    (**chop).execute(&mut chop::ChopOutput::new(output), &chop_input);
 }
 
 fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {

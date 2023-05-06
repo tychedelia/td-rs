@@ -116,6 +116,39 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>6A8B51A329EBB83A000197C7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>ChopOperatorInput.cpp</string>
+			<key>path</key>
+			<string>td-rs-chop/src/ChopOperatorInput.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A8B51A429EBB83A000197C7</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>ChopOperatorInput.h</string>
+			<key>path</key>
+			<string>td-rs-chop/src/ChopOperatorInput.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A8B51AD29EC5A64000197C7</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6A8B51A329EBB83A000197C7</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>9E4ACB8B299AC54200A2B1CE</key>
 		<dict>
 			<key>isa</key>
@@ -306,6 +339,8 @@
 		<dict>
 			<key>children</key>
 			<array>
+				<string>6A8B51A329EBB83A000197C7</string>
+				<string>6A8B51A429EBB83A000197C7</string>
 				<string>9ED7E4F0299A01AB001F2445</string>
 				<string>B9369E76274177C500EA7D98</string>
 				<string>E23329DF1DF092C90002B4FE</string>
@@ -415,6 +450,7 @@
 				<string>9EBB2640299DC28000352B6C</string>
 				<string>9ED7E4F1299A01F5001F2445</string>
 				<string>6A8B518B29EB9BF2000197C7</string>
+				<string>6A8B51AD29EC5A64000197C7</string>
 				<string>6A8B515329EB208A000197C7</string>
 			</array>
 			<key>isa</key>
