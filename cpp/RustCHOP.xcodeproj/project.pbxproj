@@ -8,11 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		B9369E75274173B500EA7D98 /* libtd_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9369E732741736D00EA7D98 /* libtd_rs.a */; };
+		B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */ = {isa = PBXBuildFile; fileRef = B9369E76274177C500EA7D98 /* lib.rs.cc */; };
 		E23329E31DF092C90002B4FE /* RustCHOP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23329E11DF092C90002B4FE /* RustCHOP.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		B9369E732741736D00EA7D98 /* libtd_rs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libtd_rs.a; sourceTree = "<group>"; };
+		B9369E76274177C500EA7D98 /* lib.rs.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lib.rs.cc; sourceTree = "<group>"; };
+		B9369E782741832600EA7D98 /* cxx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = cxx.h; sourceTree = "<group>"; };
 		E23329D61DF092AD0002B4FE /* RustCHOP.plugin */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RustCHOP.plugin; sourceTree = BUILT_PRODUCTS_DIR; };
 		E23329D91DF092AD0002B4FE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = SOURCE_ROOT; };
 		E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CHOP_CPlusPlusBase.h; sourceTree = SOURCE_ROOT; };
@@ -44,6 +47,7 @@
 		E23329CD1DF092AD0002B4FE = {
 			isa = PBXGroup;
 			children = (
+				B9369E782741832600EA7D98 /* cxx.h */,
 				E23329F11DF1D64A0002B4FE /* CHOP */,
 				E23329D71DF092AD0002B4FE /* Products */,
 				B9369E722741736D00EA7D98 /* Frameworks */,
@@ -61,6 +65,7 @@
 		E23329F11DF1D64A0002B4FE /* CHOP */ = {
 			isa = PBXGroup;
 			children = (
+				B9369E76274177C500EA7D98 /* lib.rs.cc */,
 				E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */,
 				E23329E01DF092C90002B4FE /* CPlusPlus_Common.h */,
 				E23329E11DF092C90002B4FE /* RustCHOP.cpp */,
@@ -139,6 +144,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E23329E31DF092C90002B4FE /* RustCHOP.cpp in Sources */,
+				B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -149,6 +155,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -195,9 +202,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
-				ONLY_ACTIVE_ARCH = YES;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -206,6 +213,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = x86_64;
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
@@ -246,8 +254,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.12;
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = macosx;
 			};
 			name = Release;
