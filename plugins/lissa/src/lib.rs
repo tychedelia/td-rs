@@ -22,11 +22,7 @@ impl Lissajous
         Default::default()
     }
 
-    fn map_params(&mut self, inputs: &ChopOperatorInputs) {
-        let params: HashMap<String, &ParamValue> = inputs.params.iter()
-            .map(|x| (x.name.clone(), x.clone()))
-            .collect();
-
+    fn map_params(&mut self, input: &OperatorInput) {
         self.point_count = params[&"Points".to_string()].double_value;
         self.freq_x = params[&"Xfreq".to_string()].double_value;
         self.freq_y = params[&"Yfreq".to_string()].double_value;

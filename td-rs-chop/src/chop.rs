@@ -197,12 +197,12 @@ pub trait Chop {
     }
 
     /// Called on plugin init to register output channels, if any.
-    fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
+    fn get_output_info(&self, info: &mut ChopOutputInfo, input: &OperatorInput) -> bool {
         false
     }
 
     /// Called for each channel to get the channel's name.
-    fn get_channel_name(&self, index: i32, inputs: &ChopOperatorInputs) -> String {
+    fn get_channel_name(&self, index: i32, input: &OperatorInput) -> String {
         format!("chan{}", index)
     }
 
@@ -218,7 +218,7 @@ pub trait Chop {
     }
 
     /// Execute the chop, filling the output channels.
-    fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+    fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput);
 
     /// Called on plugin init for the chop's general info.
     fn get_general_info(&self) -> ChopGeneralInfo {

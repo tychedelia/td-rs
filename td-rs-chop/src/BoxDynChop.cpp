@@ -27,12 +27,12 @@ ChopInfoChan BoxDynChop::getInfoChopChan(int32_t index) noexcept {
     return chop_get_info_chop_chan(*this, index);
 }
 
-bool BoxDynChop::getOutputInfo(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept {
-    return chop_get_output_info(*this, *info, *inputs);
+bool BoxDynChop::getOutputInfo(ChopOutputInfo* info, OperatorInput* input) noexcept {
+    return chop_get_output_info(*this, *info, *input);
 }
 
-rust::String BoxDynChop::getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept {
-    return chop_get_channel_name(*this, index, *inputs);
+rust::String BoxDynChop::getChannelName(int32_t index, OperatorInput* input) noexcept {
+    return chop_get_channel_name(*this, index, *input);
 };
 
 bool BoxDynChop::getInfoDatSize(ChopInfoDatSize* size) noexcept {
@@ -43,8 +43,8 @@ void BoxDynChop::getInfoDATEntries(int32_t index, int32_t nEntries, ChopInfoDatE
     return chop_get_info_dat_entries(*this, index, nEntries, *entries);
 }
 
-void BoxDynChop::execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept {
-    chop_execute(*this, *output, *inputs);
+void BoxDynChop::execute(ChopOutput* output, OperatorInput* input) noexcept {
+    chop_execute(*this, *output, *input);
 }
 
 ChopGeneralInfo BoxDynChop::getGeneralInfo() noexcept {
