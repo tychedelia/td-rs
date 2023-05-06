@@ -1,6 +1,6 @@
 use std::f64::consts::PI;
 use cxx::u;
-use crate::ffi::{ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams};
+use crate::ffi::{ChopGeneralInfo, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams};
 use crate::{Chop, ChopChannel, NumericParameter, PuleParameter};
 
 pub struct SinChop {
@@ -14,6 +14,8 @@ impl SinChop {
 }
 
 impl Chop for SinChop {
+
+
     fn on_reset(&mut self) {
         self.execute_count = 0;
     }
@@ -59,5 +61,14 @@ impl Chop for SinChop {
         }
 
         self.execute_count += 1;
+    }
+
+    fn get_general_info(&self) -> ChopGeneralInfo {
+        ChopGeneralInfo {
+            cook_every_frame: false,
+            cook_every_frame_if_asked: true,
+            timeslice: false,
+            input_match_index: 0
+        }
     }
 }

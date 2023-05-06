@@ -1,7 +1,4 @@
-use crate::{
-    ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput,
-    ChopOutputInfo, ChopParams, StringParameter,
-};
+use crate::{ChopGeneralInfo, ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, StringParameter};
 
 /// Interface to implement a TouchDesigner CHOP Operator.
 ///
@@ -58,6 +55,11 @@ pub trait Chop {
 
     /// Execute the chop, filling the output channels.
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+
+    /// Called on plugin init for the chop's general info.
+    fn get_general_info(&self) -> ChopGeneralInfo {
+        ChopGeneralInfo::default()
+    }
 
     /// Called each cook to provide an info string for the chop (or blank).
     fn get_info(&self) -> String {

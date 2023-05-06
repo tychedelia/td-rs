@@ -68,10 +68,11 @@ RustCHOP::~RustCHOP() {
 
 void
 RustCHOP::getGeneralInfo(CHOP_GeneralInfo *ginfo, const OP_Inputs *inputs, void *reserved1) {
-//    ginfo->cookEveryFrameIfAsked = true;
-    ginfo->cookEveryFrame = true;
-    ginfo->timeslice = false;
-    ginfo->inputMatchIndex = 0;
+    auto info = chop->getGeneralInfo();
+    ginfo->cookEveryFrameIfAsked = info.cook_every_frame_if_asked;
+    ginfo->cookEveryFrame = info.cook_every_frame;
+    ginfo->timeslice = info.timeslice;
+    ginfo->inputMatchIndex = info.input_match_index;
 }
 
 bool

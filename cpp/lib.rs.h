@@ -706,6 +706,7 @@ struct ChopOutput;
 struct ChopInfoChan;
 struct ChopInfoDatSize;
 struct ChopInfoDatEntries;
+struct ChopGeneralInfo;
 
 #ifndef CXXBRIDGE1_STRUCT_NumericParameter
 #define CXXBRIDGE1_STRUCT_NumericParameter
@@ -865,6 +866,18 @@ struct ChopInfoDatEntries final {
 };
 #endif // CXXBRIDGE1_STRUCT_ChopInfoDatEntries
 
+#ifndef CXXBRIDGE1_STRUCT_ChopGeneralInfo
+#define CXXBRIDGE1_STRUCT_ChopGeneralInfo
+struct ChopGeneralInfo final {
+  bool cook_every_frame;
+  bool cook_every_frame_if_asked;
+  bool timeslice;
+  ::std::int32_t input_match_index;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_ChopGeneralInfo
+
 void dyn_chop_drop_in_place(::PtrBoxDynChop ptr) noexcept;
 
 ::OperatorInfo chop_get_operator_info() noexcept;
@@ -886,6 +899,8 @@ bool chop_get_info_dat_size(const ::BoxDynChop &chop, ::ChopInfoDatSize &size) n
 void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept;
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+
+::ChopGeneralInfo chop_get_general_info(const ::BoxDynChop &chop) noexcept;
 
 ::rust::String chop_get_info(const ::BoxDynChop &chop) noexcept;
 
