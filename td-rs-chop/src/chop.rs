@@ -1,19 +1,20 @@
-use crate::{ChopGeneralInfo, ChopInfoChan, ChopInfoDatEntries, ChopInfoDatSize, ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams, StringParameter};
+use crate::cxx::ffi::*;
 
-pub mod sin;
-pub mod lissa;
+pub trait ChopInfo {
+    const OPERATOR_TYPE: &'static str = "";
+    const OPERATOR_LABEL: &'static str = "";
+    const OPERATOR_ICON: &'static str = "";
+    const MIN_INPUTS: i32 = 0;
+    const MAX_INPUTS: i32 = 0;
+    const AUTHOR_NAME: &'static str = "";
+    const AUTHOR_EMAIL: &'static str = "";
+    const MAJOR_VERSION: i32 = 0;
+    const MINOR_VERSION: i32 = 0;
+    const PYTHON_VERSION: &'static str = "";
+    const COOK_ON_START: bool = false;
+}
 
-/// Interface to implement a TouchDesigner CHOP Operator.
-///
-/// Methods are called from TD C++ plugin via FFI mapping.
-///
-/// Implement this trait, providing an execute method, and override any other methods as needed
-/// to support your operator.
-///
-/// See documentation on the [C++ base class](../cpp/CHOP_CPlusPlusBase.h) for more information
-/// about how TD calls these methods.
 pub trait Chop {
-
     /// Called when pulse is pressed with reset message.
     fn on_reset(&mut self) {
 

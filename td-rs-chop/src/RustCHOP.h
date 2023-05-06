@@ -13,7 +13,7 @@
 */
 
 #include "CHOP_CPlusPlusBase.h"
-#include <td-rs/src/lib.rs.h>
+#include <td-rs-chop/src/cxx.rs.h>
 #include "BoxDynChop.h"
 
 /*
