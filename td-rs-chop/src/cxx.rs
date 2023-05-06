@@ -38,18 +38,6 @@ pub mod ffi {
     }
 
     #[derive(Debug, Default)]
-    pub struct ChopChannel {
-        pub data: Vec<f32>,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ParamValue {
-        pub name: String,
-        pub str_value: String,
-        pub double_value: f64,
-    }
-
-    #[derive(Debug, Default)]
     pub struct ChopOutputInfo {
         pub num_channels: u32,
         pub num_samples: u32,

@@ -16,8 +16,7 @@
 #include <td-rs-chop/src/cxx.rs.h>
 #include "BoxDynChop.h"
 
-class RustCHOP : public CHOP_CPlusPlusBase
-{
+class RustCHOP : public CHOP_CPlusPlusBase {
 public:
 	RustCHOP(const OP_NodeInfo* info);
 	virtual ~RustCHOP();
