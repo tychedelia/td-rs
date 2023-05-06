@@ -12,8 +12,7 @@ impl<'execute> OperatorInput<'execute> {
     }
 
     pub fn get_float(&self, name: &str, index: usize) -> f64 {
-        println!("get_float: {} {}", name, index);
-        self.input.getParDouble(name, index as i32)
+        self.input.getParDouble(&(name.to_string()), index as i32)
     }
 
     pub fn get_int(&self, name: &str, index: usize) -> i32 {
