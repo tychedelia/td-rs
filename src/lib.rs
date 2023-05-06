@@ -1,10 +1,10 @@
 mod chop;
 mod sin_chop;
 
-use cxx::ExternType;
-use crate::ffi::*;
 use crate::chop::Chop;
+use crate::ffi::*;
 use crate::sin_chop::SinChop;
+use cxx::ExternType;
 
 unsafe impl ExternType for Box<dyn Chop> {
     type Id = cxx::type_id!("BoxDynChop");
@@ -41,7 +41,7 @@ mod ffi {
         pub name: String,
         pub label: String,
         pub page: String,
-        pub default_value: String
+        pub default_value: String,
     }
 
     #[derive(Debug, Default)]
@@ -116,7 +116,7 @@ mod ffi {
 
     #[derive(Debug, Default)]
     pub struct ChopInfoDatEntries {
-        values: Vec<String>
+        values: Vec<String>,
     }
 
     extern "C++" {
@@ -132,11 +132,28 @@ mod ffi {
         fn chop_on_reset(chop: &mut BoxDynChop);
         fn chop_get_num_info_chop_chans(chop: &BoxDynChop) -> i32;
         fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan;
-        fn chop_get_output_info(chop: &mut BoxDynChop, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool;
-        fn chop_get_channel_name(chop: &BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String;
+        fn chop_get_output_info(
+            chop: &mut BoxDynChop,
+            info: &mut ChopOutputInfo,
+            inputs: &ChopOperatorInputs,
+        ) -> bool;
+        fn chop_get_channel_name(
+            chop: &BoxDynChop,
+            index: i32,
+            inputs: &ChopOperatorInputs,
+        ) -> String;
         fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
-        fn chop_get_info_dat_entries(chop: &BoxDynChop, index: i32, entries: &mut ChopInfoDatEntries);
-        fn chop_execute(chop: &mut BoxDynChop, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+        fn chop_get_info_dat_entries(
+            chop: &BoxDynChop,
+            index: i32,
+            num_entries: i32,
+            entries: &mut ChopInfoDatEntries,
+        );
+        fn chop_execute(
+            chop: &mut BoxDynChop,
+            output: &mut ChopOutput,
+            inputs: &ChopOperatorInputs,
+        );
         fn chop_new() -> BoxDynChop;
     }
 }
@@ -159,7 +176,11 @@ fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan {
     (**chop).get_info_chop_chan(index)
 }
 
-fn chop_get_output_info(chop: &mut Box<dyn Chop>, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
+fn chop_get_output_info(
+    chop: &mut Box<dyn Chop>,
+    info: &mut ChopOutputInfo,
+    inputs: &ChopOperatorInputs,
+) -> bool {
     (**chop).get_output_info(info, inputs)
 }
 
@@ -171,8 +192,13 @@ fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool
     (**chop).get_info_dat_size(size)
 }
 
-fn chop_get_info_dat_entries(chop: &BoxDynChop, index: i32, entries: &mut ChopInfoDatEntries) {
-    (**chop).get_info_dat_entries(index, entries)
+fn chop_get_info_dat_entries(
+    chop: &BoxDynChop,
+    index: i32,
+    num_entries: i32,
+    entries: &mut ChopInfoDatEntries,
+) {
+    (**chop).get_info_dat_entries(index, num_entries, entries)
 }
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
@@ -197,7 +223,7 @@ fn chop_get_operator_info() -> OperatorInfo {
         major_version: 0,
         minor_version: 0,
         python_version: "".to_string(),
-        cook_on_start: false
+        cook_on_start: false,
     }
 }
 

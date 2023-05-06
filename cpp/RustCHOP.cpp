@@ -143,8 +143,8 @@ RustCHOP::getInfoCHOPChan(int32_t index,
 
 bool
 RustCHOP::getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) {
-    // TODO support dat
-    return false;
+    ChopInfoDatSize datSize;
+    return chop->getInfoDatSize(&datSize);
 }
 
 void
@@ -153,7 +153,15 @@ RustCHOP::getInfoDATEntries(int32_t index,
                             OP_InfoDATEntries *entries,
                             void *reserved1) {
 
-    // TODO map dat
+    ChopInfoDatEntries ents;
+    chop->getInfoDATEntries(index, nEntries, &ents);
+
+    assert(nEntries == ents.values.size());
+
+    for (auto i = 0; i < nEntries; i++) {
+        auto e = ents.values[i];
+        entries->values[i]->setString(e.c_str());
+    }
 }
 
 void

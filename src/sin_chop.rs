@@ -1,24 +1,21 @@
-use crate::Chop;
 use crate::ffi::{ChopOperatorInputs, ChopOutput, ChopOutputInfo, ChopParams};
+use crate::Chop;
 
-pub struct SinChop {
-
-}
+pub struct SinChop {}
 
 impl SinChop {
     pub(crate) fn new() -> Self {
-        Self { }
+        Self {}
     }
 }
 
 impl Chop for SinChop {
-    fn on_reset(&mut self) {
-    }
+    fn on_reset(&mut self) {}
 
     fn get_params(&self) -> ChopParams {
         ChopParams {
             numeric_params: vec![],
-            string_params: vec![]
+            string_params: vec![],
         }
     }
 
@@ -30,6 +27,5 @@ impl Chop for SinChop {
         format!("chan{}", index)
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
-    }
+    fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {}
 }

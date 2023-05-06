@@ -27,7 +27,7 @@ public:
     ChopInfoChan getInfoChopChan(int32_t index) noexcept;
     rust::String getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept;
     bool getInfoDatSize(ChopInfoDatSize* size) noexcept;
-    void getInfoDATEntries(int32_t index, ChopInfoDatEntries* entries) noexcept;
+    void getInfoDATEntries(int32_t index, int32_t nEntries, ChopInfoDatEntries* entries) noexcept;
     void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
 
 private:
