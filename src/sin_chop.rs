@@ -13,18 +13,18 @@ impl SinChop {
 
 impl Chop for SinChop {
     fn on_reset(&mut self) {
-        todo!()
     }
 
     fn get_params(&mut self) -> ChopParams {
-        todo!()
+        ChopParams {
+            params: vec![]
+        }
     }
 
     fn get_output_info(&self, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
-        todo!()
+        false
     }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
-        todo!()
     }
 }

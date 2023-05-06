@@ -110,9 +110,7 @@ mod ffi {
     }
 }
 
-fn chop_get_operator_info() -> OperatorInfo {
-   todo!()
-}
+// FFI
 
 fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams {
     (**chop).get_params()
@@ -132,6 +130,24 @@ fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &Chop
 
 unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop) {
     std::ptr::drop_in_place(ptr.0);
+}
+
+// Custom Chop Impl
+
+fn chop_get_operator_info() -> OperatorInfo {
+    OperatorInfo {
+        operator_type: "test1".to_string(),
+        operator_label: "test2".to_string(),
+        operator_icon: "test3".to_string(),
+        min_inputs: 0,
+        max_inputs: 0,
+        author_name: "test4".to_string(),
+        author_email: "test5".to_string(),
+        major_version: 0,
+        minor_version: 0,
+        python_version: "".to_string(),
+        cook_on_start: false
+    }
 }
 
 fn chop_new() -> Box<dyn Chop> {
