@@ -63,4 +63,6 @@ public:
 
 private:
    Chop chop;
+
+   ChopOperatorInput    mapInput(const OP_CHOPInput* input);
 };
