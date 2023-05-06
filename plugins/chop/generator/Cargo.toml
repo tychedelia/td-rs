@@ -3,6 +3,9 @@ name = "generator-chop"
 version = "0.1.0"
 edition = "2021"
 
+[package.metadata.td-rs]
+type = "chop"
+
 [lib]
 name = "generator_chop"
 crate-type = ["staticlib"]
