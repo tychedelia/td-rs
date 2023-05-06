@@ -1,6 +1,6 @@
 pub mod cxx;
 pub mod chop;
-pub use td_rs_param::{Param, ParameterManager, ParamOptions, OperatorInput, OperatorParams};
+pub use td_rs_base::{Param, ParameterManager, ParamOptions, OperatorInput, OperatorParams};
 pub use chop::*;
 
 

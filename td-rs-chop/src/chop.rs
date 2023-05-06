@@ -1,8 +1,8 @@
 pub use crate::cxx::ffi::*;
 use std::pin::Pin;
 use std::sync::Arc;
-use td_rs_param::operator_input::OperatorInput;
-use td_rs_param::{OperatorParams, ParameterManager};
+use td_rs_base::operator_input::OperatorInput;
+use td_rs_base::{OperatorParams, ParameterManager};
 
 pub trait ChopInfo {
     const OPERATOR_TYPE: &'static str = "";

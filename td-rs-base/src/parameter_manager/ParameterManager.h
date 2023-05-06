@@ -2,7 +2,7 @@
 #include "../CPlusPlus_Common.h"
 #include <rust/cxx.h>
 
-namespace td_rs_param::ffi {
+namespace td_rs_base::ffi {
 
 struct NumericParameter;
 struct StringParameter;

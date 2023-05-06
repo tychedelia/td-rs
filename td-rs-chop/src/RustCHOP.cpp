@@ -24,7 +24,7 @@
 #include <assert.h>
 #include <functional>
 
-using namespace td_rs_param::ffi;
+using namespace td_rs_base::ffi;
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.

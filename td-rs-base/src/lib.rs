@@ -44,6 +44,11 @@ impl From<ParamOptions> for StringParameter {
     }
 }
 
+pub trait Param {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager);
+    fn update(&mut self, name: &str, input: &OperatorInput);
+}
+
 macro_rules! impl_param_int {
     ( $t:ty ) => {
         impl Param for $t {
@@ -98,7 +103,60 @@ impl Param for String {
     }
 }
 
-pub trait Param {
-    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager);
-    fn update(&mut self, name: &str, input: &OperatorInput);
+impl Param for rgb::RGB8 {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        parameter_manager.append_rgb(options.into());
+    }
+
+    fn update(&mut self, name: &str, input: &OperatorInput) {
+        *self = rgb::RGB8::new(
+            input.get_int(name, 0) as u8,
+            input.get_int(name, 1) as u8,
+            input.get_int(name, 2) as u8,
+        );
+    }
+}
+
+impl Param for rgb::RGB16 {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        parameter_manager.append_rgb(options.into());
+    }
+
+    fn update(&mut self, name: &str, input: &OperatorInput) {
+        *self = rgb::RGB16::new(
+            input.get_int(name, 0) as u16,
+            input.get_int(name, 1) as u16,
+            input.get_int(name, 2) as u16,
+        );
+    }
+}
+
+impl Param for rgb::RGBA8 {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        parameter_manager.append_rgba(options.into());
+    }
+
+    fn update(&mut self, name: &str, input: &OperatorInput) {
+        *self = rgb::RGBA8::new(
+            input.get_int(name, 0) as u8,
+            input.get_int(name, 1) as u8,
+            input.get_int(name, 2) as u8,
+            input.get_int(name, 3) as u8,
+        );
+    }
+}
+
+impl Param for rgb::RGBA16 {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        parameter_manager.append_rgba(options.into());
+    }
+
+    fn update(&mut self, name: &str, input: &OperatorInput) {
+        *self = rgb::RGBA16::new(
+            input.get_int(name, 0) as u16,
+            input.get_int(name, 1) as u16,
+            input.get_int(name, 2) as u16,
+            input.get_int(name, 3) as u16,
+        );
+    }
 }

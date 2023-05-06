@@ -1,4 +1,4 @@
-#[cxx::bridge(namespace = "td_rs_param::ffi")]
+#[cxx::bridge(namespace = "td_rs_base::ffi")]
 pub mod ffi {
     #[derive(Debug, Default)]
     pub struct NumericParameter {

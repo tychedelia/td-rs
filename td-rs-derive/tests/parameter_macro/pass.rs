@@ -1,9 +1,11 @@
 #![allow(unused)]
 
-use td_rs_derive::Params;
+use td_rs_derive::*;
+use td_rs_base::*;
 
 #[derive(Params)]
 struct TestParameter {
+    #[label = "Hi"]
     float2: f32,
     float3: f64,
     int: i16,

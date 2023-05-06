@@ -11,7 +11,7 @@ crate-type = ["lib", "staticlib"]
 libc = "*"
 cxx = "1"
 rgb = "0.8.36"
-td-rs-param = { path = "../td-rs-param" }
+td-rs-base = { path = "../td-rs-base" }
 
 [build-dependencies]
 cxx-build = "1"
