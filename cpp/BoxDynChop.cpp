@@ -11,15 +11,23 @@ BoxDynChop::~BoxDynChop() noexcept {
     }
 }
 
-ChopParams BoxDynChop::get_params() noexcept {
+ChopParams BoxDynChop::getParams() noexcept {
     return chop_get_params(*this);
 }
 
-void BoxDynChop::on_reset() noexcept {
+void BoxDynChop::onReset() noexcept {
     chop_on_reset(*this);
 }
 
-bool BoxDynChop::get_output_info(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept {
+int32_t BoxDynChop::getNumInfoChopChans() noexcept {
+    return chop_get_num_info_chop_chans(*this);
+}
+
+ChopInfoChan BoxDynChop::getInfoChopChan(int32_t index) noexcept {
+    return chop_get_info_chop_chan(*this, index);
+}
+
+bool BoxDynChop::getOutputInfo(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept {
     return chop_get_output_info(*this, *info, *inputs);
 }
 
