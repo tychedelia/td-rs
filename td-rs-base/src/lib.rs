@@ -28,6 +28,8 @@ impl From<ParamOptions> for NumericParameter {
             page: options.page,
             min_values: [options.min, 0.0, 0.0, 0.0],
             max_values: [options.max, 0.0, 0.0, 0.0],
+            min_sliders: [options.min, 0.0, 0.0, 0.0],
+            max_sliders: [options.max, 0.0, 0.0, 0.0],
             ..Default::default()
         }
     }
@@ -53,8 +55,9 @@ macro_rules! impl_param_int {
     ( $t:ty ) => {
         impl Param for $t {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
-                parameter_manager.append_float(options.into());
-            }
+                let mut param: NumericParameter = options.into();
+                param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                parameter_manager.append_int(param);            }
 
             fn update(&mut self, name: &str, input: &OperatorInput) {
                 *self = input.get_int(name, 0) as $t;
@@ -80,7 +83,9 @@ macro_rules! impl_param_float {
     ( $t:ty ) => {
         impl Param for $t {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
-                parameter_manager.append_float(options.into());
+                let mut param: NumericParameter = options.into();
+                param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                parameter_manager.append_float(param);
             }
 
             fn update(&mut self, name: &str, input: &OperatorInput) {

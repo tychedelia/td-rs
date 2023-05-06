@@ -12,7 +12,7 @@ use syn::{
 };
 use td_rs_base::ParamOptions;
 
-#[proc_macro_derive(Params, attributes(label, page, min, max))]
+#[proc_macro_derive(Params, attributes(param))]
 pub fn parameter_derive(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     impl_parameter(&input)
@@ -31,17 +31,13 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                 let field_name = field.ident.as_ref().unwrap();
                 let field_type = &field.ty;
 
-                if let syn::Type::Path(type_path) = field_type {
-                    println!("field_type: {:?}", type_path.path.to_token_stream());
-                }
-
                 let mut label = None;
                 let mut page = None;
                 let mut min = None;
                 let mut max = None;
 
                 for attr in &field.attrs {
-                    if attr.path.is_ident("parameter") {
+                    if attr.path.is_ident("param") {
                         if let Ok(Meta::List(meta_list)) = attr.parse_meta() {
                             for nested_meta in meta_list.nested.iter() {
                                 if let NestedMeta::Meta(Meta::NameValue(MetaNameValue {
