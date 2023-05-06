@@ -101,6 +101,20 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("ChopInput.h");
+        pub(crate) type ChopInput;
+        pub fn getPath(&self) -> &str;
+        pub fn getId(&self) -> u32;
+        pub fn getNumChannels(&self) -> i32;
+        pub fn getNumSamples(&self) -> i32;
+        pub fn getSampleRate(&self) -> f64;
+        pub fn getStartIndex(&self) -> f64;
+        pub fn getChannelNames(&self) -> &[&str];
+        pub fn getChannels(&self) -> &[&[f32]];
+        pub fn getTotalCooks(&self) -> i64;
+    }
+
+    unsafe extern "C++" {
         include!("ChopOutput.h");
         pub(crate) type ChopOutput;
         pub fn getNumChannels(&self) -> i32;

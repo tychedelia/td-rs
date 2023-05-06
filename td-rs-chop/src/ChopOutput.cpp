@@ -24,12 +24,11 @@ size_t ChopOutput::getStartIndex() const {
 
 rust::Slice<const rust::Str> ChopOutput::getChannelNames() const {
     auto names = output->names;
-    auto channelNames = rust::Slice<const rust::Str>();
-    for (auto i = 0; i < getNumChannels(); i++) {
-        rust::Str const name = rust::Str(names[i]);
-//        channelNames[i] = name;
-    }
-    return channelNames;
+      rust::Str channelNames[getNumChannels()];
+      for (auto i = 0; i < getNumChannels(); i++) {
+          channelNames[i] = rust::Str(names[i]);
+      }
+      return rust::Slice<const rust::Str>(channelNames, getNumChannels());
 }
 
 rust::Slice<rust::Slice<float>> ChopOutput::getChannels() {
