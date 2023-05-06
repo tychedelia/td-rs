@@ -30,6 +30,39 @@
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
+		<key>9E574B7B29B5499F00705349</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>ParameterManager.cpp</string>
+			<key>path</key>
+			<string>td-rs-chop/src/ParameterManager.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9E574B7C29B5499F00705349</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>ParameterManager.h</string>
+			<key>path</key>
+			<string>td-rs-chop/src/ParameterManager.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>9E574B7F29B54A0200705349</key>
+		<dict>
+			<key>fileRef</key>
+			<string>9E574B7B29B5499F00705349</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>9E99107F299DBE1200C64465</key>
 		<dict>
 			<key>isa</key>
@@ -200,6 +233,8 @@
 		<dict>
 			<key>children</key>
 			<array>
+				<string>9E574B7B29B5499F00705349</string>
+				<string>9E574B7C29B5499F00705349</string>
 				<string>9E99107F299DBE1200C64465</string>
 				<string>9E991080299DBE1200C64465</string>
 				<string>B9BF86D027481CA300D63C86</string>
@@ -293,6 +328,7 @@
 				<string>B9BF86D12748762600D63C86</string>
 				<string>B9369E77274177C500EA7D98</string>
 				<string>9EBB2640299DC28000352B6C</string>
+				<string>9E574B7F29B54A0200705349</string>
 				<string>9ED7E4F1299A01F5001F2445</string>
 			</array>
 			<key>isa</key>

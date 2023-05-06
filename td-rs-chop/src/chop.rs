@@ -15,6 +15,26 @@ pub trait ChopInfo {
     const COOK_ON_START: bool = false;
 }
 
+pub struct ParameterManager<'execute> {
+    manager: Pin<&'execute mut crate::cxx::ffi::ParameterManager>,
+}
+
+impl <'execute> ParameterManager<'execute> {
+    pub fn new(manager: Pin<&'execute mut crate::cxx::ffi::ParameterManager>) -> ParameterManager<'execute> {
+        Self {
+            manager
+        }
+    }
+
+    pub fn append_float(&self, param: &mut NumericParameter) {
+        self.manager.appendFloat(param);
+    }
+
+    pub fn append_pulse(&self, param: &mut NumericParameter) {
+        self.manager.appendPulse(param);
+    }
+}
+
 pub struct ChopOutput<'execute> {
     output: Pin<&'execute mut crate::cxx::ffi::ChopOutput>,
 }
@@ -63,8 +83,8 @@ pub trait Chop {
     }
 
     /// Called on plugin init to declare parameters required for plugin.
-    fn get_params(&self) -> ChopParams {
-        ChopParams::default()
+    fn setup_params(&self, manager: &mut ParameterManager) {
+
     }
 
     /// Called on plugin init to register the number of info chop channels.

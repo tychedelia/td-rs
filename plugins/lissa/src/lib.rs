@@ -48,7 +48,7 @@ struct LissajousParams {
 impl ChopInfo for Lissajous {}
 
 impl Chop for Lissajous {
-    fn get_params(&self) -> ChopParams {
+    fn setup_params(&self) -> ChopParams {
         ChopParams {
             numeric_params: vec![
                 NumericParameter {
