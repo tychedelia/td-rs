@@ -156,7 +156,7 @@ pub mod ffi {
 
     unsafe extern "C++" {
         include!("OperatorInput.h");
-        pub(crate) type OperatorInput;
+        pub type OperatorInput;
         pub fn getParDouble(&self, name: &str, index: i32) -> f64;
         pub fn getParDouble2(&self, name: &str) -> &[f64];
         pub fn getParDouble3(&self, name: &str) -> &[f64];
@@ -207,7 +207,9 @@ pub mod ffi {
 
 // FFI
 fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
-    (**chop).setup_params(&mut chop::ParameterManager::new(manager));
+    let mut params = (**chop).get_params();
+    let mut mgr = chop::ParameterManager::new(manager);
+    params.register(&mut mgr);
 }
 
 fn chop_on_reset(chop: &mut Box<dyn Chop>) {
