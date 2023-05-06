@@ -4,6 +4,7 @@
 mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
+mod metadata;
 
 #[cfg(target_os = "macos")]
 use crate::macos::build_plugin;
@@ -11,9 +12,17 @@ use crate::macos::build_plugin;
 use crate::windows::build_plugin;
 use anyhow::Context;
 use std::env;
+use std::env::args;
 use std::process::Command;
 
 pub use anyhow::Result;
+
+// pub fn check_plugin_type(plugin: &str) -> Result<()> {
+//     let mut cmd = Command::new("cargo");
+//         .args(&["metadata", "--format-version", "1")])
+//
+// }
+
 pub fn build(packages: &[String], args: &[String]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
     let mut cmd = Command::new("cargo")
@@ -40,6 +49,8 @@ pub fn main() -> anyhow::Result<()> {
     if cmd != "build" {
         return Err(anyhow::anyhow!("command must be 'build'"));
     }
-    build_plugin(&plugin)?;
+
+    let plugin_type = metadata::plugin_type(&plugin);
+    build_plugin(&plugin, plugin_type)?;
     Ok(())
 }

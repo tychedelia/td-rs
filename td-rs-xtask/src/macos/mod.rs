@@ -5,10 +5,11 @@ use plist::Value;
 use std::fmt::format;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use crate::metadata::PluginType;
 
 const PLUGIN_HOME: &'static str = "target/plugin";
 
-pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
+pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     build(
         &[plugin.to_string(), "td-rs-chop".to_string(), "td-rs-sop".to_string()],
@@ -19,7 +20,14 @@ pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
-    write_sop_xcodeproj(&target, &plugin, &path)?;
+    match plugin_type {
+        PluginType::Chop => {
+            write_chop_xcodeproj(&target, &plugin, &path)?;
+        }
+        PluginType::Sop => {
+            write_sop_xcodeproj(&target, &plugin, &path)?;
+        }
+    }
     println!("Building xcode project");
     build_xcode(&plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
