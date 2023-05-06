@@ -694,6 +694,7 @@ std::size_t align_of() {
 } // namespace rust
 
 struct NumericParameter;
+struct StringParameter;
 struct OperatorInfo;
 struct ChopParams;
 struct ChopChannel;
@@ -720,6 +721,18 @@ struct NumericParameter final {
 };
 #endif // CXXBRIDGE1_STRUCT_NumericParameter
 
+#ifndef CXXBRIDGE1_STRUCT_StringParameter
+#define CXXBRIDGE1_STRUCT_StringParameter
+struct StringParameter final {
+  ::rust::String name;
+  ::rust::String label;
+  ::rust::String page;
+  ::rust::String default_value;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_StringParameter
+
 #ifndef CXXBRIDGE1_STRUCT_OperatorInfo
 #define CXXBRIDGE1_STRUCT_OperatorInfo
 struct OperatorInfo final {
@@ -742,7 +755,8 @@ struct OperatorInfo final {
 #ifndef CXXBRIDGE1_STRUCT_ChopParams
 #define CXXBRIDGE1_STRUCT_ChopParams
 struct ChopParams final {
-  ::rust::Vec<::NumericParameter> params;
+  ::rust::Vec<::NumericParameter> numeric_params;
+  ::rust::Vec<::StringParameter> string_params;
 
   using IsRelocatable = ::std::true_type;
 };
@@ -814,6 +828,8 @@ void dyn_chop_drop_in_place(::PtrBoxDynChop ptr) noexcept;
 void chop_on_reset(::BoxDynChop &chop) noexcept;
 
 bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+
+::rust::String chop_get_channel_name(::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs) noexcept;
 
 void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
 

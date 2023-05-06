@@ -94,7 +94,13 @@ RustCHOP::getOutputInfo(CHOP_OutputInfo *info, const OP_Inputs *inputs, void *re
 
 void
 RustCHOP::getChannelName(int32_t index, OP_String *name, const OP_Inputs *inputs, void *reserved1) {
-    name->setString("chan1");
+    ChopOperatorInputs opIn;
+    for (auto i = 0; i < inputs->getNumInputs(); i++) {
+        auto ci = inputs->getInputCHOP(i);
+        auto in = mapInput(ci);
+        opIn.inputs.push_back(in);
+    }
+    name->setString(chop->getChannelName(index, &opIn).c_str());
 }
 
 void
@@ -150,12 +156,12 @@ RustCHOP::getInfoDATEntries(int32_t index,
 
 void
 RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
-    // TODO support all param types
-    for (auto param: chop->get_params().params) {
+    for (auto param: chop->get_params().numeric_params) {
         OP_NumericParameter np;
 
         np.name = param.name.c_str();
         np.label = param.label.c_str();
+        np.page = param.page.c_str();
         std::copy(std::begin(param.default_values), std::end(param.default_values), std::begin(np.defaultValues));
         std::copy(std::begin(param.max_values), std::end(param.max_values), std::begin(np.maxValues));
         std::copy(std::begin(param.min_values), std::end(param.min_values), std::begin(np.minValues));
@@ -166,6 +172,15 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
 
         OP_ParAppendResult res = manager->appendFloat(np);
         assert(res == OP_ParAppendResult::Success);
+    }
+
+    for (auto param: chop->get_params().string_params) {
+        OP_StringParameter sp;
+
+        sp.name = param.name.c_str();
+        sp.label = param.label.c_str();
+        sp.page = param.page.c_str();
+        sp.defaultValue = param.default_value.c_str();
     }
 }
 

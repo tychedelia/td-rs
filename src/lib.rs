@@ -37,6 +37,14 @@ mod ffi {
     }
 
     #[derive(Debug, Default)]
+    pub struct StringParameter {
+        pub name: String,
+        pub label: String,
+        pub page: String,
+        pub default_value: String
+    }
+
+    #[derive(Debug, Default)]
     pub struct OperatorInfo {
         pub operator_type: String,
         pub operator_label: String,
@@ -53,7 +61,8 @@ mod ffi {
 
     #[derive(Debug, Default)]
     pub struct ChopParams {
-        pub params: Vec<NumericParameter>,
+        pub numeric_params: Vec<NumericParameter>,
+        pub string_params: Vec<StringParameter>,
     }
 
     #[derive(Debug, Default)]
@@ -105,6 +114,7 @@ mod ffi {
         fn chop_get_params(chop: &mut BoxDynChop) -> ChopParams;
         fn chop_on_reset(chop: &mut BoxDynChop);
         fn chop_get_output_info(chop: &mut BoxDynChop, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool;
+        fn chop_get_channel_name(chop: &mut BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String;
         fn chop_execute(chop: &mut BoxDynChop, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
         fn chop_new() -> BoxDynChop;
     }
@@ -122,6 +132,10 @@ fn chop_on_reset(chop: &mut Box<dyn Chop>) {
 
 fn chop_get_output_info(chop: &mut Box<dyn Chop>, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool {
     (**chop).get_output_info(info, inputs)
+}
+
+fn chop_get_channel_name(chop: &mut BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String {
+    (**chop).get_channel_name(index, inputs)
 }
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {

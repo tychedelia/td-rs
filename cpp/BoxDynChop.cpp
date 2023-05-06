@@ -23,6 +23,9 @@ bool BoxDynChop::get_output_info(ChopOutputInfo* info, ChopOperatorInputs* input
     return chop_get_output_info(*this, *info, *inputs);
 }
 
+rust::String BoxDynChop::getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept {
+    return chop_get_channel_name(*this, index, *inputs);
+};
 
 void BoxDynChop::execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept {
     chop_execute(*this, *output, *inputs);

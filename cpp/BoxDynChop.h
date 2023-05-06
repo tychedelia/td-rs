@@ -2,6 +2,7 @@
 #include <array>
 #include <cstdint>
 #include <type_traits>
+#include "cxx.h"
 
 // Forward declarations from lib.rs.h
 struct ChopParams;
@@ -19,6 +20,7 @@ public:
     void on_reset() noexcept;
     ChopParams get_params() noexcept;
     bool get_output_info(ChopOutputInfo* info, ChopOperatorInputs* inputs) noexcept;
+    rust::String getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept;
     void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
 
 private:
