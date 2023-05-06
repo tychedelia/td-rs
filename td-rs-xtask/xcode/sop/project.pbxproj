@@ -10,144 +10,148 @@
 	<string>46</string>
 	<key>objects</key>
 	<dict>
-		<key>6A8B515129EB2083000197C7</key>
+		<key>6A99B72F29EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>OperatorInput.h</string>
+			<string>SopOperatorInput.h</string>
 			<key>path</key>
-			<string>td-rs-base/src/operator_input/OperatorInput.h</string>
+			<string>td-rs-sop/src/SopOperatorInput.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B515229EB2083000197C7</key>
+		<key>6A99B73129EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.cpp.cpp</string>
 			<key>name</key>
-			<string>OperatorInput.cpp</string>
+			<string>SopInput.cpp</string>
 			<key>path</key>
-			<string>td-rs-base/src/operator_input/OperatorInput.cpp</string>
+			<string>td-rs-sop/src/SopInput.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B515329EB208A000197C7</key>
-		<dict>
-			<key>fileRef</key>
-			<string>6A8B515229EB2083000197C7</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>6A8B515429EB209E000197C7</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>ParameterManager.cpp</string>
-			<key>path</key>
-			<string>td-rs-base/src/parameter_manager/ParameterManager.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>6A8B515529EB209E000197C7</key>
+		<key>6A99B73229EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>ParameterManager.h</string>
+			<string>SopInput.h</string>
 			<key>path</key>
-			<string>td-rs-base/src/parameter_manager/ParameterManager.h</string>
+			<string>td-rs-sop/src/SopInput.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B515629EB20A1000197C7</key>
-		<dict>
-			<key>fileRef</key>
-			<string>6A8B515429EB209E000197C7</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>6A8B518929EB9BE5000197C7</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>ChopInput.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/ChopInput.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>6A8B518A29EB9BE5000197C7</key>
+		<key>6A99B73329EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>ChopInput.h</string>
+			<string>RustSOP.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/ChopInput.h</string>
+			<string>td-rs-sop/src/RustSOP.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B518B29EB9BF2000197C7</key>
-		<dict>
-			<key>fileRef</key>
-			<string>E23329E11DF092C90002B4FE</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>6A8B518C29EB9BF7000197C7</key>
-		<dict>
-			<key>fileRef</key>
-			<string>6A8B518929EB9BE5000197C7</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>6A8B51A329EBB83A000197C7</key>
+		<key>6A99B73429EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.cpp.cpp</string>
 			<key>name</key>
-			<string>ChopOperatorInput.cpp</string>
+			<string>SopOutput.cpp</string>
 			<key>path</key>
-			<string>td-rs-chop/src/ChopOperatorInput.cpp</string>
+			<string>td-rs-sop/src/SopOutput.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B51A429EBB83A000197C7</key>
+		<key>6A99B73729EF9A0500197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>SopOperatorInput.cpp</string>
+			<key>path</key>
+			<string>td-rs-sop/src/SopOperatorInput.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A99B73829EF9A0500197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>BoxDynSop.cpp</string>
+			<key>path</key>
+			<string>td-rs-sop/src/BoxDynSop.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A99B73929EF9A0500197036</key>
 		<dict>
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>ChopOperatorInput.h</string>
+			<string>BoxDynSop.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/ChopOperatorInput.h</string>
+			<string>td-rs-sop/src/BoxDynSop.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>6A8B51AD29EC5A64000197C7</key>
+		<key>6A99B73A29EF9A0500197036</key>
 		<dict>
-			<key>fileRef</key>
-			<string>6A8B51A329EBB83A000197C7</string>
 			<key>isa</key>
-			<string>PBXBuildFile</string>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>SopOutput.h</string>
+			<key>path</key>
+			<string>td-rs-sop/src/SopOutput.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A99B73B29EF9A0500197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.cpp.cpp</string>
+			<key>name</key>
+			<string>RustSOP.cpp</string>
+			<key>path</key>
+			<string>td-rs-sop/src/RustSOP.cpp</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
+		</dict>
+		<key>6A99B73C29EF9A0500197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>sourcecode.c.h</string>
+			<key>name</key>
+			<string>SOP_CPlusPlusBase.h</string>
+			<key>path</key>
+			<string>td-rs-sop/src/SOP_CPlusPlusBase.h</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>9E4ACB8B299AC54200A2B1CE</key>
 		<dict>
@@ -156,9 +160,9 @@
 			<key>lastKnownFileType</key>
 			<string>archive.ar</string>
 			<key>name</key>
-			<string>libsin.a</string>
+			<string>liblissa.a</string>
 			<key>path</key>
-			<string>target/aarch64-apple-darwin/release/libsin.a</string>
+			<string>target/aarch64-apple-darwin/release/liblissa.a</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -166,39 +170,6 @@
 		<dict>
 			<key>fileRef</key>
 			<string>9E4ACB8B299AC54200A2B1CE</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>9E99107F299DBE1200C64465</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>ChopOutput.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/ChopOutput.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>9E991080299DBE1200C64465</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>ChopOutput.h</string>
-			<key>path</key>
-			<string>td-rs-chop/src/ChopOutput.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>9EBB2640299DC28000352B6C</key>
-		<dict>
-			<key>fileRef</key>
-			<string>9E99107F299DBE1200C64465</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -218,9 +189,9 @@
 			<key>lastKnownFileType</key>
 			<string>archive.ar</string>
 			<key>name</key>
-			<string>libtd_rs_chop.a</string>
+			<string>libtd_rs_sop.a</string>
 			<key>path</key>
-			<string>target/aarch64-apple-darwin/release/libtd_rs_chop.a</string>
+			<string>target/aarch64-apple-darwin/release/libtd_rs_sop.a</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -228,26 +199,6 @@
 		<dict>
 			<key>fileRef</key>
 			<string>9ED7E4DF2999F4C9001F2445</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
-		<key>9ED7E4F0299A01AB001F2445</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>RustCHOP.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/RustCHOP.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>9ED7E4F1299A01F5001F2445</key>
-		<dict>
-			<key>fileRef</key>
-			<string>9ED7E4F0299A01AB001F2445</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -265,28 +216,6 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>B9369E76274177C500EA7D98</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>cxx.rs.cc</string>
-			<key>path</key>
-			<string>target/aarch64-apple-darwin/cxxbridge/td-rs-chop/src/cxx.rs.cc</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>B9369E77274177C500EA7D98</key>
-		<dict>
-			<key>fileRef</key>
-			<string>B9369E76274177C500EA7D98</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
 		<key>B9369E782741832600EA7D98</key>
 		<dict>
 			<key>fileEncoding</key>
@@ -302,62 +231,23 @@
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
-		<key>B9BF86CF27481CA300D63C86</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>BoxDynChop.h</string>
-			<key>path</key>
-			<string>td-rs-chop/src/BoxDynChop.h</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>B9BF86D027481CA300D63C86</key>
-		<dict>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>BoxDynChop.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/BoxDynChop.cpp</string>
-			<key>sourceTree</key>
-			<string>&lt;group&gt;</string>
-		</dict>
-		<key>B9BF86D12748762600D63C86</key>
-		<dict>
-			<key>fileRef</key>
-			<string>B9BF86D027481CA300D63C86</string>
-			<key>isa</key>
-			<string>PBXBuildFile</string>
-		</dict>
 		<key>E23329CD1DF092AD0002B4FE</key>
 		<dict>
 			<key>children</key>
 			<array>
-				<string>6A8B51A329EBB83A000197C7</string>
-				<string>6A8B51A429EBB83A000197C7</string>
-				<string>9ED7E4F0299A01AB001F2445</string>
-				<string>B9369E76274177C500EA7D98</string>
-				<string>E23329DF1DF092C90002B4FE</string>
+				<string>6A99B73829EF9A0500197036</string>
+				<string>6A99B73929EF9A0500197036</string>
+				<string>6A99B73B29EF9A0500197036</string>
+				<string>6A99B73329EF9A0500197036</string>
+				<string>6A99B73C29EF9A0500197036</string>
+				<string>6A99B73129EF9A0500197036</string>
+				<string>6A99B73229EF9A0500197036</string>
+				<string>6A99B73729EF9A0500197036</string>
+				<string>6A99B72F29EF9A0500197036</string>
+				<string>6A99B73429EF9A0500197036</string>
+				<string>6A99B73A29EF9A0500197036</string>
 				<string>E23329E01DF092C90002B4FE</string>
-				<string>E23329E11DF092C90002B4FE</string>
-				<string>E23329E21DF092C90002B4FE</string>
 				<string>E23329D91DF092AD0002B4FE</string>
-				<string>6A8B518929EB9BE5000197C7</string>
-				<string>6A8B518A29EB9BE5000197C7</string>
-				<string>6A8B515429EB209E000197C7</string>
-				<string>6A8B515529EB209E000197C7</string>
-				<string>6A8B515229EB2083000197C7</string>
-				<string>6A8B515129EB2083000197C7</string>
-				<string>9E99107F299DBE1200C64465</string>
-				<string>9E991080299DBE1200C64465</string>
-				<string>B9BF86D027481CA300D63C86</string>
-				<string>B9BF86CF27481CA300D63C86</string>
 				<string>B9369E782741832600EA7D98</string>
 				<string>E23329D71DF092AD0002B4FE</string>
 				<string>B9369E722741736D00EA7D98</string>
@@ -442,17 +332,7 @@
 			<key>buildActionMask</key>
 			<string>2147483647</string>
 			<key>files</key>
-			<array>
-				<string>6A8B518C29EB9BF7000197C7</string>
-				<string>B9BF86D12748762600D63C86</string>
-				<string>6A8B515629EB20A1000197C7</string>
-				<string>B9369E77274177C500EA7D98</string>
-				<string>9EBB2640299DC28000352B6C</string>
-				<string>9ED7E4F1299A01F5001F2445</string>
-				<string>6A8B518B29EB9BF2000197C7</string>
-				<string>6A8B51AD29EC5A64000197C7</string>
-				<string>6A8B515329EB208A000197C7</string>
-			</array>
+			<array/>
 			<key>isa</key>
 			<string>PBXSourcesBuildPhase</string>
 			<key>runOnlyForDeploymentPostprocessing</key>
@@ -500,9 +380,9 @@
 			<key>isa</key>
 			<string>PBXNativeTarget</string>
 			<key>name</key>
-			<string>RustCHOP</string>
+			<string>lissa</string>
 			<key>productName</key>
-			<string>RustCHOP</string>
+			<string>lissa</string>
 			<key>productReference</key>
 			<string>E23329D61DF092AD0002B4FE</string>
 			<key>productType</key>
@@ -517,7 +397,7 @@
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>path</key>
-			<string>RustCHOP.plugin</string>
+			<string>lissa.plugin</string>
 			<key>sourceTree</key>
 			<string>BUILT_PRODUCTS_DIR</string>
 		</dict>
@@ -864,21 +744,6 @@
 			<key>name</key>
 			<string>Release</string>
 		</dict>
-		<key>E23329DF1DF092C90002B4FE</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>CHOP_CPlusPlusBase.h</string>
-			<key>path</key>
-			<string>td-rs-chop/src/CHOP_CPlusPlusBase.h</string>
-			<key>sourceTree</key>
-			<string>SOURCE_ROOT</string>
-		</dict>
 		<key>E23329E01DF092C90002B4FE</key>
 		<dict>
 			<key>fileEncoding</key>
@@ -891,36 +756,6 @@
 			<string>CPlusPlus_Common.h</string>
 			<key>path</key>
 			<string>td-rs-chop/src/CPlusPlus_Common.h</string>
-			<key>sourceTree</key>
-			<string>SOURCE_ROOT</string>
-		</dict>
-		<key>E23329E11DF092C90002B4FE</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.cpp.cpp</string>
-			<key>name</key>
-			<string>BoxDynChop.cpp</string>
-			<key>path</key>
-			<string>td-rs-chop/src/BoxDynChop.cpp</string>
-			<key>sourceTree</key>
-			<string>SOURCE_ROOT</string>
-		</dict>
-		<key>E23329E21DF092C90002B4FE</key>
-		<dict>
-			<key>fileEncoding</key>
-			<string>4</string>
-			<key>isa</key>
-			<string>PBXFileReference</string>
-			<key>lastKnownFileType</key>
-			<string>sourcecode.c.h</string>
-			<key>name</key>
-			<string>RustCHOP.h</string>
-			<key>path</key>
-			<string>td-rs-chop/src/RustCHOP.h</string>
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>
