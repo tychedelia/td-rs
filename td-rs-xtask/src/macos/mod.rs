@@ -10,7 +10,7 @@ const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
 const XCODE_TARGET: &'static str = "RustCHOP";
 const PLUGIN_HOME: &'static str = "target/plugin";
 
-pub(crate) fn bundle(plugin: &str) -> anyhow::Result<()> {
+pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     let path = pbxproj_path(plugin);
     build(&[plugin.to_string()], &["--release".to_string(), format!("--target={target}")])?;
