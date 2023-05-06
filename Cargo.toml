@@ -19,5 +19,7 @@ crate-type = ["staticlib"]
 members = [
     "td-rs-chop",
     "td-rs-xtask",
-    "plugins/sin"
+    "plugins/sin",
+    "plugins/lissa",
+    "xtask"
 ]

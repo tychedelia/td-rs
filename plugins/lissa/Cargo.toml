@@ -1,0 +1,11 @@
+[package]
+name = "lissa"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "lissa"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../td-rs-chop" }
