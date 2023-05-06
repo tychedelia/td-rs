@@ -1,5 +1,6 @@
 use crate::cxx::ffi::*;
 use std::pin::Pin;
+use std::sync::Arc;
 
 pub trait ChopParams {
     fn register(&mut self, parameter_manager: &mut ParameterManager);
@@ -189,7 +190,7 @@ pub trait Chop {
     fn on_reset(&mut self) {}
 
     /// Called on plugin init to declare parameters required for plugin.
-    fn get_params(&self) -> Box<dyn ChopParams>;
+    fn get_params_mut(&mut self) -> Box<&mut dyn ChopParams>;
 
     /// Called on plugin init to register the number of info chop channels.
     fn get_num_info_chop_chans(&self) -> i32 {

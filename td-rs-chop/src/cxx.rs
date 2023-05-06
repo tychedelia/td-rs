@@ -207,7 +207,7 @@ pub mod ffi {
 
 // FFI
 fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
-    let mut params = (**chop).get_params();
+    let mut params = (**chop).get_params_mut();
     let mut mgr = chop::ParameterManager::new(manager);
     params.register(&mut mgr);
 }
@@ -250,6 +250,8 @@ fn chop_get_info_dat_entries(
 }
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: Pin<&mut ChopOutput>, input: &OperatorInput) {
+    let mut params = (**chop).get_params_mut();
+    params.update(input);
     (**chop).execute(&mut chop::ChopOutput::new(output), input);
 }
 

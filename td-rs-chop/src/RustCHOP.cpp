@@ -23,7 +23,6 @@
 #include <cmath>
 #include <assert.h>
 #include <functional>
-#include <iostream>
 
 // These functions are basic C function, which the DLL loader can find
 // much easier than finding a C++ Class.
