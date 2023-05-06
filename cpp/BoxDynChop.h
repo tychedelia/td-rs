@@ -29,6 +29,9 @@ public:
     bool getInfoDatSize(ChopInfoDatSize* size) noexcept;
     void getInfoDATEntries(int32_t index, int32_t nEntries, ChopInfoDatEntries* entries) noexcept;
     void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
+    rust::String getWarningString() noexcept;
+    rust::String getErrorString() noexcept;
+    rust::String getInfoString() noexcept;
 
 private:
     std::array<std::uintptr_t, 2> repr;

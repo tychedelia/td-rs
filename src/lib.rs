@@ -154,6 +154,9 @@ mod ffi {
             output: &mut ChopOutput,
             inputs: &ChopOperatorInputs,
         );
+        fn chop_get_info(chop: &BoxDynChop) -> String;
+        fn chop_get_warning(chop: &BoxDynChop) -> String;
+        fn chop_get_error(chop: &BoxDynChop) -> String;
         fn chop_new() -> BoxDynChop;
     }
 }
@@ -203,6 +206,18 @@ fn chop_get_info_dat_entries(
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
     (**chop).execute(output, inputs)
+}
+
+fn chop_get_info(chop: &BoxDynChop) -> String {
+    (**chop).get_info()
+}
+
+fn chop_get_warning(chop: &BoxDynChop) -> String {
+    (**chop).get_warning()
+}
+
+fn chop_get_error(chop: &BoxDynChop) -> String {
+    (**chop).get_error()
 }
 
 unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop) {

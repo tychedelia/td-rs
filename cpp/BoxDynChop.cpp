@@ -47,3 +47,14 @@ void BoxDynChop::execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcep
     chop_execute(*this, *output, *inputs);
 }
 
+rust::String BoxDynChop::getWarningString() noexcept {
+    return chop_get_warning(*this);
+}
+
+rust::String BoxDynChop::getErrorString() noexcept {
+    return chop_get_error(*this);
+}
+
+rust::String BoxDynChop::getInfoString() noexcept {
+    return chop_get_info(*this);
+}

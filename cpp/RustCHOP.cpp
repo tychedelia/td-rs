@@ -195,6 +195,21 @@ RustCHOP::setupParameters(OP_ParameterManager *manager, void *reserved1) {
 }
 
 void
+RustCHOP::getWarningString(OP_String *warning, void *reserved1) {
+    warning->setString(chop->getWarningString().c_str());
+}
+
+void
+RustCHOP::getErrorString(OP_String *error, void *reserved1) {
+    error->setString(chop->getErrorString().c_str());
+}
+
+void
+RustCHOP::getInfoPopupString(OP_String *info, void *reserved1) {
+    info->setString(chop->getInfoString().c_str());
+}
+
+void
 RustCHOP::pulsePressed(const char *name, void *reserved1) {
     if (!strcmp(name, "Reset")) {
         chop->onReset();

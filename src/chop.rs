@@ -23,4 +23,13 @@ pub trait Chop {
         unimplemented!()
     }
     fn execute(&mut self, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
+    fn get_info(&self) -> String {
+        "".to_string()
+    }
+    fn get_warning(&self) -> String {
+        "".to_string()
+    }
+    fn get_error(&self) -> String {
+        "".to_string()
+    }
 }

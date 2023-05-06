@@ -61,6 +61,9 @@ public:
 
 	virtual void		setupParameters(OP_ParameterManager* manager, void *reserved1) override;
 	virtual void		pulsePressed(const char* name, void* reserved1) override;
+    virtual void        getWarningString(OP_String *warning, void *reserved1) override;
+    virtual void        getErrorString(OP_String *error, void *reserved1) override;
+    virtual void        getInfoPopupString(OP_String *info, void *reserved1) override;
 
 private:
    BoxDynChop* chop;
