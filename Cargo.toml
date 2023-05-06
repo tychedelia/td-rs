@@ -27,4 +27,5 @@ members = [
     "plugins/chop/generator",
     "plugins/chop/lissa",
     "plugins/chop/sin",
+    "plugins/sop/filter"
 ]

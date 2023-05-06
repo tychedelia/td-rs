@@ -64,20 +64,20 @@ impl<'execute> SopVboOutput<'execute> {
 }
 
 /// Trait for defining a custom operator.
-pub trait Sop : Plugin {
+pub trait Sop : Op {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }
 
-    fn general_info(&self, input: &OperatorInput) -> SopGeneralInfo {
+    fn general_info(&self, input: &OperatorInputs) -> SopGeneralInfo {
         SopGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: &mut SopOutput, input: &OperatorInput) {
+    fn execute(&mut self, output: &mut SopOutput, input: &OperatorInputs) {
         // Do nothing by default.
     }
 
-    fn execute_vbo(&mut self, output: &mut SopVboOutput, input: &OperatorInput) {
+    fn execute_vbo(&mut self, output: &mut SopVboOutput, input: &OperatorInputs) {
         // Do nothing by default.
     }
 }

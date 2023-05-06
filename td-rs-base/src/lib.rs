@@ -1,14 +1,43 @@
+#![feature(associated_type_defaults)]
+
 pub mod cxx;
 
 use std::ffi;
 use std::ops::{Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
+use std::process::Output;
 use autocxx::cxx::UniquePtr;
 use crate::cxx::OP_CHOPInput;
+use crate::cxx::OP_SOPInput;
 use ref_cast::RefCast;
 
-pub trait Plugin {
+pub trait OpInfo {
+    /// The type of the operator.
+    const OPERATOR_TYPE: &'static str = "";
+    /// The label of the operator.
+    const OPERATOR_LABEL: &'static str = "";
+    /// The icon of the operator.
+    const OPERATOR_ICON: &'static str = "";
+    /// The minimum number of inputs the operator accepts.
+    const MIN_INPUTS: usize = 0;
+    /// The maximum number of inputs the operator accepts.
+    const MAX_INPUTS: usize = 0;
+    /// The author name of the operator.
+    const AUTHOR_NAME: &'static str = "";
+    /// The author email of the operator.
+    const AUTHOR_EMAIL: &'static str = "";
+    /// The major version of the operator.
+    const MAJOR_VERSION: i32 = 0;
+    /// The minor version of the operator.
+    const MINOR_VERSION: i32 = 0;
+    /// The python version of the operator.
+    const PYTHON_VERSION: &'static str = "";
+    /// Whether to cook on start.
+    const COOK_ON_START: bool = false;
+}
+
+pub trait Op {
     fn num_info_chop_chans(&self) -> usize {
         0
     }
@@ -264,46 +293,71 @@ impl<'execute> ParameterManager<'execute> {
 
 /// Input to an operator, which can be used to get parameters, channels,
 /// and other information.
-pub struct OperatorInput<'execute> {
-    input: &'execute crate::cxx::OP_Inputs,
+pub struct OperatorInputs<'execute, Op> {
+    inputs: &'execute crate::cxx::OP_Inputs,
+    _marker: std::marker::PhantomData<Op>
 }
 
-impl<'execute> OperatorInput<'execute> {
+impl<'execute, Op> OperatorInputs<'execute, Op> {
     /// Create a new operator input.
-    pub fn new(input: &'execute crate::cxx::OP_Inputs) -> OperatorInput<'execute> {
-        Self { input }
+    pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> OperatorInputs<'execute, Op> {
+        Self { inputs, _marker: Default::default() }
     }
 
-    /// Get a float parameter.
-    pub fn get_float(&self, name: &str, index: usize) -> f64 {
-        unsafe { self.input.getParDouble(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
+    pub fn params(&self) -> ParamInputs {
+        ParamInputs::new(self.inputs)
+    }
+}
+
+pub struct ParamInputs<'execute> {
+    inputs: &'execute crate::cxx::OP_Inputs
+}
+
+impl<'execute> ParamInputs<'execute> {
+    /// Create a new operator input.
+    pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> ParamInputs<'execute> {
+        Self { inputs  }
     }
 
-    /// Get an integer parameter.
-    pub fn get_int(&self, name: &str, index: usize) -> i32 {
-        unsafe { self.input.getParInt(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
+    fn get_float(&self, name: &str, index: usize) -> f64 {
+        unsafe { self.inputs.getParDouble(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
     }
 
-    /// Get a string parameter.
-    pub fn get_string(&self, name: &str) -> &str {
+    fn get_int(&self, name: &str, index: usize) -> i32 {
+        unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
+    }
+
+    fn get_string(&self, name: &str) -> &str {
         unsafe {
-            let res = self.input.getParString(ffi::CString::new(name).unwrap().into_raw());
+            let res = self.inputs.getParString(ffi::CString::new(name).unwrap().into_raw());
             ffi::CStr::from_ptr(res).to_str().unwrap()
         }
     }
 
-    pub fn get_toggle(&self, name: &str) -> bool {
-        unsafe { self.input.getParInt(ffi::CString::new(name).unwrap().into_raw(), 0) != 0 }
+    fn get_toggle(&self, name: &str) -> bool {
+        unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), 0) != 0 }
     }
 
     pub fn enable_param(&self, name: &str, enable: bool) {
         unsafe {
-            self.input.enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
+            self.inputs.enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
         }
     }
+}
 
-    pub fn num_inputs(&self) -> usize {
-        self.input.getNumInputs() as usize
+pub trait GetInput<'execute, Op> : Index<usize, Output=Self::Input> {
+    type Input = Op;
+    fn num_inputs(&self) -> usize;
+    fn get_input(&self, index: usize) -> Option<&Self::Input>;
+}
+
+impl <'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
+    where Self: GetInput<'execute, Op>
+{
+    type Output = <Self as GetInput<'execute, Op>>::Input;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        self.get_input(index).expect("Invalid input index")
     }
 }
 
@@ -311,6 +365,21 @@ impl<'execute> OperatorInput<'execute> {
 #[derive(RefCast)]
 pub struct ChopInput {
     input: OP_CHOPInput,
+}
+
+impl<'execute> GetInput<'execute, ChopInput> for OperatorInputs<'execute, ChopInput> {
+    fn num_inputs(&self) -> usize {
+        self.inputs.getNumInputs() as usize
+    }
+
+    fn get_input(&self, index: usize) -> Option<&'execute ChopInput> {
+        let input = self.inputs.getInputCHOP(index as i32);
+        if input.is_null() {
+            None
+        } else {
+            Some(ChopInput::ref_cast(unsafe { &*input }))
+        }
+    }
 }
 
 impl ChopInput {
@@ -327,19 +396,6 @@ impl ChopInput {
     }
 }
 
-impl<'execute> Index<usize> for OperatorInput<'execute> {
-    type Output = ChopInput;
-
-    fn index(&self, index: usize) -> &'execute Self::Output {
-        if index >= self.num_inputs() {
-            panic!("index out of bounds");
-        }
-
-        let input = unsafe { &*self.input.getInputCHOP(index as i32) };
-        ChopInput::ref_cast(input)
-    }
-}
-
 impl Index<usize> for ChopInput {
     type Output = [f32];
 
@@ -348,12 +404,37 @@ impl Index<usize> for ChopInput {
     }
 }
 
+#[repr(transparent)]
+#[derive(RefCast)]
+pub struct SopInput {
+    input: OP_SOPInput,
+}
+
+impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInput> {
+    fn num_inputs(&self) -> usize {
+        self.inputs.getNumInputs() as usize
+    }
+
+    fn get_input(&self, index: usize) -> Option<&'execute SopInput> {
+        let input = self.inputs.getInputSOP(index as i32);
+        if input.is_null() {
+            None
+        } else {
+            Some(SopInput::ref_cast(unsafe { &*input }))
+        }
+    }
+}
+
+impl SopInput {
+
+}
+
 /// Trait for defining operator parameters.
 pub trait OperatorParams {
     /// Register parameters with the parameter manager.
     fn register(&mut self, parameter_manager: &mut ParameterManager);
     /// Update parameters from operator input.
-    fn update(&mut self, input: &OperatorInput);
+    fn update(&mut self, inputs: &ParamInputs);
 }
 
 /// Options for creating parameters in derive macro.
@@ -396,7 +477,7 @@ pub trait Param {
     /// Register parameter with the parameter manager.
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager);
     /// Update parameter from operator input.
-    fn update(&mut self, name: &str, input: &OperatorInput);
+    fn update(&mut self, name: &str, inputs: &ParamInputs);
 }
 
 macro_rules! impl_param_int {
@@ -407,8 +488,8 @@ macro_rules! impl_param_int {
                 param.default_values = [*self as f64, 0.0, 0.0, 0.0];
                 parameter_manager.append_int(param);            }
 
-            fn update(&mut self, name: &str, input: &OperatorInput) {
-                *self = input.get_int(name, 0) as $t;
+            fn update(&mut self, name: &str, inputs: &ParamInputs) {
+                *self = inputs.get_int(name, 0) as $t;
             }
         }
     };
@@ -436,8 +517,8 @@ macro_rules! impl_param_float {
                 parameter_manager.append_float(param);
             }
 
-            fn update(&mut self, name: &str, input: &OperatorInput) {
-                *self = input.get_float(name, 0) as $t;
+            fn update(&mut self, name: &str, inputs: &ParamInputs) {
+                *self = inputs.get_float(name, 0) as $t;
             }
         }
     };
@@ -453,8 +534,8 @@ impl Param for String {
         parameter_manager.append_string(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
-        *self = input.get_string(name).to_string();
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_string(name).to_string();
     }
 }
 
@@ -470,11 +551,11 @@ impl Param for rgb::RGB8 {
         parameter_manager.append_rgb(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
         *self = rgb::RGB8::new(
-            input.get_int(name, 0) as u8,
-            input.get_int(name, 1) as u8,
-            input.get_int(name, 2) as u8,
+            inputs.get_int(name, 0) as u8,
+            inputs.get_int(name, 1) as u8,
+            inputs.get_int(name, 2) as u8,
         );
     }
 }
@@ -491,11 +572,11 @@ impl Param for rgb::RGB16 {
         parameter_manager.append_rgb(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
         *self = rgb::RGB16::new(
-            input.get_int(name, 0) as u16,
-            input.get_int(name, 1) as u16,
-            input.get_int(name, 2) as u16,
+            inputs.get_int(name, 0) as u16,
+            inputs.get_int(name, 1) as u16,
+            inputs.get_int(name, 2) as u16,
         );
     }
 }
@@ -512,12 +593,12 @@ impl Param for rgb::RGBA8 {
         parameter_manager.append_rgba(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
         *self = rgb::RGBA8::new(
-            input.get_int(name, 0) as u8,
-            input.get_int(name, 1) as u8,
-            input.get_int(name, 2) as u8,
-            input.get_int(name, 3) as u8,
+            inputs.get_int(name, 0) as u8,
+            inputs.get_int(name, 1) as u8,
+            inputs.get_int(name, 2) as u8,
+            inputs.get_int(name, 3) as u8,
         );
     }
 }
@@ -534,12 +615,12 @@ impl Param for rgb::RGBA16 {
         parameter_manager.append_rgba(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
         *self = rgb::RGBA16::new(
-            input.get_int(name, 0) as u16,
-            input.get_int(name, 1) as u16,
-            input.get_int(name, 2) as u16,
-            input.get_int(name, 3) as u16,
+            inputs.get_int(name, 0) as u16,
+            inputs.get_int(name, 1) as u16,
+            inputs.get_int(name, 2) as u16,
+            inputs.get_int(name, 3) as u16,
         );
     }
 }
@@ -568,8 +649,8 @@ impl Param for Folder {
         parameter_manager.append_folder(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
-        self.0 = PathBuf::from(input.get_string(name));
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        self.0 = PathBuf::from(inputs.get_string(name));
     }
 }
 
@@ -597,8 +678,8 @@ impl Param for File {
         parameter_manager.append_file(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
-        self.0 = PathBuf::from(input.get_string(name));
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        self.0 = PathBuf::from(inputs.get_string(name));
     }
 }
 
@@ -609,8 +690,8 @@ impl Param for PathBuf {
         parameter_manager.append_file(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
-        *self = PathBuf::from(input.get_string(name));
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = PathBuf::from(inputs.get_string(name));
     }
 }
 
@@ -621,7 +702,7 @@ impl Param for bool {
         parameter_manager.append_toggle(param);
     }
 
-    fn update(&mut self, name: &str, input: &OperatorInput) {
-        *self = input.get_toggle(name);
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_toggle(name);
     }
 }

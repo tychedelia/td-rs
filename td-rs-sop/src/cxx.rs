@@ -8,7 +8,7 @@ use std::rc::Rc;
 use cxx::let_cxx_string;
 use cxx::memory::UniquePtrTarget;
 use crate::{Sop, SopOutput, SopVboOutput};
-use td_rs_base::{OperatorInput, ParameterManager};
+use td_rs_base::{OperatorInputs, ParameterManager};
 
 include_cpp! {
     #include "SOP_CPlusPlusBase.h"
@@ -54,7 +54,7 @@ extern "C" fn sop_new() -> *mut RustSopPluginImplCpp {
 
 impl RustSopPlugin_methods for RustSopPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut SOP_GeneralInfo>, inputs: &OP_Inputs) {
-        let input = OperatorInput::new(inputs);
+        let input = OperatorInputs::new(inputs);
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
@@ -62,13 +62,13 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
     }
 
     fn execute(&mut self, outputs: Pin<&mut SOP_Output>, inputs: &OP_Inputs) {
-        let input = OperatorInput::new(inputs);
+        let input = OperatorInputs::new(inputs);
         let mut output = SopOutput::new(outputs);
         self.inner.execute(&mut output, &input);
     }
 
     fn executeVBO(&mut self, output: Pin<&mut SOP_VBOOutput>, inputs: &OP_Inputs) {
-        let input = OperatorInput::new(inputs);
+        let input = OperatorInputs::new(inputs);
         let mut output = SopVboOutput::new(output);
         self.inner.execute_vbo(&mut output, &input);
     }

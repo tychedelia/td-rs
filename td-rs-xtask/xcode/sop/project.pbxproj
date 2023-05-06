@@ -19,9 +19,9 @@
 			<key>lastKnownFileType</key>
 			<string>sourcecode.cpp.cpp</string>
 			<key>name</key>
-			<string>RustChopPlugin.cpp</string>
+			<string>RustSopPlugin.cpp</string>
 			<key>path</key>
-			<string>td-rs-chop/src/RustChopPlugin.cpp</string>
+			<string>td-rs-sop/src/RustSopPlugin.cpp</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -34,9 +34,9 @@
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>RustChopPlugin.h</string>
+			<string>RustSopPlugin.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/RustChopPlugin.h</string>
+			<string>td-rs-sop/src/RustSopPlugin.h</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -46,6 +46,15 @@
 			<string>6A99B73F29FD8AD100197036</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
+		</dict>
+		<key>6A99B74229FD9B9700197036</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXGroup</string>
+			<key>name</key>
+			<string>Products</string>
+			<key>sourceTree</key>
+			<string>&lt;group&gt;</string>
 		</dict>
 		<key>9E4ACB8B299AC54200A2B1CE</key>
 		<dict>
@@ -74,9 +83,9 @@
 			<key>lastKnownFileType</key>
 			<string>archive.ar</string>
 			<key>name</key>
-			<string>libtd_rs_chop.a</string>
+			<string>libtd_rs_sop.a</string>
 			<key>path</key>
-			<string>target/aarch64-apple-darwin/release/libtd_rs_chop.a</string>
+			<string>target/aarch64-apple-darwin/release/libtd_rs_sop.a</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -158,6 +167,15 @@
 			<string>E23329D71DF092AD0002B4FE</string>
 			<key>projectDirPath</key>
 			<string></string>
+			<key>projectReferences</key>
+			<array>
+				<dict>
+					<key>ProductGroup</key>
+					<string>6A99B74229FD9B9700197036</string>
+					<key>ProjectRef</key>
+					<string>E23329D91DF092AD0002B4FE</string>
+				</dict>
+			</array>
 			<key>projectRoot</key>
 			<string></string>
 			<key>targets</key>
@@ -545,7 +563,7 @@
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>io.github.tychedelia.RustCHOP</string>
+				<string>io.github.tychedelia.RustSOP</string>
 				<key>PRODUCT_NAME</key>
 				<string>$(TARGET_NAME)</string>
 				<key>WRAPPER_EXTENSION</key>
@@ -587,7 +605,7 @@
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
-				<string>io.github.tychedelia.RustCHOP</string>
+				<string>io.github.tychedelia.RustSOP</string>
 				<key>PRODUCT_NAME</key>
 				<string>$(TARGET_NAME)</string>
 				<key>WRAPPER_EXTENSION</key>
@@ -607,9 +625,9 @@
 			<key>lastKnownFileType</key>
 			<string>sourcecode.c.h</string>
 			<key>name</key>
-			<string>CHOP_CPlusPlusBase.h</string>
+			<string>SOP_CPlusPlusBase.h</string>
 			<key>path</key>
-			<string>td-rs-chop/src/CHOP_CPlusPlusBase.h</string>
+			<string>td-rs-sop/src/SOP_CPlusPlusBase.h</string>
 			<key>sourceTree</key>
 			<string>SOURCE_ROOT</string>
 		</dict>

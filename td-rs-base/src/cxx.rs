@@ -8,6 +8,7 @@ include_cpp! {
     generate!("OP_ParameterManager")
     generate!("OP_String")
     generate_pod!("OP_CHOPInput")
+    generate!("OP_SOPInput")
     generate_pod!("OP_NumericParameter")
     generate_pod!("OP_StringParameter")
     generate!("OP_Inputs")

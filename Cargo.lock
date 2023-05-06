@@ -524,6 +524,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "filter-sop"
+version = "0.1.0"
+dependencies = [
+ "td-rs-derive",
+ "td-rs-sop",
+]
+
+[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

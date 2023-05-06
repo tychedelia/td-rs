@@ -8,7 +8,7 @@ use std::rc::Rc;
 use cxx::let_cxx_string;
 use cxx::memory::UniquePtrTarget;
 use crate::{Chop, ChopOutput};
-use td_rs_base::{OperatorInput, ParameterManager};
+use td_rs_base::{OperatorInputs, ParameterManager};
 
 include_cpp! {
     #include "CHOP_CPlusPlusBase.h"
@@ -55,7 +55,7 @@ extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
 
 impl RustChopPlugin_methods for RustChopPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut CHOP_GeneralInfo>, input: &OP_Inputs) {
-        let input = OperatorInput::new(input);
+        let input = OperatorInputs::new(input);
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
@@ -64,7 +64,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
     }
 
     fn getOutputInfo(&mut self, mut info: Pin<&mut CHOP_OutputInfo>, input: &OP_Inputs) -> bool {
-        let input = OperatorInput::new(input);
+        let input = OperatorInputs::new(input);
         let out_info = self.inner.output_info(&input);
         if let Some(out_info) = out_info {
             info.numChannels = out_info.num_channels as i32;
@@ -78,7 +78,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
     }
 
     fn getChannelName(&mut self, index: i32, name: Pin<&mut OP_String>, input: &OP_Inputs) {
-        let input = OperatorInput::new(input);
+        let input = OperatorInputs::new(input);
         let chan_name = self.inner.channel_name(index as usize, &input);
         unsafe {
             let new_string = CString::new(chan_name.as_str()).unwrap();
@@ -89,10 +89,10 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
 
     fn execute(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
-        let input = OperatorInput::new(input);
+        let input = OperatorInputs::new(input);
         let mut output = ChopOutput::new(output);
         if let Some(mut params) = self.inner.params_mut() {
-            params.update(&input);
+            params.update(&input.params());
         }
         self.inner.execute(&mut output, &input);
     }

@@ -92,7 +92,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
 
                 let update_field_code = quote! {
                     // TODO: Field name should be null terminated
-                    Param::update(&mut self.#field_name, &(#field_name_upper.to_string()), input);
+                    Param::update(&mut self.#field_name, &(#field_name_upper.to_string()), inputs);
                 };
 
                 update_code.push(update_field_code);
@@ -108,7 +108,7 @@ fn impl_parameter(input: &DeriveInput) -> TokenStream {
                 #register_code
             }
 
-            fn update(&mut self, input: &OperatorInput) {
+            fn update(&mut self, inputs: &ParamInputs) {
                 #(#update_code)*
             }
         }

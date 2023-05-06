@@ -8,11 +8,11 @@ use td_rs_derive::Params;
 struct FilterChopParams {
     #[param(label = "Apply Scale", page = "Filter")]
     apply_scale: bool,
-    #[param(label = "Scale", page = "Filter", min = -10.0, max = 10.0)]
+    #[param(label = "Scale", page = "Filter", min = - 10.0, max = 10.0)]
     scale: f32,
     #[param(label = "Apply Offset", page = "Filter")]
     apply_offset: bool,
-    #[param(label = "Offset", page = "Filter", min = -10.0, max = 10.0)]
+    #[param(label = "Offset", page = "Filter", min = - 10.0, max = 10.0)]
     offset: f32,
 }
 
@@ -35,24 +35,26 @@ impl FilterChop {
     }
 }
 
-impl ChopInfo for FilterChop {
-    const OPERATOR_LABEL: &'static str = "Basic Filter";
+impl OpInfo for FilterChop {
     const OPERATOR_TYPE: &'static str = "Basicfilter";
-    const MAX_INPUTS: usize = 1;
+    const OPERATOR_LABEL: &'static str = "Basic Filter";
     const MIN_INPUTS: usize = 1;
+    const MAX_INPUTS: usize = 1;
 }
+
+impl Op for FilterChop {}
 
 impl Chop for FilterChop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput) {
-        input.enable_param("Scale", true);
-        input.enable_param("Offset", true);
+    fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
+        let params = inputs.params();
+        params.enable_param("Scale", true);
+        params.enable_param("Offset", true);
 
-        if input.num_inputs() == 1 {
-            let input = &input[0];
+        if let Some(input) = &inputs.get_input(0) {
             for i in 0..output.num_channels() {
                 for j in 0..output.num_samples() {
                     output[i][j] = input[i][j] * self.params.scale + self.params.offset;
@@ -61,7 +63,7 @@ impl Chop for FilterChop {
         }
     }
 
-    fn general_info(&self, input: &OperatorInput) -> ChopGeneralInfo {
+    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -70,11 +72,9 @@ impl Chop for FilterChop {
         }
     }
 
-    fn channel_name(&self, index: usize, input: &OperatorInput) -> String {
+    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
-
-
 }
 
 chop_plugin!(FilterChop);

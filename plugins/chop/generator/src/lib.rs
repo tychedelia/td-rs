@@ -45,12 +45,12 @@ impl Chop for GeneratorChop {
         Some(Box::new(&mut self.params))
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInput) {
-        input.enable_param("Scale", true);
-        input.enable_param("Offset", true);
+    fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs) {
+        inputs.enable_param("Scale", true);
+        inputs.enable_param("Offset", true);
 
         if input.num_inputs() == 1 {
-            let input = &input[0];
+            let input = &inputs[0];
             for i in 0..output.num_channels() {
                 for j in 0..output.num_samples() {
                     output[i][j] = input[i][j] * self.params.scale + self.params.offset;
@@ -59,7 +59,7 @@ impl Chop for GeneratorChop {
         }
     }
 
-    fn general_info(&self, input: &OperatorInput) -> ChopGeneralInfo {
+    fn general_info(&self, inputs: &OperatorInputs) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -69,11 +69,11 @@ impl Chop for GeneratorChop {
     }
 
 
-    fn channel_name(&self, index: usize, input: &OperatorInput) -> String {
+    fn channel_name(&self, index: usize, inputs: &OperatorInputs) -> String {
         format!("chan{}", index)
     }
 
-    fn output_info(&self, input: &OperatorInput) -> Option<ChopOutputInfo> {
+    fn output_info(&self, inputs: &OperatorInputs) -> Option<ChopOutputInfo> {
 
     }
 }
