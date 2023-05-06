@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B9369E75274173B500EA7D98 /* libtd_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B9369E732741736D00EA7D98 /* libtd_rs.a */; };
 		E23329E31DF092C90002B4FE /* RustCHOP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = E23329E11DF092C90002B4FE /* RustCHOP.cpp */; };
 /* End PBXBuildFile section */
 
@@ -25,6 +26,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9369E75274173B500EA7D98 /* libtd_rs.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
