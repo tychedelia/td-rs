@@ -8,12 +8,14 @@
 
 /* Begin PBXBuildFile section */
 		9ED7E4E02999F4C9001F2445 /* libtd_rs.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 9ED7E4DF2999F4C9001F2445 /* libtd_rs.a */; };
+		9ED7E4F1299A01F5001F2445 /* RustCHOP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 9ED7E4F0299A01AB001F2445 /* RustCHOP.cpp */; };
 		B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */ = {isa = PBXBuildFile; fileRef = B9369E76274177C500EA7D98 /* lib.rs.cc */; };
 		B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = B9BF86D027481CA300D63C86 /* BoxDynChop.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9ED7E4DF2999F4C9001F2445 /* libtd_rs.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtd_rs.a; path = "target/aarch64-apple-darwin/release/libtd_rs.a"; sourceTree = "<group>"; };
+		9ED7E4F0299A01AB001F2445 /* RustCHOP.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = RustCHOP.cpp; path = src/RustCHOP.cpp; sourceTree = "<group>"; };
 		B9369E76274177C500EA7D98 /* lib.rs.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = lib.rs.cc; path = "target/aarch64-apple-darwin/cxxbridge/td-rs/src/lib.rs.cc"; sourceTree = "<group>"; };
 		B9369E782741832600EA7D98 /* cxx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = cxx.h; path = "target/aarch64-apple-darwin/cxxbridge/rust/cxx.h"; sourceTree = "<group>"; };
 		B9BF86CF27481CA300D63C86 /* BoxDynChop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = BoxDynChop.h; path = src/BoxDynChop.h; sourceTree = "<group>"; };
@@ -74,6 +76,7 @@
 		E23329F11DF1D64A0002B4FE /* CHOP */ = {
 			isa = PBXGroup;
 			children = (
+				9ED7E4F0299A01AB001F2445 /* RustCHOP.cpp */,
 				B9369E76274177C500EA7D98 /* lib.rs.cc */,
 				E23329DF1DF092C90002B4FE /* CHOP_CPlusPlusBase.h */,
 				E23329E01DF092C90002B4FE /* CPlusPlus_Common.h */,
@@ -160,6 +163,7 @@
 			files = (
 				B9BF86D12748762600D63C86 /* BoxDynChop.cpp in Sources */,
 				B9369E77274177C500EA7D98 /* lib.rs.cc in Sources */,
+				9ED7E4F1299A01F5001F2445 /* RustCHOP.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
