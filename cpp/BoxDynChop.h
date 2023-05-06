@@ -11,6 +11,8 @@ struct ChopOutputInfo;
 struct ChopOutput;
 struct OperatorInfo;
 struct ChopInfoChan;
+struct ChopInfoDatSize;
+struct ChopInfoDatEntries;
 
 class BoxDynChop {
 public:
@@ -24,6 +26,8 @@ public:
     int32_t getNumInfoChopChans() noexcept;
     ChopInfoChan getInfoChopChan(int32_t index) noexcept;
     rust::String getChannelName(int32_t index, ChopOperatorInputs* inputs) noexcept;
+    bool getInfoDatSize(ChopInfoDatSize* size) noexcept;
+    void getInfoDATEntries(int32_t index, ChopInfoDatEntries* entries) noexcept;
     void execute(ChopOutput* output, ChopOperatorInputs* inputs) noexcept;
 
 private:

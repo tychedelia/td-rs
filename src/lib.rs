@@ -108,6 +108,17 @@ mod ffi {
         value: f32,
     }
 
+    #[derive(Debug, Default)]
+    pub struct ChopInfoDatSize {
+        rows: i32,
+        columns: i32,
+    }
+
+    #[derive(Debug, Default)]
+    pub struct ChopInfoDatEntries {
+        values: Vec<String>
+    }
+
     extern "C++" {
         include!("td-rs/cpp/BoxDynChop.h");
         type BoxDynChop = Box<dyn crate::chop::Chop>;
@@ -123,6 +134,8 @@ mod ffi {
         fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan;
         fn chop_get_output_info(chop: &mut BoxDynChop, info: &mut ChopOutputInfo, inputs: &ChopOperatorInputs) -> bool;
         fn chop_get_channel_name(chop: &BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String;
+        fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
+        fn chop_get_info_dat_entries(chop: &BoxDynChop, index: i32, entries: &mut ChopInfoDatEntries);
         fn chop_execute(chop: &mut BoxDynChop, output: &mut ChopOutput, inputs: &ChopOperatorInputs);
         fn chop_new() -> BoxDynChop;
     }
@@ -152,6 +165,14 @@ fn chop_get_output_info(chop: &mut Box<dyn Chop>, info: &mut ChopOutputInfo, inp
 
 fn chop_get_channel_name(chop: &BoxDynChop, index: i32, inputs: &ChopOperatorInputs) -> String {
     (**chop).get_channel_name(index, inputs)
+}
+
+fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool {
+    (**chop).get_info_dat_size(size)
+}
+
+fn chop_get_info_dat_entries(chop: &BoxDynChop, index: i32, entries: &mut ChopInfoDatEntries) {
+    (**chop).get_info_dat_entries(index, entries)
 }
 
 fn chop_execute(chop: &mut Box<dyn Chop>, output: &mut ChopOutput, inputs: &ChopOperatorInputs) {
