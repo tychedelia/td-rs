@@ -6,8 +6,4 @@ build/
 .vs/
 Debug/
 Release/
-cpp/td-rs
-cpp/rust
-cpp/cxx.h
-cpp/lib.rs.cc
-cpp/lib.rs.h
+RustCHOP.xcodeproj/project.xcworkspace/xcuserdata
