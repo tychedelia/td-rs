@@ -11,7 +11,7 @@ const PLUGIN_HOME: &'static str = "target/plugin";
 pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     build(
-        &[plugin.to_string(), "td-rs-chop".to_string()],
+        &[plugin.to_string(), "td-rs-chop".to_string(), "td-rs-sop".to_string()],
         &["--release".to_string(), format!("--target={target}")],
     )?;
 

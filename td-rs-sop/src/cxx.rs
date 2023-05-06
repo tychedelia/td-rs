@@ -23,6 +23,11 @@ include_cpp! {
     generate_pod!("SOP_PluginInfo")
     generate!("SOP_Output")
     generate!("SOP_VBOOutput")
+    extern_cpp_type!("Vector", td_rs_base::cxx::Vector)
+    extern_cpp_type!("Position", td_rs_base::cxx::Position)
+    extern_cpp_type!("Color", td_rs_base::cxx::Color)
+    extern_cpp_type!("TexCoord", td_rs_base::cxx::TexCoord)
+    extern_cpp_type!("BoundingBox", td_rs_base::cxx::BoundingBox)
 }
 
 pub use td_rs_base::cxx::setString;

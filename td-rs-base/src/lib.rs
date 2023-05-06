@@ -3,7 +3,7 @@
 pub mod cxx;
 
 use std::ffi;
-use std::ops::{Deref, DerefMut, Index};
+use std::ops::{Add, Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::process::Output;
@@ -12,6 +12,8 @@ use autocxx::cxx::UniquePtr;
 use crate::cxx::OP_CHOPInput;
 use crate::cxx::OP_SOPInput;
 use ref_cast::RefCast;
+use auto_ops::*;
+use derive_more::{Deref, DerefMut, AsRef, From, Into};
 
 pub trait OpInfo {
     /// The type of the operator.
@@ -296,7 +298,7 @@ impl<'execute> ParameterManager<'execute> {
 /// and other information.
 pub struct OperatorInputs<'execute, Op> {
     inputs: &'execute crate::cxx::OP_Inputs,
-    _marker: std::marker::PhantomData<Op>
+    _marker: std::marker::PhantomData<Op>,
 }
 
 impl<'execute, Op> OperatorInputs<'execute, Op> {
@@ -311,13 +313,13 @@ impl<'execute, Op> OperatorInputs<'execute, Op> {
 }
 
 pub struct ParamInputs<'execute> {
-    inputs: &'execute crate::cxx::OP_Inputs
+    inputs: &'execute crate::cxx::OP_Inputs,
 }
 
 impl<'execute> ParamInputs<'execute> {
     /// Create a new operator input.
     pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> ParamInputs<'execute> {
-        Self { inputs  }
+        Self { inputs }
     }
 
     fn get_float(&self, name: &str, index: usize) -> f64 {
@@ -357,13 +359,13 @@ impl<'execute> ParamInputs<'execute> {
     }
 }
 
-pub trait GetInput<'execute, Op> : Index<usize, Output=Self::Input> {
+pub trait GetInput<'execute, Op>: Index<usize, Output=Self::Input> {
     type Input = Op;
     fn num_inputs(&self) -> usize;
     fn get_input(&self, index: usize) -> Option<&Self::Input>;
 }
 
-impl <'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
+impl<'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
     where Self: GetInput<'execute, Op>
 {
     type Output = <Self as GetInput<'execute, Op>>::Input;
@@ -379,13 +381,31 @@ pub struct ChopInput {
     input: OP_CHOPInput,
 }
 
+impl ChopInput {
+    pub fn num_channels(&self) -> usize {
+        self.input.numChannels as usize
+    }
+
+    pub fn num_samples(&self) -> usize {
+        self.input.numSamples as usize
+    }
+
+    pub fn channel(&self, index: usize) -> &[f32] {
+        if index >= self.num_channels() {
+            panic!("index out of bounds");
+        }
+
+        unsafe { std::slice::from_raw_parts(*self.input.channelData.offset(index as isize), self.input.numSamples as usize) }
+    }
+}
+
 #[derive(Default, Clone)]
 pub struct ChopParam {
     input: Option<*const OP_CHOPInput>,
 }
 
 impl ChopParam {
-    fn input(&self) -> Option<&ChopInput> {
+    pub fn input(&self) -> Option<&ChopInput> {
         if let Some(input) = self.input {
             Some(unsafe { ChopInput::ref_cast(&*input) })
         } else {
@@ -409,20 +429,6 @@ impl<'execute> GetInput<'execute, ChopInput> for OperatorInputs<'execute, ChopIn
     }
 }
 
-impl ChopInput {
-    pub fn num_channels(&self) -> usize {
-        self.input.numChannels as usize
-    }
-
-    pub fn channel(&self, index: usize) -> &[f32] {
-        if index >= self.num_channels() {
-            panic!("index out of bounds");
-        }
-
-        unsafe { std::slice::from_raw_parts(*self.input.channelData.offset(index as isize), self.input.numSamples as usize) }
-    }
-}
-
 impl Index<usize> for ChopInput {
     type Output = [f32];
 
@@ -435,6 +441,68 @@ impl Index<usize> for ChopInput {
 #[derive(RefCast)]
 pub struct SopInput {
     input: OP_SOPInput,
+}
+
+impl SopInput {
+    pub fn point_positions(&self) -> &[Position] {
+        let num_points = self.num_points();
+        unsafe {
+            std::slice::from_raw_parts(Position::ref_cast(&*self.input.getPointPositions()), num_points)
+        }
+    }
+
+    pub fn num_points(&self) -> usize {
+        self.input.getNumPoints() as usize
+    }
+
+    pub fn has_normals(&self) -> bool {
+        self.input.hasNormals()
+    }
+
+    pub fn normals(&self) -> &[Vec3] {
+        unsafe {
+            let normals = self.input.getNormals();
+            let num_normals = (*normals).numNormals;
+            let normals = (*normals).normals;
+
+            std::slice::from_raw_parts(Vec3::ref_cast(&*normals), num_normals as usize)
+        }
+    }
+
+    pub fn has_colors(&self) -> bool {
+        self.input.hasColors()
+    }
+
+    pub fn colors(&self) -> &[Color] {
+        unsafe {
+            let colors = self.input.getColors();
+            let num_colors = (*colors).numColors;
+            let colors = (*colors).colors;
+
+            std::slice::from_raw_parts(Color::ref_cast(&*colors), num_colors as usize)
+        }
+    }
+
+    pub fn textures(&self) -> (&[TexCoord], usize) {
+        unsafe {
+            let textures = self.input.getTextures();
+            let num_textures = (*textures).numTextureLayers;
+            let textures = (*textures).textures;
+            let textures = std::slice::from_raw_parts(TexCoord::ref_cast(&*textures), num_textures as usize);
+            (textures, num_textures as usize)
+        }
+    }
+
+    pub fn num_custom_attributes(&self) -> usize {
+        self.input.getNumCustomAttributes() as usize
+    }
+
+    // pub fn custom_attribute(&self, index: usize) -> &[f32] {
+    //     unsafe {
+    //         let custom_attribute = self.input.getCustomAttribute(index as i32);
+    //         std::slice::from_raw_parts(custom_attribute, self.num_points())
+    //     }
+    // }
 }
 
 impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInput> {
@@ -452,9 +520,52 @@ impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInpu
     }
 }
 
-impl SopInput {
+#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
+#[repr(transparent)]
+pub struct Vec3(cxx::Vector);
 
+impl Vec3 {
+    pub fn zero() -> Self {
+        Self(cxx::Vector {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0,
+        })
+    }
 }
+
+impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
+    Vec3(cxx::Vector {
+        x: a.x + b.x,
+        y: a.y + b.y,
+        z: a.z + b.z,
+    })
+});
+
+
+#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
+#[repr(transparent)]
+pub struct Position(cxx::Position);
+
+impl_op_ex!(+ |a: &Position, b: &Vec3| -> Position {
+    Position(cxx::Position {
+        x: a.x + b.x,
+        y: a.y + b.y,
+        z: a.z + b.z,
+    })
+});
+
+#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
+#[repr(transparent)]
+pub struct Color(cxx::Color);
+
+#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
+#[repr(transparent)]
+pub struct TexCoord(cxx::TexCoord);
+
+#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
+#[repr(transparent)]
+pub struct BoundingBox(cxx::BoundingBox);
 
 /// Trait for defining operator parameters.
 pub trait OperatorParams {

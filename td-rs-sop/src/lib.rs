@@ -1,8 +1,10 @@
-use std::ops::{Index, IndexMut};
-use std::pin::Pin;
+use std::ops::{Deref, Index, IndexMut};
+use std::pin::{Pin, pin};
 use std::sync::Arc;
 use autocxx::prelude::*;
+use ref_cast::RefCast;
 pub use td_rs_base::*;
+use crate::cxx::Vector;
 
 pub mod cxx;
 
@@ -49,6 +51,33 @@ impl<'execute> SopOutput<'execute> {
     pub fn new(output: Pin<&'execute mut cxx::SOP_Output>) -> SopOutput<'execute> {
         Self { output }
     }
+
+    pub fn add_point(&mut self, pos: &Position) -> usize {
+        self.output.as_mut().addPoint(pos) as usize
+    }
+
+    pub fn num_points(&mut self) -> usize {
+        self.output.as_mut().getNumPoints() as usize
+    }
+
+    pub fn set_normals(&mut self, normals: &[Vec3], start_idx: usize) {
+        unsafe {
+            self.output.as_mut().setNormals(normals.as_ptr() as *const Vector, normals.len() as i32, start_idx as i32);
+        }
+    }
+
+    pub fn set_colors(&mut self, colors: &[Color], start_idx: usize) {
+        unsafe {
+            self.output.as_mut().setColors(colors.as_ptr() as *const cxx::Color, colors.len() as i32, start_idx as i32);
+        }
+    }
+
+    pub fn set_textures(&mut self, textures: &[TexCoord], num_layers: usize, start_idx: usize) {
+        unsafe {
+            self.output.as_mut().setTexCoords(textures.as_ptr() as *const cxx::TexCoord, textures.len() as i32, num_layers as i32, start_idx as i32);
+        }
+    }
+
 }
 
 pub struct SopVboOutput<'execute> {
@@ -63,8 +92,9 @@ impl<'execute> SopVboOutput<'execute> {
     }
 }
 
+
 /// Trait for defining a custom operator.
-pub trait Sop : Op {
+pub trait Sop: Op {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }

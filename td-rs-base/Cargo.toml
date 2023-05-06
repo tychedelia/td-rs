@@ -12,6 +12,8 @@ autocxx = { path = "../../../google/autocxx" }
 cxx = "1.0.78"
 rgb = "0.8.36"
 ref-cast = "1.0"
+auto_ops = "0.3.0"
+derive_more = "0.99"
 
 [build-dependencies]
 autocxx-build = { path = "../../../google/autocxx/gen/build" }

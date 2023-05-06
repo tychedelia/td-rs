@@ -14,6 +14,14 @@ include_cpp! {
     generate!("OP_Inputs")
     generate_pod!("OP_InfoDATSize")
     generate_pod!("OP_InfoCHOPChan")
+    generate_pod!("Vector")
+    generate_pod!("Position")
+    generate_pod!("Color")
+    generate_pod!("TexCoord")
+    generate_pod!("BoundingBox")
+    generate_pod!("SOP_NormalInfo")
+    generate_pod!("SOP_ColorInfo")
+    generate_pod!("SOP_TextureInfo")
 
     // util fns
     generate!("setString")
