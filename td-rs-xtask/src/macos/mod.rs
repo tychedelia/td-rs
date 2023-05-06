@@ -36,8 +36,8 @@ pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Res
 }
 
 fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    // fs_extra::dir::remove(&path.parent().unwrap())
-    //     .context("Could not remove xcode project directory")?;
+    fs_extra::dir::remove(&path.parent().unwrap())
+        .context("Could not remove xcode project directory")?;
     let plugin_build_path = format!("build/Release/{plugin}.plugin");
     let plugin_target_path = Path::new(PLUGIN_HOME).join(plugin);
     std::fs::create_dir_all(&plugin_target_path).context("Could not create plugin directory")?;
