@@ -275,5 +275,5 @@ fn chop_get_operator_info() -> OperatorInfo {
 }
 
 fn chop_new() -> Box<dyn Chop> {
-    Box::new( Lissajous::new())
+    Box::new(SinChop::new())
 }

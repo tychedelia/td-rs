@@ -52,6 +52,12 @@ public:
   String(const char16_t *);
   String(const char16_t *, std::size_t);
 
+  static String lossy(const std::string &) noexcept;
+  static String lossy(const char *) noexcept;
+  static String lossy(const char *, std::size_t) noexcept;
+  static String lossy(const char16_t *) noexcept;
+  static String lossy(const char16_t *, std::size_t) noexcept;
+
   String &operator=(const String &) &noexcept;
   String &operator=(String &&) &noexcept;
 
@@ -89,6 +95,9 @@ public:
   String(unsafe_bitcopy_t, const String &) noexcept;
 
 private:
+  struct lossy_t;
+  String(lossy_t, const char *, std::size_t) noexcept;
+  String(lossy_t, const char16_t *, std::size_t) noexcept;
   friend void swap(String &lhs, String &rhs) noexcept { lhs.swap(rhs); }
 
   std::array<std::uintptr_t, 3> repr;
@@ -429,6 +438,8 @@ public:
   void push_back(T &&value);
   template <typename... Args>
   void emplace_back(Args &&...args);
+  void truncate(std::size_t len);
+  void clear();
 
   using iterator = typename Slice<T>::iterator;
   iterator begin() noexcept;
@@ -581,6 +592,11 @@ void Vec<T>::emplace_back(Args &&...args) {
                                size * size_of<T>()))
       T(std::forward<Args>(args)...);
   this->set_len(size + 1);
+}
+
+template <typename T>
+void Vec<T>::clear() {
+  this->truncate(0);
 }
 
 template <typename T>
@@ -899,26 +915,26 @@ void dyn_chop_drop_in_place(::PtrBoxDynChop ptr) noexcept;
 
 void chop_on_reset(::BoxDynChop &chop) noexcept;
 
-::std::int32_t chop_get_num_info_chop_chans(const ::BoxDynChop &chop) noexcept;
+::std::int32_t chop_get_num_info_chop_chans(::BoxDynChop const &chop) noexcept;
 
-::ChopInfoChan chop_get_info_chop_chan(const ::BoxDynChop &chop, ::std::int32_t index) noexcept;
+::ChopInfoChan chop_get_info_chop_chan(::BoxDynChop const &chop, ::std::int32_t index) noexcept;
 
-bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, const ::ChopOperatorInputs &inputs) noexcept;
+bool chop_get_output_info(::BoxDynChop &chop, ::ChopOutputInfo &info, ::ChopOperatorInputs const &inputs) noexcept;
 
-::rust::String chop_get_channel_name(const ::BoxDynChop &chop, ::std::int32_t index, const ::ChopOperatorInputs &inputs) noexcept;
+::rust::String chop_get_channel_name(::BoxDynChop const &chop, ::std::int32_t index, ::ChopOperatorInputs const &inputs) noexcept;
 
-bool chop_get_info_dat_size(const ::BoxDynChop &chop, ::ChopInfoDatSize &size) noexcept;
+bool chop_get_info_dat_size(::BoxDynChop const &chop, ::ChopInfoDatSize &size) noexcept;
 
-void chop_get_info_dat_entries(const ::BoxDynChop &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept;
+void chop_get_info_dat_entries(::BoxDynChop const &chop, ::std::int32_t index, ::std::int32_t num_entries, ::ChopInfoDatEntries &entries) noexcept;
 
-void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, const ::ChopOperatorInputs &inputs) noexcept;
+void chop_execute(::BoxDynChop &chop, ::ChopOutput &output, ::ChopOperatorInputs const &inputs) noexcept;
 
-::ChopGeneralInfo chop_get_general_info(const ::BoxDynChop &chop) noexcept;
+::ChopGeneralInfo chop_get_general_info(::BoxDynChop const &chop) noexcept;
 
-::rust::String chop_get_info(const ::BoxDynChop &chop) noexcept;
+::rust::String chop_get_info(::BoxDynChop const &chop) noexcept;
 
-::rust::String chop_get_warning(const ::BoxDynChop &chop) noexcept;
+::rust::String chop_get_warning(::BoxDynChop const &chop) noexcept;
 
-::rust::String chop_get_error(const ::BoxDynChop &chop) noexcept;
+::rust::String chop_get_error(::BoxDynChop const &chop) noexcept;
 
 ::BoxDynChop chop_new() noexcept;
