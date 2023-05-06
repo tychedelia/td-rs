@@ -37,13 +37,6 @@ pub mod ffi {
     }
 
     #[derive(Debug, Default)]
-    pub struct PuleParameter {
-        pub name: String,
-        pub label: String,
-        pub page: String,
-    }
-
-    #[derive(Debug, Default)]
     pub struct StringParameter {
         pub name: String,
         pub label: String,
