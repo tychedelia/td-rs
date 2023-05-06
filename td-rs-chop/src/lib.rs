@@ -3,6 +3,7 @@ use std::pin::Pin;
 use std::sync::Arc;
 use autocxx::prelude::*;
 pub use td_rs_base::*;
+pub use td_rs_base::chop::*;
 
 pub mod cxx;
 

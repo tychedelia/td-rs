@@ -4,7 +4,9 @@ use std::sync::Arc;
 use autocxx::prelude::*;
 use ref_cast::RefCast;
 pub use td_rs_base::*;
-use crate::cxx::Vector;
+use crate::cxx::{SOP_CustomAttribData, Vector};
+pub use td_rs_base::param::OperatorParams;
+pub use td_rs_base::sop::*;
 
 pub mod cxx;
 
@@ -56,6 +58,24 @@ impl<'execute> SopOutput<'execute> {
         self.output.as_mut().addPoint(pos) as usize
     }
 
+    pub fn add_particle_system(&mut self, num_pts: usize, start_idx: usize) {
+        unsafe {
+            self.output.as_mut().addParticleSystem(num_pts as i32, start_idx as i32);
+        }
+    }
+
+    pub fn add_line(&mut self, indices: &[u32]) {
+        unsafe {
+            self.output.as_mut().addLine(indices.as_ptr() as *const i32, indices.len() as i32);
+        }
+    }
+
+    pub fn add_triangles(&mut self, indices: &[u32]) {
+        unsafe {
+            self.output.as_mut().addTriangles(indices.as_ptr() as *const i32, indices.len() as i32);
+        }
+    }
+
     pub fn num_points(&mut self) -> usize {
         self.output.as_mut().getNumPoints() as usize
     }
@@ -78,6 +98,12 @@ impl<'execute> SopOutput<'execute> {
         }
     }
 
+    pub fn set_custom_attribute(&mut self, attr: &CustomAttributeData, num_pts: usize) {
+        unsafe {
+            let attr: *const CustomAttributeData = attr;
+            self.output.as_mut().setCustomAttribute(attr as *const SOP_CustomAttribData, num_pts as i32);
+        }
+    }
 }
 
 pub struct SopVboOutput<'execute> {

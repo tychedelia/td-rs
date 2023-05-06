@@ -25,7 +25,7 @@ impl SinChop {
     }
 }
 
-impl ChopInfo for SinChop {
+impl OpInfo for SinChop {
     const OPERATOR_LABEL: &'static str = "Sin";
 }
 
@@ -36,7 +36,7 @@ impl Chop for SinChop {
         Some(Box::new(&mut self.params))
     }
 
-    fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs) {
+    fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         for chan_index in 0..output.num_channels() as usize {
             let phase = (2.0 * PI) / (chan_index as f64 + 1.0);
 
@@ -53,7 +53,7 @@ impl Chop for SinChop {
         self.execute_count += 1;
     }
 
-    fn general_info(&self, inputs: &OperatorInputs) -> ChopGeneralInfo {
+    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,
@@ -62,7 +62,7 @@ impl Chop for SinChop {
         }
     }
 
-    fn output_info(&self, inputs: &OperatorInputs) -> Option<ChopOutputInfo> {
+    fn output_info(&self, inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         Some(ChopOutputInfo {
             num_channels: 3,
             num_samples: 100,

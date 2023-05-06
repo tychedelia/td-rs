@@ -9,7 +9,7 @@ use syn::{
     parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
     NestedMeta,
 };
-use td_rs_base::ParamOptions;
+use td_rs_base::param::ParamOptions;
 
 #[proc_macro_derive(Params, attributes(param))]
 pub fn parameter_derive(input: TokenStream) -> TokenStream {

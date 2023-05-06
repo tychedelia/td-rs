@@ -133,7 +133,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.warning()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             warning.setString(new_string_ptr);
         }
@@ -141,7 +141,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getErrorString(&mut self, error: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.error()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             error.setString(new_string_ptr);
         }
@@ -149,7 +149,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getInfoPopupString(&mut self, info: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.info()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             info.setString(new_string_ptr);
         }

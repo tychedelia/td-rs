@@ -8,7 +8,7 @@ use std::rc::Rc;
 use cxx::let_cxx_string;
 use cxx::memory::UniquePtrTarget;
 use crate::{Sop, SopOutput, SopVboOutput};
-use td_rs_base::{OperatorInputs, ParameterManager};
+use td_rs_base::{OperatorInputs, param::{ParameterManager}};
 
 include_cpp! {
     #include "SOP_CPlusPlusBase.h"
@@ -70,6 +70,9 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
     fn execute(&mut self, outputs: Pin<&mut SOP_Output>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         let mut output = SopOutput::new(outputs);
+        if let Some(mut params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         self.inner.execute(&mut output, &input);
     }
 
@@ -115,7 +118,7 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
 
     fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.warning()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             warning.setString(new_string_ptr);
         }
@@ -123,7 +126,7 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
 
     fn getErrorString(&mut self, error: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.error()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             error.setString(new_string_ptr);
         }
@@ -131,7 +134,7 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
 
     fn getInfoPopupString(&mut self, info: Pin<&mut OP_String>) {
         unsafe {
-            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string = CString::new(self.inner.info()).unwrap();
             let new_string_ptr = new_string.as_ptr();
             info.setString(new_string_ptr);
         }

@@ -22,9 +22,13 @@ include_cpp! {
     generate_pod!("SOP_NormalInfo")
     generate_pod!("SOP_ColorInfo")
     generate_pod!("SOP_TextureInfo")
+    generate_pod!("SOP_CustomAttribData")
+    generate_pod!("SOP_PrimitiveInfo")
 
     // util fns
     generate!("setString")
+    generate!("getPrimitiveInfo")
+    generate_pod!("RS_PrimitiveInfo")
 }
 
 pub use ffi::*;

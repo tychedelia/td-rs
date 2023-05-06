@@ -983,7 +983,8 @@ public:
 								float &hitU, float &hitV, int &hitPrimitiveIndex) = 0;
 
 	// Returns the SOP_PrimitiveInfo with primIndex
-	const SOP_PrimitiveInfo
+    // TODO: This should be const
+	SOP_PrimitiveInfo
 	getPrimitive(int32_t primIndex) const
 	{
 		return myPrimsInfo[primIndex];
