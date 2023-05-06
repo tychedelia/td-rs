@@ -7,6 +7,7 @@ use std::ops::{Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::process::Output;
+use std::rc::Rc;
 use autocxx::cxx::UniquePtr;
 use crate::cxx::OP_CHOPInput;
 use crate::cxx::OP_SOPInput;
@@ -343,6 +344,17 @@ impl<'execute> ParamInputs<'execute> {
             self.inputs.enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
         }
     }
+
+    fn get_chop(&self, name: &str) -> ChopParam {
+        unsafe {
+            let chop = self.inputs.getParCHOP(ffi::CString::new(name).unwrap().into_raw());
+            if chop.is_null() {
+                ChopParam { input: None }
+            } else {
+                ChopParam { input: Some(chop) }
+            }
+        }
+    }
 }
 
 pub trait GetInput<'execute, Op> : Index<usize, Output=Self::Input> {
@@ -365,6 +377,21 @@ impl <'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
 #[derive(RefCast)]
 pub struct ChopInput {
     input: OP_CHOPInput,
+}
+
+#[derive(Default, Clone)]
+pub struct ChopParam {
+    input: Option<*const OP_CHOPInput>,
+}
+
+impl ChopParam {
+    fn input(&self) -> Option<&ChopInput> {
+        if let Some(input) = self.input {
+            Some(unsafe { ChopInput::ref_cast(&*input) })
+        } else {
+            None
+        }
+    }
 }
 
 impl<'execute> GetInput<'execute, ChopInput> for OperatorInputs<'execute, ChopInput> {
@@ -704,5 +731,16 @@ impl Param for bool {
 
     fn update(&mut self, name: &str, inputs: &ParamInputs) {
         *self = inputs.get_toggle(name);
+    }
+}
+
+impl Param for ChopParam {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param: StringParameter = options.into();
+        parameter_manager.append_chop(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_chop(name);
     }
 }

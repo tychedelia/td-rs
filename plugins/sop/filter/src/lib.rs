@@ -6,14 +6,7 @@ use td_rs_derive::Params;
 
 #[derive(Params, Default, Clone)]
 struct FilterSopParams {
-    #[param(label = "Apply Scale", page = "Filter")]
-    apply_scale: bool,
-    #[param(label = "Scale", page = "Filter", min = -10.0, max = 10.0)]
-    scale: f32,
-    #[param(label = "Apply Offset", page = "Filter")]
-    apply_offset: bool,
-    #[param(label = "Offset", page = "Filter", min = -10.0, max = 10.0)]
-    offset: f32,
+    translate: ChopParam
 }
 
 /// Struct representing our SOP's state
@@ -25,12 +18,7 @@ pub struct FilterSop {
 impl FilterSop {
     pub(crate) fn new() -> Self {
         Self {
-            params: FilterSopParams {
-                apply_scale: true,
-                scale: 1.0,
-                apply_offset: false,
-                offset: 0.0,
-            }
+            params: Default::default(),
         }
     }
 }
@@ -49,12 +37,13 @@ impl Sop for FilterSop {
         Some(Box::new(&mut self.params))
     }
 
-    fn execute(&mut self, output: &mut SopOutput, inputs: &OperatorInputs) {
+    fn execute(&mut self, output: &mut SopOutput, inputs: &OperatorInputs<SopInput>) {
         if let Some(input) = inputs.get_input(0) {
+
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs) -> SopGeneralInfo {
+    fn general_info(&self, inputs: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,

@@ -20,6 +20,7 @@ include_cpp! {
     extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
     extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
     generate_pod!("SOP_GeneralInfo")
+    generate_pod!("SOP_PluginInfo")
     generate!("SOP_Output")
     generate!("SOP_VBOOutput")
 }

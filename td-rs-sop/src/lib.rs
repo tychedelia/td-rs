@@ -69,15 +69,15 @@ pub trait Sop : Op {
         None
     }
 
-    fn general_info(&self, input: &OperatorInputs) -> SopGeneralInfo {
+    fn general_info(&self, input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: &mut SopOutput, input: &OperatorInputs) {
+    fn execute(&mut self, output: &mut SopOutput, input: &OperatorInputs<SopInput>) {
         // Do nothing by default.
     }
 
-    fn execute_vbo(&mut self, output: &mut SopVboOutput, input: &OperatorInputs) {
+    fn execute_vbo(&mut self, output: &mut SopVboOutput, input: &OperatorInputs<SopInput>) {
         // Do nothing by default.
     }
 }

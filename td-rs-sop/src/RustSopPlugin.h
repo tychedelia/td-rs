@@ -34,7 +34,9 @@ public:
         return this->getNumInfoCHOPChans();
     }
 
-    virtual int32_t getNumInfoCHOPChans() {}
+    virtual int32_t getNumInfoCHOPChans() {
+        return 0;
+    }
 
     void getInfoCHOPChan(int32_t index, OP_InfoCHOPChan *chan, void *reserved1) override {
         OP_String *name = chan->name;
@@ -51,7 +53,9 @@ public:
         return this->getInfoDATSize(*infoSize);
     }
 
-    virtual bool getInfoDATSize(OP_InfoDATSize &infoSize) {}
+    virtual bool getInfoDATSize(OP_InfoDATSize &infoSize) {
+        return false;
+    }
 
     void getInfoDATEntries(int32_t index, int32_t nEntries, OP_InfoDATEntries *entries, void *reserved1) override {
         for (int i = 0; i < nEntries; i++) {
