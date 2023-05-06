@@ -16,6 +16,9 @@ and provides a "normal" C++ class interface to the methods exposed by our trait.
 plugin class](./src/RustCHOP.cpp) which is ultimately instantiated by TouchDesigner holds 
 a reference to this wrapper.
 
+Plugins can be written by implementing the [`Chop`](./src/chop/mod.rs) trait and overriding
+trait methods as needed.
+
 A number of structs are implemented via `cxx` to map TouchDesigner data classes
 to structs that can be used by Rust. This currently introduces some performance overhead
 at the FFI boundary that could likely be reduced in the future by eliminating copies
