@@ -1,17 +1,18 @@
 use std::pin::Pin;
 
 pub struct OperatorInput<'execute> {
-    input: Pin<&'execute mut crate::cxx::ffi::OperatorInput>,
+    input: Pin<&'execute crate::cxx::ffi::OperatorInput>,
 }
 
 impl<'execute> OperatorInput<'execute> {
     pub fn new(
-        input: Pin<&'execute mut crate::cxx::ffi::OperatorInput>,
+        input: Pin<&'execute crate::cxx::ffi::OperatorInput>,
     ) -> OperatorInput<'execute> {
         Self { input }
     }
 
     pub fn get_float(&self, name: &str, index: usize) -> f64 {
+        println!("get_float: {} {}", name, index);
         self.input.getParDouble(name, index as i32)
     }
 

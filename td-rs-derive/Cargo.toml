@@ -7,10 +7,11 @@ edition = "2021"
 proc-macro = true
 
 [dependencies]
-td-rs-chop = { path = "../td-rs-chop" }
+td-rs-param = { path = "../td-rs-param" }
 syn = { version = "1.0", features = ["full"] }
 quote = "1.0"
 proc-macro2 = "1.0"
 
 [dev-dependencies]
 trybuild = "1.0"
+rgb = "0.8.36"

@@ -1,8 +1,9 @@
 #pragma once
-#include <CPlusPlus_Common.h>
+#include "../CPlusPlus_Common.h"
 #include <rust/cxx.h>
 
-// Forward declarations from cxx.rs.h
+namespace td_rs_param::ffi {
+
 struct NumericParameter;
 struct StringParameter;
 
@@ -73,3 +74,5 @@ private:
 
     OP_StringParameter mapString(StringParameter sp) const;
 };
+
+}

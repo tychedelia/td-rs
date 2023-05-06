@@ -1,5 +1,8 @@
 pub mod cxx;
 pub mod chop;
+pub use td_rs_param::{Param, ParameterManager, ParamOptions, OperatorInput, OperatorParams};
+pub use chop::*;
+
 
 #[macro_export]
 macro_rules! chop_plugin {
