@@ -36,9 +36,21 @@ possible.
 
 ## Build
 
+### `cargo-xtask` (WIP)
+
+Run `cargo xtask build` to build the project. This will build the Rust library and
+generate the C++ glue code, and then build the C++ plugin. The resulting plugin
+will be placed in `./target/` and can be loaded in TouchDesigner.
+
+```shell
+cargo xtask build sin
+```
+
+### Makefile
+
 Running the project may require some modification to the respective MSVC and Xcode projects.
 
-### Windows
+### Windows (Currently broken)
 
 #### Dependencies
 - MSVC toolchain.

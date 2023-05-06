@@ -13,7 +13,7 @@ const PLUGIN_HOME: &'static str = "target/plugin";
 pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     let path = pbxproj_path(plugin);
-    build(&[plugin.to_string()], &["--release".to_string(), format!("--target={target}")])?;
+    build(&[plugin.to_string(), "td-rs-chop".to_string()], &["--release".to_string(), format!("--target={target}")])?;
     write_xcodeproj(&target, &plugin, &path)?;
     build_xcode(&plugin)?;
     move_plugin(plugin, &path)?;
@@ -21,12 +21,14 @@ pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
 }
 
 fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    // fs_extra::dir::remove(&path.parent().unwrap())
-    //     .context("Could not remove xcode project directory")?;
+    fs_extra::dir::remove(&path.parent().unwrap())
+        .context("Could not remove xcode project directory")?;
     let plugin_build_path = format!("build/Release/{XCODE_TARGET}.plugin");
     let plugin_target_path = Path::new(PLUGIN_HOME).join(plugin);
     std::fs::create_dir_all(&plugin_target_path)
         .context("Could not create plugin directory")?;
+    fs_extra::dir::remove(&plugin_target_path.join(format!("{XCODE_TARGET}.plugin")))
+        .context("Could not remove plugin directory")?;
     fs_extra::dir::move_dir(&plugin_build_path, &plugin_target_path, &CopyOptions::new())
         .context("Could not move plugin to target directory")?;
     Ok(())
