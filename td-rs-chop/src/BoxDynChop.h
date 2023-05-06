@@ -1,4 +1,5 @@
 #pragma once
+#include "ChopOutput.h"
 #include <array>
 #include <cstdint>
 #include <type_traits>
@@ -8,7 +9,6 @@
 struct ChopParams;
 struct ChopOperatorInputs;
 struct ChopOutputInfo;
-struct ChopOutput;
 struct OperatorInfo;
 struct ChopInfoChan;
 struct ChopInfoDatSize;

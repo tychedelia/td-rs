@@ -14,6 +14,7 @@
 
 #include "RustCHOP.h"
 #include "BoxDynChop.h"
+#include "ChopOutput.h"
 #include <td-rs-chop/src/cxx.rs.h>
 #include <rust/cxx.h>
 #include <stdio.h>
@@ -111,42 +112,8 @@ RustCHOP::execute(CHOP_Output *output,
                   const OP_Inputs *inputs,
                   void *reserved) {
     ChopOperatorInputs ins;
-    ins.inputs = rust::Vec<ChopOperatorInput>();
-    for (int i = 0; i < inputs->getNumInputs(); i++) {
-        auto cinput = inputs->getInputCHOP(i);
-        auto in = mapInput(cinput);
-        ins.inputs.push_back(in);
-    }
-    ins.params = rust::Vec<ParamValue>();
-    for (auto param: chop->getParams().numeric_params) {
-        ParamValue val;
-        val.name = param.name;
-        val.double_value = inputs->getParDouble(param.name.c_str());
-        ins.params.push_back(val);
-    }
-
-    for (auto param: chop->getParams().string_params) {
-        ParamValue val;
-        val.name = param.name;
-        val.str_value = rust::String(inputs->getParString(param.name.c_str()));
-        ins.params.push_back(val);
-    }
-
-
-    ChopOutput out;
-    out.channels = rust::Vec<ChopChannel>();
-    out.num_channels = output->numChannels;
-    out.num_samples = output->numSamples;
-    out.sample_rate = output->sampleRate;
-    for (auto i = 0; i < out.num_channels; i++) {
-        ChopChannel c;
-        out.channels.push_back(c);
-    }
-    chop->execute(&out, &ins);
-    for (auto i = 0; i < out.channels.size(); i++) {
-        auto c = out.channels[i];
-        std::copy(std::begin(c.data), std::end(c.data), output->channels[i]);
-    }
+    auto out = new ChopOutput(output);
+    chop->execute(out, &ins);
 }
 
 int32_t
