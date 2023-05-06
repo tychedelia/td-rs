@@ -1,10 +1,10 @@
-use std::fmt::format;
-use std::path::{Path, PathBuf};
-use std::process::Command;
+use crate::build;
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use plist::Value;
-use crate::build;
+use std::fmt::format;
+use std::path::{Path, PathBuf};
+use std::process::Command;
 
 const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
 const XCODE_TARGET: &'static str = "RustCHOP";
@@ -13,7 +13,10 @@ const PLUGIN_HOME: &'static str = "target/plugin";
 pub(crate) fn build_plugin(plugin: &str) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     let path = pbxproj_path(plugin);
-    build(&[plugin.to_string(), "td-rs-chop".to_string()], &["--release".to_string(), format!("--target={target}")])?;
+    build(
+        &[plugin.to_string(), "td-rs-chop".to_string()],
+        &["--release".to_string(), format!("--target={target}")],
+    )?;
     write_xcodeproj(&target, &plugin, &path)?;
     build_xcode(&plugin)?;
     move_plugin(plugin, &path)?;
@@ -25,8 +28,7 @@ fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
     //     .context("Could not remove xcode project directory")?;
     let plugin_build_path = format!("build/Release/{XCODE_TARGET}.plugin");
     let plugin_target_path = Path::new(PLUGIN_HOME).join(plugin);
-    std::fs::create_dir_all(&plugin_target_path)
-        .context("Could not create plugin directory")?;
+    std::fs::create_dir_all(&plugin_target_path).context("Could not create plugin directory")?;
     fs_extra::dir::remove(&plugin_target_path.join(format!("{XCODE_TARGET}.plugin")))
         .context("Could not remove plugin directory")?;
     fs_extra::dir::move_dir(&plugin_build_path, &plugin_target_path, &CopyOptions::new())
@@ -59,8 +61,14 @@ fn write_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Result
     let mut p = project.as_dictionary_mut().unwrap();
     let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
     let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
-    lib.insert("name".to_string(), Value::String(format!("lib{}.a", plugin)));
-    lib.insert("path".to_string(), Value::String(format!("target/{target}/release/lib{plugin}.a")));
+    lib.insert(
+        "name".to_string(),
+        Value::String(format!("lib{}.a", plugin)),
+    );
+    lib.insert(
+        "path".to_string(),
+        Value::String(format!("target/{target}/release/lib{plugin}.a")),
+    );
 
     project.to_file_xml(path)?;
     Ok(())

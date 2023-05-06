@@ -1,5 +1,5 @@
-use std::pin::Pin;
 use crate::cxx::ffi::{NumericParameter, StringParameter};
+use std::pin::Pin;
 
 pub struct ParameterManager<'execute> {
     manager: Pin<&'execute mut crate::cxx::ffi::ParameterManager>,

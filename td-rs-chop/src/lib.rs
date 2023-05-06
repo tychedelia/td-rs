@@ -1,8 +1,7 @@
-pub mod cxx;
 pub mod chop;
-pub use td_rs_base::{Param, ParameterManager, ParamOptions, OperatorInput, OperatorParams};
+pub mod cxx;
 pub use chop::*;
-
+pub use td_rs_base::{OperatorInput, OperatorParams, Param, ParamOptions, ParameterManager};
 
 #[macro_export]
 macro_rules! chop_plugin {
@@ -30,5 +29,5 @@ macro_rules! chop_plugin {
         pub extern "C" fn chop_new_impl() -> Box<dyn Chop> {
             Box::new(<$plugin_ty>::new())
         }
-    }
+    };
 }

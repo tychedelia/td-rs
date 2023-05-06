@@ -5,9 +5,7 @@ pub struct OperatorInput<'execute> {
 }
 
 impl<'execute> OperatorInput<'execute> {
-    pub fn new(
-        input: Pin<&'execute crate::cxx::ffi::OperatorInput>,
-    ) -> OperatorInput<'execute> {
+    pub fn new(input: Pin<&'execute crate::cxx::ffi::OperatorInput>) -> OperatorInput<'execute> {
         Self { input }
     }
 

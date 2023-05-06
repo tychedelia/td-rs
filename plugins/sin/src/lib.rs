@@ -19,8 +19,9 @@ pub struct SinChop {
 /// Impl block providing default constructor for plugin
 impl SinChop {
     pub(crate) fn new() -> Self {
-        Self { execute_count: 0,
-            params: Default::default()
+        Self {
+            execute_count: 0,
+            params: Default::default(),
         }
     }
 }
@@ -48,7 +49,8 @@ impl Chop for SinChop {
 
             for index in 0..output.num_samples() {
                 let percent = (index as f64) / (output.num_samples() as f64);
-                let timestep = (self.execute_count as f64) / (output.sample_rate() as f64 * self.params.divisor);
+                let timestep = (self.execute_count as f64)
+                    / (output.sample_rate() as f64 * self.params.divisor);
                 let val = (phase * percent + timestep).sin();
 
                 output.channels_mut()[chan_index as usize][index as usize] = val as f32;
