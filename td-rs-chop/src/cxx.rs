@@ -1,254 +1,176 @@
-use crate::chop;
-use crate::chop::Chop;
-use crate::cxx::ffi::*;
-use cxx::ExternType;
+use std::cell::RefCell;
+use std::ffi::{c_void, CString};
+use std::ops::DerefMut;
+use autocxx::prelude::*;
+use autocxx::subclass::*;
 use std::pin::Pin;
-use td_rs_base::cxx::ffi::OperatorInput;
-use td_rs_base::cxx::ffi::ParameterManager;
+use std::rc::Rc;
+use cxx::let_cxx_string;
+use cxx::memory::UniquePtrTarget;
+use crate::{Chop, ChopOutput, OperatorInfo};
+use td_rs_base::{OperatorInput, ParameterManager};
 
-unsafe impl ExternType for Box<dyn Chop> {
-    type Id = cxx::type_id!("BoxDynChop");
-    type Kind = cxx::kind::Trivial;
+include_cpp! {
+    #include "CHOP_CPlusPlusBase.h"
+    #include "RustChopPlugin.h"
+    safety!(unsafe)
+    extern_cpp_type!("OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
+    extern_cpp_type!("OP_String", td_rs_base::cxx::OP_String)
+    extern_cpp_type!("OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
+    extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
+    extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
+    generate_pod!("CHOP_PluginInfo")
+    generate_pod!("CHOP_GeneralInfo")
+    generate_pod!("CHOP_OutputInfo")
+    generate_pod!("CHOP_Output")
+    generate!("setString")
 }
 
-#[repr(transparent)]
-pub struct PtrBoxDynChop(*mut Box<dyn Chop>);
-
-unsafe impl ExternType for PtrBoxDynChop {
-    type Id = cxx::type_id!("PtrBoxDynChop");
-    type Kind = cxx::kind::Trivial;
-}
-
-#[cxx::bridge]
-pub mod ffi {
-
-    #[derive(Debug, Default)]
-    pub struct OperatorInfo {
-        pub operator_type: String,
-        pub operator_label: String,
-        pub operator_icon: String,
-        pub min_inputs: i32,
-        pub max_inputs: i32,
-        pub author_name: String,
-        pub author_email: String,
-        pub major_version: i32,
-        pub minor_version: i32,
-        pub python_version: String,
-        pub cook_on_start: bool,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopOutputInfo {
-        pub num_channels: u32,
-        pub num_samples: u32,
-        pub sample_rate: f64,
-        pub start_index: usize,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopInfoChan {
-        name: String,
-        value: f32,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopInfoDatSize {
-        rows: i32,
-        columns: i32,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopInfoDatEntries {
-        values: Vec<String>,
-    }
-
-    #[derive(Debug, Default)]
-    pub struct ChopGeneralInfo {
-        pub cook_every_frame: bool,
-        pub cook_every_frame_if_asked: bool,
-        pub timeslice: bool,
-        pub input_match_index: i32,
-    }
-
-    #[namespace = "td_rs_base::ffi"]
-    extern "C++" {
-        include!("parameter_manager/ParameterManager.h");
-        type ParameterManager = td_rs_base::cxx::ffi::ParameterManager;
-    }
-
-    #[namespace = "td_rs_base::ffi"]
-    extern "C++" {
-        include!("operator_input/OperatorInput.h");
-        type OperatorInput = td_rs_base::cxx::ffi::OperatorInput;
-    }
-
-    extern "C++" {
-        include!("BoxDynChop.h");
-        type BoxDynChop = Box<dyn crate::chop::Chop>;
-        type PtrBoxDynChop = crate::cxx::PtrBoxDynChop;
-    }
-
-    unsafe extern "C++" {
-        include!("ChopOperatorInput.h");
-        pub(crate) type ChopOperatorInput;
-        pub fn getInput(&self, idx: usize) -> UniquePtr<ChopInput>;
-    }
-
-    unsafe extern "C++" {
-        include!("ChopInput.h");
-        pub(crate) type ChopInput;
-        pub fn getPath(&self) -> &str;
-        pub fn getId(&self) -> u32;
-        pub fn getNumChannels(&self) -> i32;
-        pub fn getNumSamples(&self) -> i32;
-        pub fn getSampleRate(&self) -> f64;
-        pub fn getStartIndex(&self) -> f64;
-        pub fn getChannelNames(&self) -> &[&str];
-        pub fn getChannels(&self) -> &[&[f32]];
-        pub fn getTotalCooks(&self) -> i64;
-    }
-
-    unsafe extern "C++" {
-        include!("ChopOutput.h");
-        pub(crate) type ChopOutput;
-        pub fn getNumChannels(&self) -> i32;
-        pub fn getNumSamples(&self) -> i32;
-        pub fn getSampleRate(&self) -> i32;
-        pub fn getStartIndex(&self) -> usize;
-        pub fn getChannelNames(&self) -> &[&str];
-        pub fn getChannels(self: Pin<&mut ChopOutput>) -> &mut [&mut [f32]];
-    }
-
-    extern "Rust" {
-        unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop);
-        fn chop_setup_params(chop: &mut BoxDynChop, manager: Pin<&mut ParameterManager>);
-        fn chop_on_reset(chop: &mut BoxDynChop);
-        fn chop_get_num_info_chop_chans(chop: &BoxDynChop) -> i32;
-        fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan;
-        fn chop_get_output_info(
-            chop: &mut BoxDynChop,
-            info: &mut ChopOutputInfo,
-            chop_input: Pin<&ChopOperatorInput>,
-        ) -> bool;
-        fn chop_get_channel_name(
-            chop: &BoxDynChop,
-            index: i32,
-            chop_input: Pin<&ChopOperatorInput>,
-        ) -> String;
-        fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool;
-        fn chop_get_info_dat_entries(
-            chop: &BoxDynChop,
-            index: i32,
-            num_entries: i32,
-            entries: &mut ChopInfoDatEntries,
-        );
-        fn chop_execute(
-            chop: &mut BoxDynChop,
-            output: Pin<&mut ChopOutput>,
-            input: Pin<&OperatorInput>,
-            chop_input: Pin<&ChopOperatorInput>,
-        );
-        fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo;
-        fn chop_get_info(chop: &BoxDynChop) -> String;
-        fn chop_get_warning(chop: &BoxDynChop) -> String;
-        fn chop_get_error(chop: &BoxDynChop) -> String;
-        fn chop_get_operator_info() -> OperatorInfo;
-        fn chop_new() -> BoxDynChop;
-    }
-}
-
-// FFI
-fn chop_setup_params(chop: &mut Box<dyn Chop>, manager: Pin<&mut ParameterManager>) {
-    let params = (**chop).get_params_mut();
-    if let Some(mut params) = params {
-        let mut mgr = td_rs_base::parameter_manager::ParameterManager::new(manager);
-        params.register(&mut mgr);
-    }
-}
-
-fn chop_on_reset(chop: &mut Box<dyn Chop>) {
-    (**chop).on_reset();
-}
-
-fn chop_get_num_info_chop_chans(chop: &BoxDynChop) -> i32 {
-    (**chop).get_num_info_chop_chans()
-}
-
-fn chop_get_info_chop_chan(chop: &BoxDynChop, index: i32) -> ChopInfoChan {
-    (**chop).get_info_chop_chan(index)
-}
-
-fn chop_get_output_info(
-    chop: &mut Box<dyn Chop>,
-    info: &mut ChopOutputInfo,
-    chop_input: Pin<&ChopOperatorInput>,
-) -> bool {
-    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
-    (**chop).get_output_info(info, &chop_input)
-}
-
-fn chop_get_channel_name(chop: &BoxDynChop, index: i32, chop_input: Pin<&ChopOperatorInput>) -> String {
-    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
-    (**chop).get_channel_name(index, &chop_input)
-}
-
-fn chop_get_info_dat_size(chop: &BoxDynChop, size: &mut ChopInfoDatSize) -> bool {
-    (**chop).get_info_dat_size(size)
-}
-
-fn chop_get_info_dat_entries(
-    chop: &BoxDynChop,
-    index: i32,
-    num_entries: i32,
-    entries: &mut ChopInfoDatEntries,
-) {
-    (**chop).get_info_dat_entries(index, num_entries, entries)
-}
-
-fn chop_execute(
-    chop: &mut Box<dyn Chop>,
-    output: Pin<&mut ChopOutput>,
-    input: Pin<&OperatorInput>,
-    chop_input: Pin<&ChopOperatorInput>,
-) {
-    let mut input = td_rs_base::operator_input::OperatorInput::new(input);
-    let params = (**chop).get_params_mut();
-    if let Some(mut params) = params {
-        params.update(&input);
-    }
-    let chop_input = crate::chop::ChopOperatorInput::new(chop_input);
-    (**chop).execute(&mut chop::ChopOutput::new(output), &chop_input);
-}
-
-fn chop_get_general_info(chop: &BoxDynChop) -> ChopGeneralInfo {
-    (**chop).get_general_info()
-}
-
-fn chop_get_info(chop: &BoxDynChop) -> String {
-    (**chop).get_info()
-}
-
-fn chop_get_warning(chop: &BoxDynChop) -> String {
-    (**chop).get_warning()
-}
-
-fn chop_get_error(chop: &BoxDynChop) -> String {
-    (**chop).get_error()
-}
-
-unsafe fn dyn_chop_drop_in_place(ptr: PtrBoxDynChop) {
-    std::ptr::drop_in_place(ptr.0);
-}
+pub use ffi::*;
 
 extern "C" {
-    fn chop_get_operator_info_impl() -> OperatorInfo;
     fn chop_new_impl() -> Box<dyn Chop>;
 }
 
-fn chop_get_operator_info() -> OperatorInfo {
-    unsafe { chop_get_operator_info_impl() }
+#[subclass(superclass("RustChopPlugin"))]
+pub struct RustChopPluginImpl {
+    inner: Box<dyn Chop>,
 }
 
-fn chop_new() -> Box<dyn Chop> {
-    unsafe { chop_new_impl() }
+impl Default for RustChopPluginImpl {
+    fn default() -> Self {
+        unsafe {
+            Self {
+                inner: chop_new_impl(),
+                cpp_peer: Default::default(),
+            }
+        }
+    }
+}
+
+// #[autocxx::extern_rust::extern_rust_function]
+// pub fn chop_get_plugin_info(chop_info: Pin<&mut OP_CustomOPInfo>) {
+//     unsafe {
+//         chop_get_plugin_info_impl(chop_info)
+//     }
+// }
+
+#[no_mangle]
+extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
+    RustChopPluginImpl::default_cpp_owned().into_raw()
+}
+
+impl RustChopPlugin_methods for RustChopPluginImpl {
+    fn getGeneralInfo(&mut self, mut info: Pin<&mut CHOP_GeneralInfo>, input: &OP_Inputs) {
+        let input = OperatorInput::new(input);
+        let gen_info = self.inner.general_info(&input);
+        info.cookEveryFrame = gen_info.cook_every_frame;
+        info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
+        info.timeslice = gen_info.timeslice;
+        info.inputMatchIndex = gen_info.input_match_index;
+    }
+
+    fn getOutputInfo(&mut self, mut info: Pin<&mut CHOP_OutputInfo>, input: &OP_Inputs) -> bool {
+        let input = OperatorInput::new(input);
+        let out_info = self.inner.output_info(&input);
+        if let Some(out_info) = out_info {
+            info.numChannels = out_info.num_channels as i32;
+            info.sampleRate = out_info.sample_rate;
+            info.numSamples = out_info.num_samples as i32;
+            info.startIndex = out_info.start_index as u32;
+            true
+        } else {
+            false
+        }
+    }
+
+    fn getChannelName(&mut self, index: i32, name: Pin<&mut OP_String>, input: &OP_Inputs) {
+        let input = OperatorInput::new(input);
+        let chan_name = self.inner.channel_name(index as usize, &input);
+        unsafe {
+            let new_string = CString::new(chan_name.as_str()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            name.setString(new_string_ptr);
+        }
+    }
+
+
+    fn execute(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
+        let input = OperatorInput::new(input);
+        let mut output = ChopOutput::new(output);
+        if let Some(mut params) = self.inner.params_mut() {
+            params.update(&input);
+        }
+        self.inner.execute(&mut output, &input);
+    }
+
+    fn getNumInfoCHOPChans(&mut self) -> i32 {
+        self.inner.num_info_chop_chans() as i32
+    }
+
+    fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
+        let (info_name, info_value) = self.inner.info_chop_chan(index as usize);
+        unsafe {
+            let new_string = CString::new(info_name.as_str()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            name.setString(new_string_ptr);
+        }
+        value.set(info_value);
+    }
+
+    fn getInfoDATSize(&mut self, mut info: Pin<&mut OP_InfoDATSize>) -> bool {
+        let (rows, cols) = self.inner.info_dat_size();
+        if rows == 0 && cols == 0 {
+            false
+        } else {
+            info.rows = rows as i32;
+            info.cols = cols as i32;
+            true
+        }
+    }
+
+    fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
+        let entry_str = self.inner.info_dat_entry(index as usize, entryIndex as usize);
+        unsafe {
+            let new_string = CString::new(entry_str.as_str()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            entry.setString(new_string_ptr);
+        }
+    }
+
+    fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
+        unsafe {
+            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            warning.setString(new_string_ptr);
+        }
+    }
+
+    fn getErrorString(&mut self, error: Pin<&mut OP_String>) {
+        unsafe {
+            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            error.setString(new_string_ptr);
+        }
+    }
+
+    fn getInfoPopupString(&mut self, info: Pin<&mut OP_String>) {
+        unsafe {
+            let new_string = CString::new(self.inner.warning_string()).unwrap();
+            let new_string_ptr = new_string.as_ptr();
+            info.setString(new_string_ptr);
+        }
+    }
+
+    fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
+        let params = self.inner.params_mut();
+        if let Some(mut params) = params {
+            let mut manager = ParameterManager::new(manager);
+            params.register(&mut manager);
+        }
+    }
+
+    unsafe fn pulsePressed(&mut self, name: *const std::ffi::c_char) {
+        self.inner.pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+    }
 }

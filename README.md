@@ -6,22 +6,11 @@ Experiments integrating Rust into TouchDesigner using `cxx`.
 
 This is a work in progress, and is not yet ready for production use. The current
 implementation is a proof of concept, and is not yet optimized for performance.
-Efforts have been made to ensure that reading and writing data to the operator
-buffers is efficient, but the implementation of the `Chop` trait involves a
-number of copies and allocations that could be avoided.
-
-Currently, only a limited API of the CHOP plugin type is implemented, with the 
-intention of adding support for other plugin types in the future.
 
 ## Structure
 
-Using `cxx` we generate a C++ interface or "bridge" to our Rust library, which is then compiled
-into a C++ plugin that can be loaded in TouchDesigner. 
-
-The derived C++ plugin is a thin wrapper around a reference to a trait object that implements the
-`Chop` trait. The C++ plugin class is responsible for calling the `Chop` trait methods via FFI, and
-marshalling the data back and forth between Rust and C++. Additional C++ classes are implemented to 
-wrap the TouchDesigner API, and provide a more ergonomic interface to the Rust library using `cxx` Rust types.
+Using `autocxx` we generate a C++ interface or "bridge" to our Rust library, which is then compiled
+into a C++ plugin that can be loaded in TouchDesigner.
 
 ## Features
 
