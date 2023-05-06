@@ -694,6 +694,7 @@ std::size_t align_of() {
 } // namespace rust
 
 struct NumericParameter;
+struct PuleParameter;
 struct StringParameter;
 struct OperatorInfo;
 struct ChopParams;
@@ -723,6 +724,17 @@ struct NumericParameter final {
   using IsRelocatable = ::std::true_type;
 };
 #endif // CXXBRIDGE1_STRUCT_NumericParameter
+
+#ifndef CXXBRIDGE1_STRUCT_PuleParameter
+#define CXXBRIDGE1_STRUCT_PuleParameter
+struct PuleParameter final {
+  ::rust::String name;
+  ::rust::String label;
+  ::rust::String page;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_PuleParameter
 
 #ifndef CXXBRIDGE1_STRUCT_StringParameter
 #define CXXBRIDGE1_STRUCT_StringParameter
@@ -760,6 +772,7 @@ struct OperatorInfo final {
 struct ChopParams final {
   ::rust::Vec<::NumericParameter> numeric_params;
   ::rust::Vec<::StringParameter> string_params;
+  ::rust::Vec<::PuleParameter> pulse_params;
 
   using IsRelocatable = ::std::true_type;
 };
@@ -805,6 +818,7 @@ struct ChopOutputInfo final {
   ::std::uint32_t num_channels;
   ::std::uint32_t num_samples;
   double sample_rate;
+  ::std::size_t start_index;
 
   using IsRelocatable = ::std::true_type;
 };

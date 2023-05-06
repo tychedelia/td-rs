@@ -37,6 +37,13 @@ mod ffi {
     }
 
     #[derive(Debug, Default)]
+    pub struct PuleParameter {
+        pub name: String,
+        pub label: String,
+        pub page: String,
+    }
+
+    #[derive(Debug, Default)]
     pub struct StringParameter {
         pub name: String,
         pub label: String,
@@ -63,6 +70,7 @@ mod ffi {
     pub struct ChopParams {
         pub numeric_params: Vec<NumericParameter>,
         pub string_params: Vec<StringParameter>,
+        pub pulse_params: Vec<PuleParameter>,
     }
 
     #[derive(Debug, Default)]
@@ -92,6 +100,7 @@ mod ffi {
         pub num_channels: u32,
         pub num_samples: u32,
         pub sample_rate: f64,
+        pub start_index: usize,
     }
 
     #[derive(Debug, Default)]

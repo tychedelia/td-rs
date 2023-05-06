@@ -757,6 +757,7 @@ union MaybeUninit {
 } // namespace rust
 
 struct NumericParameter;
+struct PuleParameter;
 struct StringParameter;
 struct OperatorInfo;
 struct ChopParams;
@@ -786,6 +787,17 @@ struct NumericParameter final {
   using IsRelocatable = ::std::true_type;
 };
 #endif // CXXBRIDGE1_STRUCT_NumericParameter
+
+#ifndef CXXBRIDGE1_STRUCT_PuleParameter
+#define CXXBRIDGE1_STRUCT_PuleParameter
+struct PuleParameter final {
+  ::rust::String name;
+  ::rust::String label;
+  ::rust::String page;
+
+  using IsRelocatable = ::std::true_type;
+};
+#endif // CXXBRIDGE1_STRUCT_PuleParameter
 
 #ifndef CXXBRIDGE1_STRUCT_StringParameter
 #define CXXBRIDGE1_STRUCT_StringParameter
@@ -823,6 +835,7 @@ struct OperatorInfo final {
 struct ChopParams final {
   ::rust::Vec<::NumericParameter> numeric_params;
   ::rust::Vec<::StringParameter> string_params;
+  ::rust::Vec<::PuleParameter> pulse_params;
 
   using IsRelocatable = ::std::true_type;
 };
@@ -868,6 +881,7 @@ struct ChopOutputInfo final {
   ::std::uint32_t num_channels;
   ::std::uint32_t num_samples;
   double sample_rate;
+  ::std::size_t start_index;
 
   using IsRelocatable = ::std::true_type;
 };
@@ -1047,6 +1061,14 @@ const ::StringParameter *cxxbridge1$rust_vec$StringParameter$data(const ::rust::
 void cxxbridge1$rust_vec$StringParameter$reserve_total(::rust::Vec<::StringParameter> *ptr, ::std::size_t new_cap) noexcept;
 void cxxbridge1$rust_vec$StringParameter$set_len(::rust::Vec<::StringParameter> *ptr, ::std::size_t len) noexcept;
 
+void cxxbridge1$rust_vec$PuleParameter$new(const ::rust::Vec<::PuleParameter> *ptr) noexcept;
+void cxxbridge1$rust_vec$PuleParameter$drop(::rust::Vec<::PuleParameter> *ptr) noexcept;
+::std::size_t cxxbridge1$rust_vec$PuleParameter$len(const ::rust::Vec<::PuleParameter> *ptr) noexcept;
+::std::size_t cxxbridge1$rust_vec$PuleParameter$capacity(const ::rust::Vec<::PuleParameter> *ptr) noexcept;
+const ::PuleParameter *cxxbridge1$rust_vec$PuleParameter$data(const ::rust::Vec<::PuleParameter> *ptr) noexcept;
+void cxxbridge1$rust_vec$PuleParameter$reserve_total(::rust::Vec<::PuleParameter> *ptr, ::std::size_t new_cap) noexcept;
+void cxxbridge1$rust_vec$PuleParameter$set_len(::rust::Vec<::PuleParameter> *ptr, ::std::size_t len) noexcept;
+
 void cxxbridge1$rust_vec$ChopOperatorInput$new(const ::rust::Vec<::ChopOperatorInput> *ptr) noexcept;
 void cxxbridge1$rust_vec$ChopOperatorInput$drop(::rust::Vec<::ChopOperatorInput> *ptr) noexcept;
 ::std::size_t cxxbridge1$rust_vec$ChopOperatorInput$len(const ::rust::Vec<::ChopOperatorInput> *ptr) noexcept;
@@ -1121,6 +1143,34 @@ void Vec<::StringParameter>::reserve_total(::std::size_t new_cap) noexcept {
 template <>
 void Vec<::StringParameter>::set_len(::std::size_t len) noexcept {
   return cxxbridge1$rust_vec$StringParameter$set_len(this, len);
+}
+template <>
+Vec<::PuleParameter>::Vec() noexcept {
+  cxxbridge1$rust_vec$PuleParameter$new(this);
+}
+template <>
+void Vec<::PuleParameter>::drop() noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$drop(this);
+}
+template <>
+::std::size_t Vec<::PuleParameter>::size() const noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$len(this);
+}
+template <>
+::std::size_t Vec<::PuleParameter>::capacity() const noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$capacity(this);
+}
+template <>
+const ::PuleParameter *Vec<::PuleParameter>::data() const noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$data(this);
+}
+template <>
+void Vec<::PuleParameter>::reserve_total(::std::size_t new_cap) noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$reserve_total(this, new_cap);
+}
+template <>
+void Vec<::PuleParameter>::set_len(::std::size_t len) noexcept {
+  return cxxbridge1$rust_vec$PuleParameter$set_len(this, len);
 }
 template <>
 Vec<::ChopOperatorInput>::Vec() noexcept {
