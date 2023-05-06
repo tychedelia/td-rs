@@ -150,6 +150,32 @@ pub mod ffi {
         pub(crate) type ParameterManager;
         pub fn appendFloat(&self, np: NumericParameter);
         pub fn appendPulse(&self, np: NumericParameter);
+        pub fn appendInt(&self, np: NumericParameter);
+        pub fn appendXY(&self, np: NumericParameter);
+        pub fn appendXYZ(&self, np: NumericParameter);
+        pub fn appendUV(&self, np: NumericParameter);
+        pub fn appendUVW(&self, np: NumericParameter);
+        pub fn appendRGB(&self, np: NumericParameter);
+        pub fn appendRGBA(&self, np: NumericParameter);
+        pub fn appendToggle(&self, np: NumericParameter);
+        pub fn appendString(&self, sp: StringParameter);
+        pub fn appendFile(&self, sp: StringParameter);
+        pub fn appendFolder(&self, sp: StringParameter);
+        pub fn appendDAT(&self, sp: StringParameter);
+        pub fn appendCHOP(&self, sp: StringParameter);
+        pub fn appendTOP(&self, sp: StringParameter);
+        pub fn appendObject(&self, sp: StringParameter);
+        pub fn appendMenu(&self, sp: StringParameter, names: &[&str], labels: &[&str]);
+        pub fn appendStringMenu(&self, sp: StringParameter, names: &[&str], labels: &[&str]);
+        pub fn appendSOP(&self, sp: StringParameter);
+        pub fn appendPython(&self, sp: StringParameter);
+        pub fn appendOP(&self, sp: StringParameter);
+        pub fn appendCOMP(&self, sp: StringParameter);
+        pub fn appendMAT(&self, sp: StringParameter);
+        pub fn appendPanelCOMP(&self, sp: StringParameter);
+        pub fn appendHeader(&self, sp: StringParameter);
+        pub fn appendMomentary(&self, np: NumericParameter);
+        pub fn appendWH(&self, np: NumericParameter);
     }
 
     extern "Rust" {
