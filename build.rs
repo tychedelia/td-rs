@@ -1,7 +1,7 @@
 fn main() {
     // build the bridge
     cxx_build::bridge("src/lib.rs")
-        .file("./src/BoxDynChop.h")
+        // .file("./src/BoxDynChop.h")
         .flag_if_supported("-std=c++11")
         .compile("td-rs");
 
