@@ -1,5 +1,5 @@
 #pragma once
-#include "CHOP_CPlusPlusBase.h"
+#include <CPlusPlus_Common.h>
 #include <rust/cxx.h>
 
 // Forward declarations from cxx.rs.h

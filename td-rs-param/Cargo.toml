@@ -3,9 +3,12 @@ name = "td-rs-param"
 version = "0.1.0"
 edition = "2021"
 
-[lib]
-name = "td_rs_param"
-path = "src/lib.rs"
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-td-rs-chop = { path = "../td-rs-chop" }
+libc = "*"
+cxx = "1"
+rgb = "0.8.36"
+
+[build-dependencies]
+cxx-build = "1"

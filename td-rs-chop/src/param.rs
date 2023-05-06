@@ -1,12 +1,7 @@
-pub mod parameter_manager;
-pub mod operator_input;
-pub mod cxx;
+use crate::chop::ParameterManager;
+use crate::cxx::ffi::{NumericParameter, OperatorInput, StringParameter};
 
-use crate::cxx::ffi::{NumericParameter, StringParameter};
-use crate::operator_input::OperatorInput;
-use crate::parameter_manager::ParameterManager;
-
-pub trait Params {
+pub trait ChopParams {
     fn register(&mut self, parameter_manager: &mut ParameterManager);
     fn update(&mut self, input: &OperatorInput);
 }
@@ -51,7 +46,7 @@ macro_rules! impl_param_int {
             }
 
             fn update(&mut self, name: &str, input: &OperatorInput) {
-                *self = input.get_int(name, 0) as $t;
+                *self = input.getParDouble(name, 0) as $t;
             }
         }
     }
@@ -78,7 +73,7 @@ macro_rules! impl_param_float {
             }
 
             fn update(&mut self, name: &str, input: &OperatorInput) {
-                *self = input.get_float(name, 0) as $t;
+                *self = input.getParDouble(name, 0) as $t;
             }
         }
     }
@@ -93,7 +88,7 @@ impl Param for String {
     }
 
     fn update(&mut self, name: &str, input: &OperatorInput) {
-        *self = input.get_string(name).to_string();
+        *self = input.getParString(name).to_string();
     }
 }
 
