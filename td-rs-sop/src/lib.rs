@@ -17,32 +17,6 @@ pub struct SopGeneralInfo {
     pub direct_to_gpu: bool,
 }
 
-/// Trait for defining metadata for a sop operator.
-pub trait SopInfo {
-    /// The type of the operator.
-    const OPERATOR_TYPE: &'static str = "";
-    /// The label of the operator.
-    const OPERATOR_LABEL: &'static str = "";
-    /// The icon of the operator.
-    const OPERATOR_ICON: &'static str = "";
-    /// The minimum number of inputs the operator accepts.
-    const MIN_INPUTS: usize = 0;
-    /// The maximum number of inputs the operator accepts.
-    const MAX_INPUTS: usize = 0;
-    /// The author name of the operator.
-    const AUTHOR_NAME: &'static str = "";
-    /// The author email of the operator.
-    const AUTHOR_EMAIL: &'static str = "";
-    /// The major version of the operator.
-    const MAJOR_VERSION: i32 = 0;
-    /// The minor version of the operator.
-    const MINOR_VERSION: i32 = 0;
-    /// The python version of the operator.
-    const PYTHON_VERSION: &'static str = "";
-    /// Whether to cook on start.
-    const COOK_ON_START: bool = false;
-}
-
 pub struct SopOutput<'execute> {
     output: Pin<&'execute mut cxx::SOP_Output>,
 }

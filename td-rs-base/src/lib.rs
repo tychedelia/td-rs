@@ -4,6 +4,7 @@ pub mod cxx;
 pub mod chop;
 pub mod param;
 pub mod sop;
+pub mod dat;
 
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
@@ -19,8 +20,7 @@ use auto_ops::*;
 use derive_more::{Deref, DerefMut, AsRef, From, Into};
 use std::cell::OnceCell;
 use crate::param::{ChopParam};
-
-pub use param::{OperatorParams, ParameterManager, Param, ParamOptions};
+pub use param::*;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -156,17 +156,17 @@ impl<'execute> ParamInputs<'execute> {
     }
 
     /// Get a float parameter.
-    fn get_float(&self, name: &str, index: usize) -> f64 {
+    pub fn get_float(&self, name: &str, index: usize) -> f64 {
         unsafe { self.inputs.getParDouble(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
     }
 
     /// Get an integer parameter.
-    fn get_int(&self, name: &str, index: usize) -> i32 {
+    pub fn get_int(&self, name: &str, index: usize) -> i32 {
         unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
     }
 
     /// Get a string parameter.
-    fn get_string(&self, name: &str) -> &str {
+    pub fn get_string(&self, name: &str) -> &str {
         unsafe {
             let res = self.inputs.getParString(ffi::CString::new(name).unwrap().into_raw());
             ffi::CStr::from_ptr(res).to_str().unwrap()
@@ -174,7 +174,7 @@ impl<'execute> ParamInputs<'execute> {
     }
 
     /// Get a toggle parameter.
-    fn get_toggle(&self, name: &str) -> bool {
+    pub fn get_toggle(&self, name: &str) -> bool {
         unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), 0) != 0 }
     }
 

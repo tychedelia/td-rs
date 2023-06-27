@@ -19,13 +19,14 @@ crate-type = ["staticlib"]
 members = [
     "td-rs-base",
     "td-rs-chop",
+    "td-rs-dat",
     "td-rs-derive",
     "td-rs-sop",
     "td-rs-xtask",
     "xtask",
     "plugins/chop/filter",
+    "plugins/chop/euro-filter",
     "plugins/chop/generator",
-    "plugins/chop/lissa",
-    "plugins/chop/sin",
+    "plugins/dat/filter",
     "plugins/sop/filter"
 ]

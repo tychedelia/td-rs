@@ -1,0 +1,15 @@
+[package]
+name = "filter-dat"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "dat"
+
+[lib]
+name = "filter_dat"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-dat = { path = "../../../td-rs-dat" }
+td-rs-derive = { path = "../../../td-rs-derive" }

@@ -5,19 +5,113 @@ use proc_macro2::TokenStream as TokenStream2;
 
 use quote::{quote, ToTokens};
 use syn::spanned::Spanned;
-use syn::{
-    parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
-    NestedMeta,
-};
+use syn::{parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue, NestedMeta, Type, Variant};
 use td_rs_base::param::ParamOptions;
 
-#[proc_macro_derive(Params, attributes(param))]
-pub fn parameter_derive(input: TokenStream) -> TokenStream {
+#[proc_macro_derive(Param)]
+pub fn derive_param(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    impl_parameter(&input)
+
+    let enum_ident = input.ident;
+    let enum_data = if let Data::Enum(data) = input.data {
+        data
+    } else {
+        panic!("`Param` can only be derived for enums");
+    };
+
+    let variant_names = enum_data
+        .variants
+        .iter()
+        .map(|variant| variant.ident.to_string())
+        .collect::<Vec<String>>();
+
+    let variant_labels = variant_names
+        .iter()
+        .map(|name| camel_case_to_words(name))
+        .collect::<Vec<String>>();
+
+    let variants = enum_data.variants.into_iter().collect::<Vec<Variant>>();
+    let try_from_i32_match_arms = try_from_i32_match_arms(&variants);
+
+    let output = quote! {
+        impl MenuParam for #enum_ident {
+            fn names() -> Vec<String> {
+                vec![
+                    #(String::from(#variant_names)),*
+                ]
+            }
+
+            fn labels() -> Vec<String> {
+                vec![
+                    #(String::from(#variant_labels)),*
+                ]
+            }
+        }
+
+        impl std::convert::TryFrom<i32> for #enum_ident {
+            type Error = String;
+
+            fn try_from(value: i32) -> Result<Self, Self::Error> {
+                match value {
+                    #try_from_i32_match_arms
+                    _ => Err(format!("Invalid value for {}: {}", stringify!(#enum_ident), value)),
+                }
+            }
+        }
+
+        impl Param for #enum_ident {
+            fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+                let param: StringParameter = options.into();
+                let names = #enum_ident::names();
+                let labels = #enum_ident::labels();
+                parameter_manager.append_menu(param, &names, &labels);
+            }
+
+            fn update(&mut self, name: &str, inputs: &ParamInputs) {
+                let idx = inputs.get_int(name, 0);
+                let value = #enum_ident::try_from(idx).unwrap();
+                *self = value;
+            }
+        }
+    };
+
+    output.into()
 }
 
-fn impl_parameter(input: &DeriveInput) -> TokenStream {
+fn try_from_i32_match_arms(variants: &[Variant]) -> proc_macro2::TokenStream {
+    let arms = variants.iter().enumerate().map(|(idx, variant)| {
+        let ident = &variant.ident;
+        let index = idx as i32;
+        quote! {
+            #index => Ok(Self::#ident),
+        }
+    });
+
+    quote! {
+        #( #arms )*
+    }
+}
+
+fn camel_case_to_words(s: &str) -> String {
+    let mut words = String::new();
+
+    for (i, c) in s.char_indices() {
+        if i != 0 && c.is_uppercase() {
+            words.push(' ');
+        }
+        words.push(c);
+    }
+
+    words
+}
+
+#[proc_macro_derive(Params, attributes(param))]
+pub fn params_derive(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as DeriveInput);
+    impl_params(&input)
+}
+
+fn impl_params(input: &DeriveInput) -> TokenStream {
     let struct_name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 

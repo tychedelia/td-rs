@@ -564,6 +564,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "euro-filter-chop"
+version = "0.1.0"
+dependencies = [
+ "td-rs-chop",
+ "td-rs-derive",
+]
+
+[[package]]
 name = "fastrand"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -577,6 +585,14 @@ name = "filter-chop"
 version = "0.1.0"
 dependencies = [
  "td-rs-chop",
+ "td-rs-derive",
+]
+
+[[package]]
+name = "filter-dat"
+version = "0.1.0"
+dependencies = [
+ "td-rs-dat",
  "td-rs-derive",
 ]
 
@@ -847,14 +863,6 @@ name = "linux-raw-sys"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9b085a4f2cde5781fc4b1717f2e86c62f5cda49de7ba99a7c2eae02b61c9064c"
-
-[[package]]
-name = "lissa"
-version = "0.1.0"
-dependencies = [
- "td-rs-chop",
- "td-rs-derive",
-]
 
 [[package]]
 name = "lock_api"
@@ -1380,15 +1388,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 
 [[package]]
-name = "sin"
-version = "0.1.0"
-dependencies = [
- "rgb",
- "td-rs-chop",
- "td-rs-derive",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1507,6 +1506,18 @@ dependencies = [
  "autocxx-build",
  "cxx",
  "miette",
+ "td-rs-base",
+]
+
+[[package]]
+name = "td-rs-dat"
+version = "0.1.0"
+dependencies = [
+ "autocxx",
+ "autocxx-build",
+ "cxx",
+ "miette",
+ "ref-cast",
  "td-rs-base",
 ]
 

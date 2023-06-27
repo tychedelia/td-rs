@@ -1,5 +1,6 @@
 use std::ffi;
-use std::ops::{Deref, DerefMut};
+use std::ffi::{c_char, CString};
+use std::ops::{Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
 use ref_cast::RefCast;
@@ -222,9 +223,30 @@ impl<'execute> ParameterManager<'execute> {
         self.manager.as_mut().appendObject(&param);
     }
 
-    // pub fn append_menu(&mut self, param: StringParameter, names: &[&str], labels: &[&str]) {
-    //     self.manager.as_mut().appendMenu(&param, names, labels);
-    // }
+    pub fn append_menu(&mut self, param: StringParameter, names: &[String], labels: &[String]) {
+        assert_eq!(names.len(), labels.len());
+        let n_items = names.len() as i32;
+        let c_strings: Vec<CString> = names
+            .iter()
+            .map(|s| CString::new(s.as_bytes()).unwrap())
+            .collect();
+
+        let name_ptrs: Vec<*const c_char> = c_strings.iter().map(|cs| cs.as_ptr()).collect();
+        let names: *mut *const c_char = name_ptrs.as_ptr() as *mut *const c_char;
+
+        let c_strings: Vec<CString> =  labels
+            .iter()
+            .map(|s| CString::new(s.as_bytes()).unwrap())
+            .collect();
+
+        let label_ptrs: Vec<*const c_char> = c_strings.iter().map(|cs| cs.as_ptr()).collect();
+        let labels: *mut *const c_char = label_ptrs.as_ptr() as *mut *const c_char;
+
+        let param = param.into();
+        unsafe {
+            self.manager.as_mut().appendMenu(&param, n_items, names, labels);
+        }
+    }
 
     // pub fn append_string_menu(&mut self, param: StringParameter, names: &[&str], labels: &[&str]) {
     //     self.manager.as_mut().appendStringMenu(&param, names.len(), names.as_ptr(), labels.as_ptr());
@@ -476,9 +498,9 @@ impl Param for rgb::RGBA16 {
 }
 
 /// A parameter wrapping a `PathBuf` that will be registered as a folder parameter.
-pub struct Folder(PathBuf);
+pub struct FolderParam(PathBuf);
 
-impl Deref for Folder {
+impl Deref for FolderParam {
     type Target = PathBuf;
 
     fn deref(&self) -> &Self::Target {
@@ -486,13 +508,13 @@ impl Deref for Folder {
     }
 }
 
-impl DerefMut for Folder {
+impl DerefMut for FolderParam {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl Param for Folder {
+impl Param for FolderParam {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: StringParameter = options.into();
         param.default_value = self.to_string_lossy().to_string();
@@ -505,9 +527,9 @@ impl Param for Folder {
 }
 
 /// A parameter wrapping a `PathBuf` that will be registered as a file parameter.
-pub struct File(PathBuf);
+pub struct FileParam(PathBuf);
 
-impl Deref for File {
+impl Deref for FileParam {
     type Target = PathBuf;
 
     fn deref(&self) -> &Self::Target {
@@ -515,13 +537,13 @@ impl Deref for File {
     }
 }
 
-impl DerefMut for File {
+impl DerefMut for FileParam {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-impl Param for File {
+impl Param for FileParam {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: StringParameter = options.into();
         param.default_value = self.to_string_lossy().to_string();
@@ -584,4 +606,9 @@ impl ChopParam {
             None
         }
     }
+}
+
+pub trait MenuParam {
+    fn names() -> Vec<String>;
+    fn labels() -> Vec<String>;
 }

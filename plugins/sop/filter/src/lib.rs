@@ -122,7 +122,7 @@ impl FilterSop {
     }
 }
 
-impl SopInfo for FilterSop {
+impl OpInfo for FilterSop {
     const OPERATOR_LABEL: &'static str = "Basic Filter";
     const OPERATOR_TYPE: &'static str = "Basicfilter";
     const MAX_INPUTS: usize = 1;

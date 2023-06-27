@@ -3,15 +3,23 @@
 use td_rs_derive::*;
 use td_rs_base::*;
 
+#[derive(Param)]
+enum TestEnum {
+    Hi,
+    Hello,
+    Goodbye,
+}
+
 #[derive(Params)]
 struct TestParameter {
-    #[label = "Hi"]
+    #[param(label = "Hi")]
     float2: f32,
     float3: f64,
     int: i16,
     int2: u32,
     int3: i64,
     hi: String,
+    menu: TestEnum,
     // rgb: rgb::RGB<u8>,
 }
 
@@ -24,6 +32,8 @@ fn main() {
         int2: 0,
         int3: 0,
         hi: "".to_string(),
-        // rgb: rgb::RGB::new(0,0,0),
+        menu: TestEnum::Hi,
     };
+
+    assert_eq!(TestEnum::names(), [String::from("Hi"), String::from("Hello"), String::from("Goodbye")]);
 }

@@ -6,6 +6,7 @@ use cargo_metadata::{Metadata, MetadataCommand};
 pub enum PluginType {
     Chop,
     Sop,
+    Dat,
 }
 
 pub fn plugin_type(plugin: &str) -> PluginType {
@@ -28,6 +29,7 @@ pub fn plugin_type(plugin: &str) -> PluginType {
         match plugin_type {
             "chop" => PluginType::Chop,
             "sop" => PluginType::Sop,
+            "dat" => PluginType::Dat,
             _ => panic!("Unknown plugin type: {}", plugin_type),
         }
     } else {

@@ -1,5 +1,5 @@
 [package]
-name = "lissa"
+name = "euro-filter-chop"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 type = "chop"
 
 [lib]
-name = "lissa"
+name = "euro_filter_chop"
 crate-type = ["staticlib"]
 
 [dependencies]
