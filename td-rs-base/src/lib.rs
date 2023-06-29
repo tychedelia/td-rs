@@ -140,7 +140,7 @@ impl<'execute, Op> OperatorInputs<'execute, Op>
     pub fn input(&self, index: usize) -> Option<&<Self as GetInput<'execute, Op>>::Input>
         where OperatorInputs<'execute, Op>: GetInput<'execute, Op>
     {
-        self.input(index)
+        GetInput::input(self, index)
     }
 }
 

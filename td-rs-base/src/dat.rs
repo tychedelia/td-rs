@@ -42,9 +42,13 @@ impl DatInput {
             if cell.is_null() {
                 None
             } else {
-                Some(unsafe { std::ffi::CStr::from_ptr(cell) }.to_str().unwrap())
+                Some(unsafe { std::ffi::CStr::from_ptr(cell) }.to_str().expect("invalid utf8"))
             }
         }
+    }
+
+    pub fn text(&self) -> &str {
+        self.cell(0, 0).unwrap()
     }
 }
 

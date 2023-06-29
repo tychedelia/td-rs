@@ -18,10 +18,10 @@ public:
   virtual void getGeneralInfo(DAT_GeneralInfo &info, const OP_Inputs &inputs) {}
 
   void execute(DAT_Output *outputs, const OP_Inputs *inputs, void *reserved1) {
-    this->execute(outputs, *inputs);
+    this->execute(*outputs, *inputs);
   }
 
-  virtual void execute(DAT_Output *outputs, const OP_Inputs &inputs) {}
+  virtual void execute(DAT_Output &outputs, const OP_Inputs &inputs) {}
 
   int32_t getNumInfoCHOPChans(void *reserved1) {
     return this->getNumInfoCHOPChans();

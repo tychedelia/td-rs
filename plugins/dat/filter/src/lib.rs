@@ -4,7 +4,7 @@ use std::sync::Arc;
 use td_rs_dat::*;
 use td_rs_derive::{Params, Param};
 
-#[derive(Param, Default, Clone)]
+#[derive(Param, Default, Clone, Debug)]
 enum FilterType {
     UpperCamelCase,
     #[default]
@@ -12,7 +12,7 @@ enum FilterType {
     UpperCase,
 }
 
-#[derive(Params, Default, Clone)]
+#[derive(Params, Default, Clone, Debug)]
 struct FilterDatParams {
     #[param(label = "Case", page = "Filter")]
     case: FilterType,
@@ -57,24 +57,39 @@ impl Dat for FilterDat {
                 output.set_table_size(rows, cols);
                 for row in 0..rows {
                     for col in 0..cols {
-                        match self.params.case {
-                            FilterType::UpperCamelCase => {
-                                let cell = input.cell(row.clone(), col).unwrap();
-                                let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
-                                output.set(row, col, formatted);
+                        if let Some(cell) = input.cell(row.clone(), col) {
+                            match self.params.case {
+                                FilterType::UpperCamelCase => {
+                                    let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
+                                    output.set(row, col, formatted);
+                                }
+                                FilterType::LowerCase => {
+                                    let formatted = to_lower_case(cell, self.params.keep_spaces.clone());
+                                    output.set(row, col, formatted);
+                                }
+                                FilterType::UpperCase => {
+                                    let formatted = to_upper_case(cell, self.params.keep_spaces.clone());
+                                    output.set(row, col, formatted);
+                                }
                             }
-                            FilterType::LowerCase => {}
-                            FilterType::UpperCase => {}
                         }
                     }
                 }
-
             } else {
-                let output = output.text();
+                let mut output = output.text();
                 match self.params.case {
-                    FilterType::UpperCamelCase => {}
-                    FilterType::LowerCase => {}
-                    FilterType::UpperCase => {}
+                    FilterType::UpperCamelCase => {
+                        let formatted = to_camel_case(input.text(), self.params.keep_spaces.clone());
+                        output.set_text(&formatted);
+                    }
+                    FilterType::LowerCase => {
+                        let formatted = to_lower_case(input.text(), self.params.keep_spaces.clone());
+                        output.set_text(&formatted);
+                    }
+                    FilterType::UpperCase => {
+                        let formatted = to_upper_case(input.text(), self.params.keep_spaces.clone());
+                        output.set_text(&formatted);
+                    }
                 }
             }
         }

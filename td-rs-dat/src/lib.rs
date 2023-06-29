@@ -153,13 +153,14 @@ impl<'execute> CellType<'execute> for String {
     }
 
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self) {
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
+        let rows = table.table_size()[0];
+        let offset = row * rows + col;
         table.table[offset] = value.clone();
+        let cstr = std::ffi::CString::new(value).unwrap();
         unsafe {
             table.output
                 .as_mut()
-                .setCellString(row as i32, col as i32, value.as_ptr() as *const i8);
+                .setCellString(row as i32, col as i32, cstr.as_ptr());
         }
     }
 }
