@@ -127,7 +127,7 @@ public:
 	// If the type of out data is Table, set the number of rows and columns.
 	virtual void	setTableSize(const int32_t rows, const int32_t cols) = 0;
 
-	virtual void	getTableSize(int32_t *rows, int32_t *cols) = 0;
+	virtual void	getTableSize(int32_t *rows, int32_t *cols) const = 0;
 
 	// If the type of out data is set to Text, 
 	// Set the whole text by calling this function. str must be UTF-8 encoded.
@@ -159,15 +159,15 @@ public:
 	// The memory the pointer points to is valid until the next call to
 	// a function that changes the tabel (setCell*, setTableSize etc.)
 	// or the end of the ::execute function.
-	virtual const char*	getCellString(int32_t row, int32_t col) = 0;
+	virtual const char*	getCellString(int32_t row, int32_t col) const = 0;
 
 	// Get the int32_t cell data with a row and column index,
 	// returns false if it cannot find the cell, or invalid argument
-	virtual bool		getCellInt(int32_t row, int32_t col, int32_t* res) = 0;
+	virtual bool		getCellInt(int32_t row, int32_t col, int32_t* res) const = 0;
 
 	// Get the double cell data with a row and column index,
 	// returns false if it cannot find the cell, or invalid argument
-	virtual bool		getCellDouble(int32_t row, int32_t col, double* res) = 0;
+	virtual bool		getCellDouble(int32_t row, int32_t col, double* res) const = 0;
 
 
 private:

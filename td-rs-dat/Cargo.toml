@@ -12,6 +12,7 @@ autocxx = { path = "../../../google/autocxx" }
 cxx = "1.0.78"
 td-rs-base = { path = "../td-rs-base" }
 ref-cast = "1.0"
+sparsevec = "0.2.0"
 
 [build-dependencies]
 autocxx-build = { path = "../../../google/autocxx/gen/build" }
