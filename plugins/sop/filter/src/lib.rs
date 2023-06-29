@@ -138,7 +138,7 @@ impl Sop for FilterSop {
     }
 
     fn execute(&mut self, output: &mut SopOutput, inputs: &OperatorInputs<SopInput>) {
-        if let Some(input) = inputs.get_input(0) {
+        if let Some(input) = inputs.input(0) {
             let t = self.translate();
             Self::copy_points_translated(output, input, &t);
             Self::copy_normals(output, input);

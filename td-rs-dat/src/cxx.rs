@@ -66,7 +66,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
         if let Some(mut params) = self.inner.params_mut() {
             params.update(&input.params());
         }
-        self.inner.execute(&mut output, &input);
+        self.inner.execute(output, &input);
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {

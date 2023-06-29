@@ -58,7 +58,7 @@ impl<'execute> DatOutput<'execute> {
 /// A type which can be used as a cell in a DAT table. Should not be implemented manually or used
 /// directly.
 pub trait CellType<'execute>
-    where Self: Copy
+    where Self: Clone
 {
     /// Get a reference to the value of this cell from the table.
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self;
@@ -70,8 +70,8 @@ pub trait CellType<'execute>
 impl<'execute> CellType<'execute> for f64 {
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
         let mut out = f64::default();
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
+        let [rows, _]  = table.table_size();
+        let offset = row * rows + col;
         unsafe {
             table.output
                 .as_ref()
@@ -79,14 +79,8 @@ impl<'execute> CellType<'execute> for f64 {
         }
         let ptr = table.table.as_ptr();
 
-
-        /// SAFETY:
-        /// 1. The size of the table is set whenever the table is created, and is reset when
-        ///    the table is resized. The size of the table is always equal to the number of
-        ///    rows times the number of columns.
-        /// 2. The value read by reading the cell is valid for the lifetime `'execute`.
         unsafe {
-            let y = ptr.offset(offset.clone() as isize) as *mut f64;
+            let y = ptr.offset(offset as isize) as *mut f64;
             *y = out;
         }
 
@@ -94,8 +88,8 @@ impl<'execute> CellType<'execute> for f64 {
     }
 
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self) {
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
+        let [rows, _] = table.table_size();
+        let offset = row * rows + col;
         table.table[offset] = value.clone();
         unsafe {
             table.output
@@ -108,8 +102,8 @@ impl<'execute> CellType<'execute> for f64 {
 impl<'execute> CellType<'execute> for i32 {
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
         let mut out = i32::default();
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
+        let [rows, _] = table.table_size();
+        let offset = row * rows + col;
         unsafe {
             table.output
                 .as_ref()
@@ -117,12 +111,6 @@ impl<'execute> CellType<'execute> for i32 {
         }
         let ptr = table.table.as_ptr();
 
-
-        /// SAFETY:
-        /// 1. The size of the table is set whenever the table is created, and is reset when
-        ///    the table is resized. The size of the table is always equal to the number of
-        ///    rows times the number of columns.
-        /// 2. The value read by reading the cell is valid for the lifetime `'execute`.
         unsafe {
             let y = ptr.offset(offset.clone() as isize) as *mut i32;
             *y = out;
@@ -143,7 +131,7 @@ impl<'execute> CellType<'execute> for i32 {
     }
 }
 
-impl<'execute> CellType<'execute> for &str {
+impl<'execute> CellType<'execute> for String {
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
         let rows = table.table_size()[0].clone();
         let offset = row.clone() * rows + col.clone();
@@ -156,12 +144,6 @@ impl<'execute> CellType<'execute> for &str {
 
         let ptr = table.table.as_ptr();
 
-
-        /// SAFETY:
-        /// 1. The size of the table is set whenever the table is created, and is reset when
-        ///    the table is resized. The size of the table is always equal to the number of
-        ///    rows times the number of columns.
-        /// 2. The value read by reading the cell is valid for the lifetime `'execute`.
         unsafe {
             let y = ptr.offset(offset.clone() as isize) as *mut &str;
             *y = out;
@@ -193,9 +175,21 @@ impl <'execute, T, > Index<[usize; 2]> for DatTableOutput<'execute, T>
     type Output = T;
 
     fn index(&self, index: [usize; 2]) -> &Self::Output {
-        let row = index[0].clone();
-        let col = index[1].clone();
+        let [row, col] = index;
         self.get(row, col)
+    }
+}
+
+impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
+    where T: CellType<'execute> + Copy + Default
+{
+
+    fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
+        let [row, col] = index;
+        let [rows, _] = self.table_size();
+        let out = T::default();
+        self.table[row * rows + col] = out;
+        &mut self.table[row * rows + col]
     }
 }
 
@@ -221,7 +215,7 @@ impl<'execute, T> DatTableOutput<'execute, T>
 
     pub fn set_table_size(&mut self, rows: usize, cols: usize) {
         unsafe {
-            self.output.as_mut().setTableSize(rows.clone() as i32, cols.clone() as i32);
+            self.output.as_mut().setTableSize(rows as i32, cols as i32);
             self.table.resize(rows * cols, T::default());
         }
     }
@@ -249,7 +243,7 @@ pub trait Dat: Op {
         DatGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: &mut DatOutput, input: &OperatorInputs<DatInput>) {
+    fn execute(&mut self, output: DatOutput, input: &OperatorInputs<DatInput>) {
         // Do nothing by default.
     }
 }

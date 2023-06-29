@@ -106,7 +106,7 @@ impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInpu
         self.inputs.getNumInputs() as usize
     }
 
-    fn get_input(&self, index: usize) -> Option<&'execute SopInput> {
+    fn input(&self, index: usize) -> Option<&'execute SopInput> {
         let input = self.inputs.getInputSOP(index as i32);
         if input.is_null() {
             None

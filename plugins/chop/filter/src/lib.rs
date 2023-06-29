@@ -54,7 +54,7 @@ impl Chop for FilterChop {
         params.enable_param("Scale", true);
         params.enable_param("Offset", true);
 
-        if let Some(input) = &inputs.get_input(0) {
+        if let Some(input) = &inputs.input(0) {
             for i in 0..output.num_channels() {
                 for j in 0..output.num_samples() {
                     output[i][j] = input[i][j] * self.params.scale + self.params.offset;

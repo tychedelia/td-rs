@@ -2,10 +2,10 @@ use std::f64::consts::PI;
 use std::pin::Pin;
 use std::sync::Arc;
 use td_rs_dat::*;
-use td_rs_derive::Params;
+use td_rs_derive::{Params, Param};
 
 #[derive(Param, Default, Clone)]
-pub enum FilterType {
+enum FilterType {
     UpperCamelCase,
     #[default]
     LowerCase,
@@ -14,10 +14,10 @@ pub enum FilterType {
 
 #[derive(Params, Default, Clone)]
 struct FilterDatParams {
-    #[param(label = "Apply Filter", page = "Filter")]
-    apply_scale: bool,
-    #[param(label = "Filter", page = "Filter")]
-    filter: FilterType,
+    #[param(label = "Case", page = "Filter")]
+    case: FilterType,
+    #[param(label = "Keep Spaces", page = "Filter")]
+    keep_spaces: bool,
 }
 
 /// Struct representing our DAT's state
@@ -49,15 +49,34 @@ impl Dat for FilterDat {
         Some(Box::new(&mut self.params))
     }
 
-    fn execute(&mut self, output: &mut DatOutput, inputs: &OperatorInputs<DatInput>) {
+    fn execute(&mut self, output: DatOutput, inputs: &OperatorInputs<DatInput>) {
         if let Some(input) = inputs.input(0) {
-            let output = if input.is_table() {
-                DatTableOutput::new(output)
-            } else {
-                DatTextOutput::new(output)
-            };
+            if input.is_table() {
+                let mut output = output.table::<String>();
+                let [rows, cols] = input.table_size();
+                output.set_table_size(rows, cols);
+                for row in 0..rows {
+                    for col in 0..cols {
+                        match self.params.case {
+                            FilterType::UpperCamelCase => {
+                                let cell = input.cell(row.clone(), col).unwrap();
+                                let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
+                                output.set(row, col, formatted);
+                            }
+                            FilterType::LowerCase => {}
+                            FilterType::UpperCase => {}
+                        }
+                    }
+                }
 
-            output[[0, 1]] = 1.0;
+            } else {
+                let output = output.text();
+                match self.params.case {
+                    FilterType::UpperCamelCase => {}
+                    FilterType::LowerCase => {}
+                    FilterType::UpperCase => {}
+                }
+            }
         }
     }
 
@@ -67,6 +86,47 @@ impl Dat for FilterDat {
             cook_every_frame_if_asked: false,
         }
     }
+}
+
+pub fn to_camel_case(s: &str, keep_spaces: bool) -> String {
+    let mut out = String::new();
+    let mut next_upper = true;
+
+    for c in s.chars() {
+        if c.is_whitespace() {
+            next_upper = true;
+            if keep_spaces {
+                out.push(c);
+            }
+        } else if next_upper {
+            out.push(c.to_ascii_uppercase());
+            next_upper = false;
+        } else {
+            out.push(c.to_ascii_lowercase());
+        }
+    }
+
+    out
+}
+
+pub fn change_case(s: &str, keep_spaces: bool, upper: bool) -> String {
+    let mut out = String::new();
+
+    for c in s.chars() {
+        if keep_spaces || !c.is_whitespace() {
+            out.push(if upper { c.to_ascii_uppercase() } else { c.to_ascii_lowercase() });
+        }
+    }
+
+    out
+}
+
+pub fn to_upper_case(s: &str, keep_spaces: bool) -> String {
+    change_case(s, keep_spaces, true)
+}
+
+pub fn to_lower_case(s: &str, keep_spaces: bool) -> String {
+    change_case(s, keep_spaces, false)
 }
 
 dat_plugin!(FilterDat);

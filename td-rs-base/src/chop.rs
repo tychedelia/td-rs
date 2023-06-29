@@ -36,7 +36,7 @@ impl<'execute> GetInput<'execute, ChopInput> for OperatorInputs<'execute, ChopIn
         self.inputs.getNumInputs() as usize
     }
 
-    fn get_input(&self, index: usize) -> Option<&'execute ChopInput> {
+    fn input(&self, index: usize) -> Option<&'execute ChopInput> {
         let input = self.inputs.getInputCHOP(index as i32);
         if input.is_null() {
             None

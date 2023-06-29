@@ -140,7 +140,7 @@ impl<'execute, Op> OperatorInputs<'execute, Op>
     pub fn input(&self, index: usize) -> Option<&<Self as GetInput<'execute, Op>>::Input>
         where OperatorInputs<'execute, Op>: GetInput<'execute, Op>
     {
-        self.get_input(index)
+        self.input(index)
     }
 }
 
@@ -205,7 +205,7 @@ pub trait GetInput<'execute, Op>: Index<usize, Output=Self::Input> {
     /// The number of inputs available.
     fn num_inputs(&self) -> usize;
     /// Get an input.
-    fn get_input(&self, index: usize) -> Option<&Self::Input>;
+    fn input(&self, index: usize) -> Option<&Self::Input>;
 }
 
 impl<'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
@@ -214,6 +214,6 @@ impl<'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
     type Output = <Self as GetInput<'execute, Op>>::Input;
 
     fn index(&self, index: usize) -> &Self::Output {
-        self.get_input(index).expect("Invalid input index")
+        self.input(index).expect("Invalid input index")
     }
 }

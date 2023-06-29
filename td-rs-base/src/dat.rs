@@ -19,6 +19,33 @@ impl DatInput {
     pub fn is_table(&self) -> bool {
         self.input.isTable
     }
+
+    pub fn num_rows(&self) -> usize {
+        self.input.numRows as usize
+    }
+
+    pub fn num_cols(&self) -> usize {
+        self.input.numCols as usize
+    }
+
+    pub fn table_size(&self) -> [usize; 2] {
+        let rows = self.num_rows();
+        let cols = self.num_cols();
+        [rows, cols]
+    }
+
+    pub fn cell(&self, row: usize, col: usize) -> Option<&str> {
+        if row >= self.num_rows() || col >= self.num_cols() {
+            None
+        } else {
+            let cell = unsafe { self.input.getCell(row as i32, col as i32) };
+            if cell.is_null() {
+                None
+            } else {
+                Some(unsafe { std::ffi::CStr::from_ptr(cell) }.to_str().unwrap())
+            }
+        }
+    }
 }
 
 impl<'execute> GetInput<'execute, DatInput> for OperatorInputs<'execute, DatInput> {
@@ -26,7 +53,7 @@ impl<'execute> GetInput<'execute, DatInput> for OperatorInputs<'execute, DatInpu
         self.inputs.getNumInputs() as usize
     }
 
-    fn get_input(&self, index: usize) -> Option<&'execute DatInput> {
+    fn input(&self, index: usize) -> Option<&'execute DatInput> {
         let input = self.inputs.getInputDAT(index as i32);
         if input.is_null() {
             None
@@ -35,11 +62,3 @@ impl<'execute> GetInput<'execute, DatInput> for OperatorInputs<'execute, DatInpu
         }
     }
 }
-
-// impl Index<usize> for DatInput {
-//     type Output = [f32];
-//
-//     fn index(&self, index: usize) -> &Self::Output {
-//         self.channel(index)
-//     }
-// }
