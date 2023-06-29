@@ -143,6 +143,45 @@ impl<'execute> CellType<'execute> for i32 {
     }
 }
 
+impl<'execute> CellType<'execute> for &str {
+    fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
+        let rows = table.table_size()[0].clone();
+        let offset = row.clone() * rows + col.clone();
+        let out = unsafe {
+            let out = table.output
+                .as_ref()
+                .getCellString(row as i32, col as i32);
+            std::ffi::CStr::from_ptr(out).to_str().unwrap()
+        };
+
+        let ptr = table.table.as_ptr();
+
+
+        /// SAFETY:
+        /// 1. The size of the table is set whenever the table is created, and is reset when
+        ///    the table is resized. The size of the table is always equal to the number of
+        ///    rows times the number of columns.
+        /// 2. The value read by reading the cell is valid for the lifetime `'execute`.
+        unsafe {
+            let y = ptr.offset(offset.clone() as isize) as *mut &str;
+            *y = out;
+        }
+
+        &table.table[offset]
+    }
+
+    fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self) {
+        let rows = table.table_size()[0].clone();
+        let offset = row.clone() * rows + col.clone();
+        table.table[offset] = value.clone();
+        unsafe {
+            table.output
+                .as_mut()
+                .setCellString(row as i32, col as i32, value.as_ptr() as *const i8);
+        }
+    }
+}
+
 pub struct DatTableOutput<'execute, T> {
     output: Pin<&'execute mut cxx::DAT_Output>,
     table: Vec<T>,
