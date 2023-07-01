@@ -17,16 +17,18 @@ crate-type = ["staticlib"]
 
 [workspace]
 members = [
+    "plugins/chop/euro-filter",
+    "plugins/chop/filter",
+    "plugins/chop/generator",
+    "plugins/dat/filter",
+    "plugins/sop/filter",
+    "plugins/top/filter",
     "td-rs-base",
     "td-rs-chop",
     "td-rs-dat",
     "td-rs-derive",
     "td-rs-sop",
+    "td-rs-top",
     "td-rs-xtask",
     "xtask",
-    "plugins/chop/filter",
-    "plugins/chop/euro-filter",
-    "plugins/chop/generator",
-    "plugins/dat/filter",
-    "plugins/sop/filter"
 ]

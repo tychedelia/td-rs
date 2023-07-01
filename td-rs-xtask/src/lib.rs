@@ -17,12 +17,6 @@ use std::process::Command;
 
 pub use anyhow::Result;
 
-// pub fn check_plugin_type(plugin: &str) -> Result<()> {
-//     let mut cmd = Command::new("cargo");
-//         .args(&["metadata", "--format-version", "1")])
-//
-// }
-
 pub fn build(packages: &[String], args: &[String]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
     let mut cmd = Command::new("cargo")

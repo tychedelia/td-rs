@@ -1,0 +1,18 @@
+[package]
+name = "td-rs-top"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "td_rs_top"
+crate-type = ["lib", "staticlib"]
+
+[dependencies]
+autocxx = { path = "../../../google/autocxx" }
+cxx = "1.0.78"
+td-rs-base = { path = "../td-rs-base" }
+ref-cast = "1.0"
+
+[build-dependencies]
+autocxx-build = { path = "../../../google/autocxx/gen/build" }
+miette = { version="5", features = [ "fancy" ] }

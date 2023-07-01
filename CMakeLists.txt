@@ -28,4 +28,8 @@ add_executable(td_rs
         td-rs-chop/src/CHOP_CPlusPlusBase.h
         td-rs-chop/src/RustChopPlugin.cpp
         td-rs-chop-autocxx/src/RustChopPlugin.h
-        td-rs-base/src/RustBase.h td-rs-sop/src/RustSopPlugin.h)
+        td-rs-base/src/RustBase.h
+        td-rs-sop/src/RustSopPlugin.h
+        td-rs-top/src/RustTopPlugin.cpp
+        td-rs-top/src/TOP_CPlusPlusBase.h
+        td-rs-top/src/RustTopPlugin.h)

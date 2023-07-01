@@ -7,6 +7,7 @@ pub enum PluginType {
     Chop,
     Sop,
     Dat,
+    Top,
 }
 
 pub fn plugin_type(plugin: &str) -> PluginType {
@@ -30,6 +31,7 @@ pub fn plugin_type(plugin: &str) -> PluginType {
             "chop" => PluginType::Chop,
             "sop" => PluginType::Sop,
             "dat" => PluginType::Dat,
+            "top" => PluginType::Top,
             _ => panic!("Unknown plugin type: {}", plugin_type),
         }
     } else {

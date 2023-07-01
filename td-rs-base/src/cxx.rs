@@ -25,6 +25,7 @@ include_cpp! {
     generate_pod!("SOP_CustomAttribData")
     generate_pod!("SOP_PrimitiveInfo")
     generate_pod!("OP_DATInput")
+    generate_pod!("OP_TOPInput")
     
     // util fns
     generate!("setString")

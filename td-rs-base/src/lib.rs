@@ -5,6 +5,7 @@ pub mod chop;
 pub mod param;
 pub mod sop;
 pub mod dat;
+pub mod top;
 
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
