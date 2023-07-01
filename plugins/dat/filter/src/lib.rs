@@ -61,15 +61,15 @@ impl Dat for FilterDat {
                             match self.params.case {
                                 FilterType::UpperCamelCase => {
                                     let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
-                                    output.set(row, col, formatted);
+                                    output[[row, col]] = formatted;
                                 }
                                 FilterType::LowerCase => {
                                     let formatted = to_lower_case(cell, self.params.keep_spaces.clone());
-                                    output.set(row, col, formatted);
+                                    output[[row, col]] = formatted;
                                 }
                                 FilterType::UpperCase => {
                                     let formatted = to_upper_case(cell, self.params.keep_spaces.clone());
-                                    output.set(row, col, formatted);
+                                    output[[row, col]] = formatted;
                                 }
                             }
                         }

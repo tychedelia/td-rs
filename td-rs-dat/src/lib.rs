@@ -55,6 +55,38 @@ impl<'execute> DatOutput<'execute> {
     }
 }
 
+pub struct DatTableOutput<'execute, T> {
+    output: Pin<&'execute mut cxx::DAT_Output>,
+    table: Vec<T>,
+}
+
+impl<'execute, T> DatTableOutput<'execute, T>
+    where T: CellType<'execute> + Default
+{
+    pub fn get(&self, row: usize, col: usize) -> &T {
+        T::get(self, row, col)
+    }
+
+    pub fn set(&mut self, row: usize, col: usize, value: T) {
+        T::set(self, row, col, value)
+    }
+
+    pub fn table_size(&self) -> [usize; 2] {
+        let mut rows = 0;
+        let mut cols = 0;
+        unsafe {
+            self.output.as_ref().getTableSize(&mut rows, &mut cols);
+        }
+        [rows as usize, cols as usize]
+    }
+
+    pub fn set_table_size(&mut self, rows: usize, cols: usize) {
+        unsafe {
+            self.output.as_mut().setTableSize(rows as i32, cols as i32);
+            self.table.resize(rows * cols, T::default());
+        }
+    }
+}
 /// A type which can be used as a cell in a DAT table. Should not be implemented manually or used
 /// directly.
 pub trait CellType<'execute>
@@ -165,13 +197,9 @@ impl<'execute> CellType<'execute> for String {
     }
 }
 
-pub struct DatTableOutput<'execute, T> {
-    output: Pin<&'execute mut cxx::DAT_Output>,
-    table: Vec<T>,
-}
 
 impl <'execute, T, > Index<[usize; 2]> for DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Copy + Default
+    where T: CellType<'execute> + Default
 {
     type Output = T;
 
@@ -182,7 +210,7 @@ impl <'execute, T, > Index<[usize; 2]> for DatTableOutput<'execute, T>
 }
 
 impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Copy + Default
+    where T: CellType<'execute> + Default
 {
 
     fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
@@ -190,37 +218,12 @@ impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
         let [rows, _] = self.table_size();
         let out = T::default();
         self.table[row * rows + col] = out;
+        self.set(row, col, out);
         &mut self.table[row * rows + col]
     }
 }
 
-impl<'execute, T> DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Default
-{
-    pub fn get(&self, row: usize, col: usize) -> &T {
-        T::get(self, row, col)
-    }
 
-    pub fn set(&mut self, row: usize, col: usize, value: T) {
-        T::set(self, row, col, value)
-    }
-
-    pub fn table_size(&self) -> [usize; 2] {
-        let mut rows = 0;
-        let mut cols = 0;
-        unsafe {
-            self.output.as_ref().getTableSize(&mut rows, &mut cols);
-        }
-        [rows as usize, cols as usize]
-    }
-
-    pub fn set_table_size(&mut self, rows: usize, cols: usize) {
-        unsafe {
-            self.output.as_mut().setTableSize(rows as i32, cols as i32);
-            self.table.resize(rows * cols, T::default());
-        }
-    }
-}
 
 pub struct DatTextOutput<'execute> {
     output: Pin<&'execute mut cxx::DAT_Output>,
