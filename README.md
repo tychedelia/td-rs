@@ -1,6 +1,6 @@
 # `td-rs`
 
-Experiments integrating Rust into TouchDesigner using `cxx`.
+Experiments integrating Rust into TouchDesigner's plugin framework.
 
 ## Status
 
