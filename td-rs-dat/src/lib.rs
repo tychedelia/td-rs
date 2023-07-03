@@ -218,7 +218,7 @@ impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
         let [rows, _] = self.table_size();
         let out = T::default();
         self.table[row * rows + col] = out;
-        self.set(row, col, out);
+        //self.set(row, col, out);
         &mut self.table[row * rows + col]
     }
 }

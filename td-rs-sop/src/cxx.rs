@@ -28,6 +28,8 @@ include_cpp! {
     extern_cpp_type!("Color", td_rs_base::cxx::Color)
     extern_cpp_type!("TexCoord", td_rs_base::cxx::TexCoord)
     extern_cpp_type!("BoundingBox", td_rs_base::cxx::BoundingBox)
+    extern_cpp_type!("SOP_CustomAttribData", td_rs_base::cxx::SOP_CustomAttribData)
+    extern_cpp_type!("SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
 }
 
 pub use td_rs_base::cxx::setString;

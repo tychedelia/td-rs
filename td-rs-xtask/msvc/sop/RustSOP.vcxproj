@@ -14,18 +14,18 @@
     <ClInclude Include="td-rs-base\src\CPlusPlus_Common.h" />
     <ClInclude Include="td-rs-base\src\GL_Extensions.h" />
     <ClInclude Include="td-rs-base\src\RustBase.h" />
-    <ClInclude Include="td-rs-chop\src\CHOP_CPlusPlusBase.h" />
-    <ClInclude Include="td-rs-chop\src\RustChopPlugin.h" />
+    <ClInclude Include="td-rs-sop\src\SOP_CPlusPlusBase.h" />
+    <ClInclude Include="td-rs-sop\src\RustSopPlugin.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="td-rs-chop\src\RustChopPlugin.cpp" />
+    <ClCompile Include="td-rs-sop\src\RustSopPlugin.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F5BEECD-FA36-459F-91B8-BB481A67EF44}</ProjectGuid>
-    <RootNamespace>CPlusPlusCHOPExample</RootNamespace>
+    <RootNamespace>CPlusPlusSOPExample</RootNamespace>
     <Keyword>Win32Proj</Keyword>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-    <ProjectName>RustCHOP</ProjectName>
+    <ProjectName>RustSOP</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
@@ -75,12 +75,12 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_chop.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_sop.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CPLUSPLUSCHOPEXAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;CPLUSPLUSSOPEXAMPLE_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>
       </PrecompiledHeader>
@@ -93,7 +93,7 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_chop.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_sop.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
