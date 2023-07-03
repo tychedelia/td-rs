@@ -17,7 +17,9 @@ use std::process::Command;
 
 pub use anyhow::Result;
 
-pub fn build(packages: &[String], args: &[String]) -> Result<()> {
+const PLUGIN_HOME: &'static str = "target/plugin";
+
+pub fn build(packages: &[&str], args: &[&str]) -> Result<()> {
     let package_args = packages.iter().flat_map(|package| ["-p", package]);
     let mut cmd = Command::new("cargo")
         .arg("build")

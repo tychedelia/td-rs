@@ -10,6 +10,26 @@ pub enum PluginType {
     Top,
 }
 
+impl PluginType {
+    pub(crate) fn to_plugin_name(&self) -> &str {
+        match self {
+            Self::Chop => "td-rs-chop",
+            Self::Sop => "td-rs-sop",
+            Self::Dat => "td-rs-dat",
+            Self::Top => "td-rs-top",
+        }
+    }
+
+    pub(crate) fn to_short_name(&self) -> &str {
+        match self {
+            Self::Chop => "chop",
+            Self::Sop => "sop",
+            Self::Dat => "dat",
+            Self::Top => "top",
+        }
+    }
+}
+
 pub fn plugin_type(plugin: &str) -> PluginType {
     let package_name = plugin;
     let metadata = fetch_cargo_metadata();

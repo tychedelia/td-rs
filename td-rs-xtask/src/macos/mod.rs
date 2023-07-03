@@ -1,4 +1,4 @@
-use crate::build;
+use crate::{build, PLUGIN_HOME};
 use crate::metadata::PluginType;
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
@@ -7,41 +7,21 @@ use std::fmt::format;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-const PLUGIN_HOME: &'static str = "target/plugin";
-
 pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     build(
         &[
-            plugin.to_string(),
-            match plugin_type {
-                PluginType::Chop => "td-rs-chop".to_string(),
-                PluginType::Sop => "td-rs-sop".to_string(),
-                PluginType::Dat => "td-rs-dat".to_string(),
-                PluginType::Top => "td-rs-top".to_string(),
-            }
+            plugin,
+            plugin_type.to_plugin_name(),
         ],
-        &["--release".to_string(), format!("--target={target}")],
+        &["--release", &format!("--target={target}")],
     )?;
 
     let plugin = &plugin.replace("-", "_");
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
-    match plugin_type {
-        PluginType::Chop => {
-            write_chop_xcodeproj(&target, &plugin, &path)?;
-        }
-        PluginType::Sop => {
-            write_sop_xcodeproj(&target, &plugin, &path)?;
-        }
-        PluginType::Dat => {
-            write_dat_xcodeproj(&target, &plugin, &path)?;
-        }
-        PluginType::Top => {
-            write_top_xcodeproj(&target, &plugin, &path)?;
-        }
-    }
+    write_xcodeproj(&target, &plugin, &plugin_type, &path)?;
     println!("Building xcode project");
     build_xcode(&plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
@@ -80,148 +60,21 @@ fn build_xcode(plugin: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn write_chop_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
+fn write_xcodeproj(target: &str, plugin: &str, plugin_type: &PluginType, path: &PathBuf) -> anyhow::Result<()> {
     const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
     const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
     const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
 
+    let plugin_type_name = plugin_type.to_short_name();
+
     std::fs::create_dir_all(&path.parent().unwrap())
         .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file("td-rs-xtask/xcode/chop/project.pbxproj")
+    let mut project = Value::from_file(format!("td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"))
         .expect("Could not read xcode project");
     let mut p = project.as_dictionary_mut().unwrap();
     let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
     let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
     lib.insert("name".to_string(), Value::String(format!("lib{plugin}.a")));
-    lib.insert(
-        "path".to_string(),
-        Value::String(format!("target/{target}/release/lib{plugin}.a")),
-    );
-    let mut bundle = objs
-        .get_mut(BUNDLE_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}.plugin")),
-    );
-    let mut bundle_config = objs
-        .get_mut(BUNDLE_CONFIGURATION_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
-    bundle_config.insert(
-        "productName".to_string(),
-        Value::String(format!("{plugin}")),
-    );
-    project.to_file_xml(path)?;
-    Ok(())
-}
-
-fn write_sop_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
-    const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
-    const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
-
-    std::fs::create_dir_all(&path.parent().unwrap())
-        .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file("td-rs-xtask/xcode/sop/project.pbxproj")
-        .expect("Could not read xcode project");
-    let mut p = project.as_dictionary_mut().unwrap();
-    let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
-    let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
-    lib.insert(
-        "name".to_string(),
-        Value::String(format!("lib{}.a", plugin)),
-    );
-    lib.insert(
-        "path".to_string(),
-        Value::String(format!("target/{target}/release/lib{plugin}.a")),
-    );
-    let mut bundle = objs
-        .get_mut(BUNDLE_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}.plugin")),
-    );
-    let mut bundle_config = objs
-        .get_mut(BUNDLE_CONFIGURATION_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
-    bundle_config.insert(
-        "productName".to_string(),
-        Value::String(format!("{plugin}")),
-    );
-    project.to_file_xml(path)?;
-    Ok(())
-}
-
-fn write_dat_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
-    const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
-    const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
-
-    std::fs::create_dir_all(&path.parent().unwrap())
-        .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file("td-rs-xtask/xcode/dat/project.pbxproj")
-        .expect("Could not read xcode project");
-    let mut p = project.as_dictionary_mut().unwrap();
-    let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
-    let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
-    lib.insert(
-        "name".to_string(),
-        Value::String(format!("lib{}.a", plugin)),
-    );
-    lib.insert(
-        "path".to_string(),
-        Value::String(format!("target/{target}/release/lib{plugin}.a")),
-    );
-    let mut bundle = objs
-        .get_mut(BUNDLE_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}.plugin")),
-    );
-    let mut bundle_config = objs
-        .get_mut(BUNDLE_CONFIGURATION_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
-    bundle_config.insert(
-        "productName".to_string(),
-        Value::String(format!("{plugin}")),
-    );
-    project.to_file_xml(path)?;
-    Ok(())
-}
-
-fn write_top_xcodeproj(target: &str, plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
-    const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
-    const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
-
-    std::fs::create_dir_all(&path.parent().unwrap())
-        .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file("td-rs-xtask/xcode/top/project.pbxproj")
-        .expect("Could not read xcode project");
-    let mut p = project.as_dictionary_mut().unwrap();
-    let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
-    let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
-    lib.insert(
-        "name".to_string(),
-        Value::String(format!("lib{}.a", plugin)),
-    );
     lib.insert(
         "path".to_string(),
         Value::String(format!("target/{target}/release/lib{plugin}.a")),
