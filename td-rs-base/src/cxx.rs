@@ -26,7 +26,10 @@ include_cpp! {
     generate_pod!("SOP_PrimitiveInfo")
     generate_pod!("OP_DATInput")
     generate_pod!("OP_TOPInput")
-    
+    generate_pod!("OP_TOPInputDownloadOptions")
+    generate_pod!("OP_TOPInputDownloadType")
+    generate_pod!("OP_CPUMemPixelType")
+
     // util fns
     generate!("setString")
 }
