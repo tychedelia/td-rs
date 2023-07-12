@@ -5,13 +5,14 @@
 extern "C" {
 
 RustTopPlugin *top_new();
-void top_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
+TOP_ExecuteMode top_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
 void FillTOPPluginInfo(TOP_PluginInfo *info) {
     info->apiVersion = TOPCPlusPlusAPIVersion;
     auto opInfo = &info->customOPInfo;
-    top_get_plugin_info_impl(*opInfo);
+    auto mode = top_get_plugin_info_impl(*opInfo);
+    info->executeMode = mode;
 }
 
 DLLEXPORT

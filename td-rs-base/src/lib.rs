@@ -1,27 +1,27 @@
 #![feature(associated_type_defaults)]
 
-pub mod cxx;
 pub mod chop;
+pub mod cxx;
+pub mod dat;
 pub mod param;
 pub mod sop;
-pub mod dat;
 pub mod top;
 
+use crate::cxx::OP_SOPInput;
+use crate::cxx::{OP_CHOPInput, OP_TOPInputDownloadOptions};
+use crate::param::ChopParam;
+use auto_ops::*;
+use autocxx::cxx::UniquePtr;
+use derive_more::{AsRef, Deref, DerefMut, From, Into};
+pub use param::*;
+use ref_cast::RefCast;
+use std::cell::OnceCell;
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::process::Output;
 use std::rc::Rc;
-use autocxx::cxx::UniquePtr;
-use crate::cxx::OP_CHOPInput;
-use crate::cxx::OP_SOPInput;
-use ref_cast::RefCast;
-use auto_ops::*;
-use derive_more::{Deref, DerefMut, AsRef, From, Into};
-use std::cell::OnceCell;
-use crate::param::{ChopParam};
-pub use param::*;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -120,16 +120,20 @@ pub trait Op {
 /// Input to an operator, which can be used to get parameters, channels,
 /// and other information.
 pub struct OperatorInputs<'execute, Op> {
-    inputs: &'execute crate::cxx::OP_Inputs,
+    pub inputs: &'execute crate::cxx::OP_Inputs,
     _marker: std::marker::PhantomData<Op>,
 }
 
 impl<'execute, Op> OperatorInputs<'execute, Op>
-    where Self: GetInput<'execute, Op>
+where
+    Self: GetInput<'execute, Op>,
 {
     /// Create a new operator input. This is only called by the operator.
     pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> OperatorInputs<'execute, Op> {
-        Self { inputs, _marker: Default::default() }
+        Self {
+            inputs,
+            _marker: Default::default(),
+        }
     }
 
     /// Get the parameters for this operator.
@@ -139,7 +143,8 @@ impl<'execute, Op> OperatorInputs<'execute, Op>
 
     /// Get an input channel.
     pub fn input(&self, index: usize) -> Option<&<Self as GetInput<'execute, Op>>::Input>
-        where OperatorInputs<'execute, Op>: GetInput<'execute, Op>
+    where
+        OperatorInputs<'execute, Op>: GetInput<'execute, Op>,
     {
         GetInput::input(self, index)
     }
@@ -158,38 +163,53 @@ impl<'execute> ParamInputs<'execute> {
 
     /// Get a float parameter.
     pub fn get_float(&self, name: &str, index: usize) -> f64 {
-        unsafe { self.inputs.getParDouble(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
+        unsafe {
+            self.inputs
+                .getParDouble(ffi::CString::new(name).unwrap().into_raw(), index as i32)
+        }
     }
 
     /// Get an integer parameter.
     pub fn get_int(&self, name: &str, index: usize) -> i32 {
-        unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), index as i32) }
+        unsafe {
+            self.inputs
+                .getParInt(ffi::CString::new(name).unwrap().into_raw(), index as i32)
+        }
     }
 
     /// Get a string parameter.
     pub fn get_string(&self, name: &str) -> &str {
         unsafe {
-            let res = self.inputs.getParString(ffi::CString::new(name).unwrap().into_raw());
+            let res = self
+                .inputs
+                .getParString(ffi::CString::new(name).unwrap().into_raw());
             ffi::CStr::from_ptr(res).to_str().unwrap()
         }
     }
 
     /// Get a toggle parameter.
     pub fn get_toggle(&self, name: &str) -> bool {
-        unsafe { self.inputs.getParInt(ffi::CString::new(name).unwrap().into_raw(), 0) != 0 }
+        unsafe {
+            self.inputs
+                .getParInt(ffi::CString::new(name).unwrap().into_raw(), 0)
+                != 0
+        }
     }
 
     /// Enable or disable a parameter.
     pub fn enable_param(&self, name: &str, enable: bool) {
         unsafe {
-            self.inputs.enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
+            self.inputs
+                .enablePar(ffi::CString::new(name).unwrap().into_raw(), enable);
         }
     }
 
     /// Get a chop parameter.
     fn get_chop(&self, name: &str) -> ChopParam {
         unsafe {
-            let chop = self.inputs.getParCHOP(ffi::CString::new(name).unwrap().into_raw());
+            let chop = self
+                .inputs
+                .getParCHOP(ffi::CString::new(name).unwrap().into_raw());
             if chop.is_null() {
                 ChopParam { input: None }
             } else {
@@ -200,7 +220,7 @@ impl<'execute> ParamInputs<'execute> {
 }
 
 /// Get an input to an operator.
-pub trait GetInput<'execute, Op>: Index<usize, Output=Self::Input> {
+pub trait GetInput<'execute, Op>: Index<usize, Output = Self::Input> {
     /// The type of the input.
     type Input = Op;
     /// The number of inputs available.
@@ -210,7 +230,8 @@ pub trait GetInput<'execute, Op>: Index<usize, Output=Self::Input> {
 }
 
 impl<'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
-    where Self: GetInput<'execute, Op>
+where
+    Self: GetInput<'execute, Op>,
 {
     type Output = <Self as GetInput<'execute, Op>>::Input;
 
