@@ -1,86 +1,36 @@
-#![feature(min_specialization)]
 pub mod cxx;
-pub mod mode;
 
-use mode::cpu::{CpuMemPixelType, TopCpuInput, TopCpuOutput};
 use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
+
+pub struct TopOutput<'execute> {
+    output: Pin<&'execute mut cxx::TOP_Output>,
+}
+
+impl<'execute> TopOutput<'execute> {
+    pub fn new(output: Pin<&'execute mut cxx::TOP_Output>) -> TopOutput<'execute> {
+        Self { output }
+    }
+}
 
 pub trait TopInfo {
     const EXECUTE_MODE: ExecuteMode;
 }
 
-pub struct TopOutputSpecs<'execute> {
-    specs: Pin<&'execute mut cxx::TOP_OutputFormatSpecs>,
-}
-
-impl<'execute> TopOutputSpecs<'execute> {
-    pub fn new(specs: Pin<&'execute mut cxx::TOP_OutputFormatSpecs>) -> TopOutputSpecs {
-        TopOutputSpecs { specs }
-    }
-
-    pub fn width(&self) -> usize {
-        self.specs.width as usize
-    }
-
-    pub fn height(&self) -> usize {
-        self.specs.height as usize
-    }
-}
-
-pub struct TopContext<'execute> {
-    context: Pin<&'execute mut cxx::TOP_Context>,
-}
-
-impl<'execute> TopContext<'execute> {
-    pub fn new(context: Pin<&'execute mut cxx::TOP_Context>) -> TopContext {
-        TopContext { context }
-    }
-}
-
 #[derive(Debug, Default)]
 pub struct TopGeneralInfo {
     pub cook_every_frame: bool,
-    pub clear_buffers: bool,
-    pub mipmap_all_tops: bool,
     pub cook_every_frame_if_asked: bool,
     pub input_size_index: i32,
-    pub mem_pixel_type: CpuMemPixelType,
 }
 
 pub enum ExecuteMode {
-    OpenGL,
+    Cpu,
     Cuda,
-    CpuWrite,
-    CpuReadWrite,
 }
 
-pub trait TopExecute {
-    fn execute_opengl(
-        &mut self,
-        input: &OperatorInputs<TopInput>,
-        output: TopOutputSpecs,
-        context: TopContext,
-    ) {
-        unimplemented!("OpenGL execution not implemented for this operator")
-    }
-
-    fn execute_cuda(
-        &mut self,
-        input: &OperatorInputs<TopInput>,
-        output: TopOutputSpecs,
-        context: TopContext,
-    ) {
-        unimplemented!("CUDA execution not implemented for this operator")
-    }
-
-    fn execute_cpu(&mut self, input: &OperatorInputs<TopCpuInput>, output: TopCpuOutput) {
-        unimplemented!("CPU execution not implemented for this operator")
-    }
-}
-
-pub trait Top: Op + TopExecute {
+pub trait Top: Op {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }
@@ -88,6 +38,8 @@ pub trait Top: Op + TopExecute {
     fn general_info(&self, input: &OperatorInputs<TopInput>) -> TopGeneralInfo {
         TopGeneralInfo::default()
     }
+
+    fn execute(&mut self, output: TopOutput, input: &OperatorInputs<TopInput>) {}
 }
 
 #[macro_export]
@@ -124,17 +76,10 @@ macro_rules! top_plugin {
                 td_rs_top::cxx::setString(op_info.pythonVersion, new_string_ptr);
                 op_info.cookOnStart = <$plugin_ty>::COOK_ON_START;
                 match <$plugin_ty>::EXECUTE_MODE {
-                    td_rs_top::ExecuteMode::OpenGL => cxx::TOP_ExecuteMode::OpenGL_FBO,
                     td_rs_top::ExecuteMode::Cuda => cxx::TOP_ExecuteMode::CUDA,
-                    td_rs_top::ExecuteMode::CpuWrite => cxx::TOP_ExecuteMode::CPUMemWriteOnly,
-                    td_rs_top::ExecuteMode::CpuReadWrite => cxx::TOP_ExecuteMode::CPUMemReadWrite,
+                    td_rs_top::ExecuteMode::Cpu => cxx::TOP_ExecuteMode::CPUMem,
                 }
             }
-        }
-
-        #[no_mangle]
-        pub extern "C" fn top_get_execute_mode_impl() -> ExecuteMode {
-            <$plugin_ty>::EXECUTE_MODE
         }
 
         #[no_mangle]

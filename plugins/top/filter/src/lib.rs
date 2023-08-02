@@ -18,7 +18,7 @@ enum DownloadTypes {
 #[derive(Params, Default, Clone)]
 struct FilterChopParams {
     #[param(label = "Bits per color", min = 1.0, max = 8.0)]
-    bits_per_color: u32,
+    bits_per_color: u8,
     #[param(label = "Dither")]
     dither: bool,
     #[param(label = "Multithread")]
@@ -70,24 +70,35 @@ impl Top for FilterChop {
 }
 
 impl TopExecute for FilterChop {
-    fn execute_cpu(&mut self, input: &OperatorInputs<TopCpuInput>, output: TopCpuOutput) {
-        let input_height = top.height();
-        let input_width = top.width();
+    fn execute_cpu(&mut self, input: &OperatorInputs<TopCpuInput>, mut output: TopCpuOutput) {
+        if let Some(top) = input.input(0) {
+            let input_height = top.height();
+            let input_width = top.width();
 
-        let input_buf: Option<&[u32]> = input.texture(top, opts);
+            let opts = DownloadOptions {
+                cpu_mem_pixel_type: CpuMemPixelType::BGRA8Fixed,
+                ..Default::default()
+            };
+            let input_buf: Option<&[u32]> = input.texture(top, opts);
+            if let Some(input_buf) = input_buf {
+                let mut out_buffer = Vec::new();
+                Filter::do_filter_work(
+                    input_buf,
+                    input_width,
+                    input_height,
+                    &mut out_buffer,
+                    output.width(),
+                    output.height(),
+                    self.params.dither,
+                    self.params.bits_per_color,
+                );
+                output.write(&mut out_buffer)
+            }
+        }
     }
 }
 // fn execute(&mut self, input: &OperatorInputs<TopInput>, output: TopOutputSpecs) {
-// if let Some(top) = input.input(0) {
-//
-//     let opts = InputDownloadOptions {
-//         download_type: match self.params.download_type {
-//             DownloadTypes::Delayed => InputDownloadType::Delayed,
-//             DownloadTypes::Instant => InputDownloadType::Instant,
-//         },
-//         cpu_mem_pixel_type: CpuMemPixelType::BGRA8Fixed,
-//         ..Default::default()
-//     };
+
 //
 //     let input_buffer: Option<&[u32]> = input.top_data_in_cpu_memory(top, opts);
 //     if let Some(buf) = input_buffer {

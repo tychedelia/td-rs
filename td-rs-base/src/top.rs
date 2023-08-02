@@ -9,13 +9,7 @@ pub struct TopInput {
 }
 
 impl TopInput {
-    pub fn width(&self) -> usize {
-        self.input.width as usize
-    }
-
-    pub fn height(&self) -> usize {
-        self.input.height as usize
-    }
+    
 }
 
 impl<'execute> GetInput<'execute, TopInput> for OperatorInputs<'execute, TopInput> {

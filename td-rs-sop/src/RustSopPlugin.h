@@ -6,6 +6,8 @@
 #ifndef TD_RS_RUSTSOP_H
 #define TD_RS_RUSTSOP_H
 
+using namespace TD;
+
 class SopPlugin : public SOP_CPlusPlusBase {
 public:
     virtual ~SopPlugin() {};

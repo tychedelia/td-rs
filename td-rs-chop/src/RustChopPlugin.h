@@ -6,6 +6,8 @@
 #ifndef TD_RS_RUSTCHOP_H
 #define TD_RS_RUSTCHOP_H
 
+using namespace TD;
+
 class ChopPlugin : public CHOP_CPlusPlusBase {
 public:
     virtual ~ChopPlugin() {};

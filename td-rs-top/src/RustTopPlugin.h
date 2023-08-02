@@ -4,9 +4,11 @@
 #ifndef TD_RS_RUSTTOPPLUGIN_H
 #define TD_RS_RUSTTOPPLUGIN_H
 
+using namespace TD;
+
 class TopPlugin : public TOP_CPlusPlusBase {
 public:
-    virtual ~TopPlugin(){};
+    virtual ~TopPlugin() {};
 
     void getGeneralInfo(TOP_GeneralInfo *info, const OP_Inputs *inputs,
                         void *reserved1) override {
@@ -15,19 +17,11 @@ public:
 
     virtual void getGeneralInfo(TOP_GeneralInfo &info, const OP_Inputs &inputs) {}
 
-    virtual bool getOutputFormat(TOP_OutputFormat* output_format, const OP_Inputs* inputs, void* reserved1) override {
-        return this->getOutputFormat(*output_format, *inputs);
+    virtual void execute(TOP_Output* output, const OP_Inputs* inputs, void* reserved1) override {
+        this->execute(*output, *inputs);
     }
 
-    virtual bool getOutputFormat(TOP_OutputFormat &output_format, const OP_Inputs &inputs) {
-        return false;
-    }
-
-    virtual void execute(TOP_OutputFormatSpecs* output_specs, const OP_Inputs* inputs, TOP_Context* context, void* reserved1) override {
-        this->execute(*output_specs, *inputs, *context);
-    }
-
-    virtual void execute(TOP_OutputFormatSpecs &output_specs, const OP_Inputs &inputs, TOP_Context &context) {}
+    virtual void execute(TOP_Output &output, const OP_Inputs &inputs) {}
 
     int32_t getNumInfoCHOPChans(void *reserved1) override {
         return this->getNumInfoCHOPChans();
@@ -97,16 +91,14 @@ public:
 
 class RustTopPlugin : public TopPlugin {
 public:
-    virtual ~RustTopPlugin(){};
+    virtual ~RustTopPlugin() {};
 
     virtual void getGeneralInfo(TOP_GeneralInfo &info,
                                 const OP_Inputs &inputs) = 0;
 
     virtual int32_t getNumInfoCHOPChans() = 0;
 
-    virtual bool getOutputFormat(TOP_OutputFormat &output_format, const OP_Inputs &inputs) = 0;
-
-    virtual void execute(TOP_OutputFormatSpecs &output_specs, const OP_Inputs &inputs, TOP_Context &context) = 0;
+    virtual void execute(TOP_Output &output, const OP_Inputs &inputs) = 0;
 
     virtual void getInfoCHOPChan(int32_t index, OP_String &name,
                                  float &value) = 0;

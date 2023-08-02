@@ -1,8 +1,6 @@
-use std::f64::consts::PI;
 use std::pin::Pin;
-use std::sync::Arc;
 use td_rs_dat::*;
-use td_rs_derive::{Params, Param};
+use td_rs_derive::{Param, Params};
 
 #[derive(Param, Default, Clone, Debug)]
 enum FilterType {
@@ -60,15 +58,18 @@ impl Dat for FilterDat {
                         if let Some(cell) = input.cell(row.clone(), col) {
                             match self.params.case {
                                 FilterType::UpperCamelCase => {
-                                    let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
+                                    let formatted =
+                                        to_camel_case(cell, self.params.keep_spaces.clone());
                                     output[[row, col]] = formatted;
                                 }
                                 FilterType::LowerCase => {
-                                    let formatted = to_lower_case(cell, self.params.keep_spaces.clone());
+                                    let formatted =
+                                        to_lower_case(cell, self.params.keep_spaces.clone());
                                     output[[row, col]] = formatted;
                                 }
                                 FilterType::UpperCase => {
-                                    let formatted = to_upper_case(cell, self.params.keep_spaces.clone());
+                                    let formatted =
+                                        to_upper_case(cell, self.params.keep_spaces.clone());
                                     output[[row, col]] = formatted;
                                 }
                             }
@@ -79,15 +80,18 @@ impl Dat for FilterDat {
                 let mut output = output.text();
                 match self.params.case {
                     FilterType::UpperCamelCase => {
-                        let formatted = to_camel_case(input.text(), self.params.keep_spaces.clone());
+                        let formatted =
+                            to_camel_case(input.text(), self.params.keep_spaces.clone());
                         output.set_text(&formatted);
                     }
                     FilterType::LowerCase => {
-                        let formatted = to_lower_case(input.text(), self.params.keep_spaces.clone());
+                        let formatted =
+                            to_lower_case(input.text(), self.params.keep_spaces.clone());
                         output.set_text(&formatted);
                     }
                     FilterType::UpperCase => {
-                        let formatted = to_upper_case(input.text(), self.params.keep_spaces.clone());
+                        let formatted =
+                            to_upper_case(input.text(), self.params.keep_spaces.clone());
                         output.set_text(&formatted);
                     }
                 }
@@ -129,7 +133,11 @@ pub fn change_case(s: &str, keep_spaces: bool, upper: bool) -> String {
 
     for c in s.chars() {
         if keep_spaces || !c.is_whitespace() {
-            out.push(if upper { c.to_ascii_uppercase() } else { c.to_ascii_lowercase() });
+            out.push(if upper {
+                c.to_ascii_uppercase()
+            } else {
+                c.to_ascii_lowercase()
+            });
         }
     }
 

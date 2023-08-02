@@ -9,7 +9,6 @@ pub mod top;
 
 use crate::cxx::OP_SOPInput;
 use crate::cxx::{OP_CHOPInput, OP_TOPInputDownloadOptions};
-use crate::param::ChopParam;
 use auto_ops::*;
 use autocxx::cxx::UniquePtr;
 use derive_more::{AsRef, Deref, DerefMut, From, Into};

@@ -1,7 +1,7 @@
+use cargo_metadata::{Metadata, MetadataCommand};
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use cargo_metadata::{Metadata, MetadataCommand};
 
 pub enum PluginType {
     Chop,
