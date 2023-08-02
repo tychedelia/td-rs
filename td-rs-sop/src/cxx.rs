@@ -14,26 +14,27 @@ include_cpp! {
     #include "SOP_CPlusPlusBase.h"
     #include "RustSopPlugin.h"
     safety!(unsafe)
-    extern_cpp_type!("OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
-    extern_cpp_type!("OP_String", td_rs_base::cxx::OP_String)
-    extern_cpp_type!("OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
-    extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
-    extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    generate_pod!("SOP_GeneralInfo")
-    generate_pod!("SOP_PluginInfo")
-    generate!("SOP_Output")
-    generate!("SOP_VBOOutput")
-    extern_cpp_type!("Vector", td_rs_base::cxx::Vector)
-    extern_cpp_type!("Position", td_rs_base::cxx::Position)
-    extern_cpp_type!("Color", td_rs_base::cxx::Color)
-    extern_cpp_type!("TexCoord", td_rs_base::cxx::TexCoord)
-    extern_cpp_type!("BoundingBox", td_rs_base::cxx::BoundingBox)
-    extern_cpp_type!("SOP_CustomAttribData", td_rs_base::cxx::SOP_CustomAttribData)
-    extern_cpp_type!("SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
+    extern_cpp_type!("TD::OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
+    extern_cpp_type!("TD::OP_String", td_rs_base::cxx::OP_String)
+    extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
+    extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
+    extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
+    generate_pod!("TD::SOP_GeneralInfo")
+    generate_pod!("TD::SOP_PluginInfo")
+    generate!("TD::SOP_Output")
+    generate!("TD::SOP_VBOOutput")
+    extern_cpp_type!("TD::Vector", td_rs_base::cxx::Vector)
+    extern_cpp_type!("TD::Position", td_rs_base::cxx::Position)
+    extern_cpp_type!("TD::Color", td_rs_base::cxx::Color)
+    extern_cpp_type!("TD::TexCoord", td_rs_base::cxx::TexCoord)
+    extern_cpp_type!("TD::BoundingBox", td_rs_base::cxx::BoundingBox)
+    extern_cpp_type!("TD::SOP_CustomAttribData", td_rs_base::cxx::SOP_CustomAttribData)
+    extern_cpp_type!("TD::SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
 }
 
-pub use td_rs_base::cxx::setString;
 pub use ffi::*;
+pub use ffi::TD::*;
+pub use td_rs_base::cxx::setString;
 
 extern "C" {
     fn sop_new_impl() -> Box<dyn Sop>;

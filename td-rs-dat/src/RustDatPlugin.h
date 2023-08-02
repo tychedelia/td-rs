@@ -6,6 +6,8 @@
 #ifndef TD_RS_RUSTDAT_H
 #define TD_RS_RUSTDAT_H
 
+using namespace TD;
+
 class DatPlugin : public DAT_CPlusPlusBase {
 public:
   virtual ~DatPlugin(){};

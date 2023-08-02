@@ -49,7 +49,8 @@ fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
     let plugin_target_path = Path::new(PLUGIN_HOME)
         .join(plugin)
         .join(format!("{plugin}.dll"));
-    std::fs::create_dir_all(&plugin_target_path.parent().unwrap()).context("Could not create plugin directory")?;
+    std::fs::create_dir_all(&plugin_target_path.parent().unwrap())
+        .context("Could not create plugin directory")?;
     std::fs::copy(&plugin_build_path, &plugin_target_path)
         .context("Could not move plugin to target directory")?;
     Ok(())

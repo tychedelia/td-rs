@@ -14,19 +14,20 @@ include_cpp! {
     #include "CHOP_CPlusPlusBase.h"
     #include "RustChopPlugin.h"
     safety!(unsafe)
-    extern_cpp_type!("OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
-    extern_cpp_type!("OP_String", td_rs_base::cxx::OP_String)
-    extern_cpp_type!("OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
-    extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
-    extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    generate_pod!("CHOP_PluginInfo")
-    generate_pod!("CHOP_GeneralInfo")
-    generate_pod!("CHOP_OutputInfo")
-    generate_pod!("CHOP_Output")
+    extern_cpp_type!("TD::OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
+    extern_cpp_type!("TD::OP_String", td_rs_base::cxx::OP_String)
+    extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
+    extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
+    extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
+    generate_pod!("TD::CHOP_PluginInfo")
+    generate_pod!("TD::CHOP_GeneralInfo")
+    generate_pod!("TD::CHOP_OutputInfo")
+    generate_pod!("TD::CHOP_Output")
 }
 
-pub use td_rs_base::cxx::setString;
 pub use ffi::*;
+pub use ffi::TD::*;
+pub use td_rs_base::cxx::setString;
 
 extern "C" {
     fn chop_new_impl() -> Box<dyn Chop>;
@@ -127,6 +128,9 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
         let entry_str = self.inner.info_dat_entry(index as usize, entryIndex as usize);
+        if entry_str.is_empty() {
+            return;
+        }
         unsafe {
             let new_string = CString::new(entry_str.as_str()).unwrap();
             let new_string_ptr = new_string.as_ptr();

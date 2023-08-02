@@ -1,19 +1,15 @@
-use crate::{build, PLUGIN_HOME};
 use crate::metadata::PluginType;
+use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use plist::Value;
-use std::fmt::format;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
     let target = "aarch64-apple-darwin";
     build(
-        &[
-            plugin,
-            plugin_type.to_plugin_name(),
-        ],
+        &[plugin, plugin_type.to_plugin_name()],
         &["--release", &format!("--target={target}")],
     )?;
 
@@ -60,7 +56,12 @@ fn build_xcode(plugin: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-fn write_xcodeproj(target: &str, plugin: &str, plugin_type: &PluginType, path: &PathBuf) -> anyhow::Result<()> {
+fn write_xcodeproj(
+    target: &str,
+    plugin: &str,
+    plugin_type: &PluginType,
+    path: &PathBuf,
+) -> anyhow::Result<()> {
     const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
     const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
     const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
@@ -69,8 +70,10 @@ fn write_xcodeproj(target: &str, plugin: &str, plugin_type: &PluginType, path: &
 
     std::fs::create_dir_all(&path.parent().unwrap())
         .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file(format!("td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"))
-        .expect("Could not read xcode project");
+    let mut project = Value::from_file(format!(
+        "td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"
+    ))
+    .expect("Could not read xcode project");
     let mut p = project.as_dictionary_mut().unwrap();
     let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
     let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();

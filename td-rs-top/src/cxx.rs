@@ -4,37 +4,33 @@ use std::ffi::CString;
 use std::pin::Pin;
 use td_rs_base::{param::ParameterManager, OperatorInputs};
 
+use crate::TopOutput;
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
-use crate::{ExecuteMode, Top, TopContext, TopOutputSpecs};
+use crate::{ExecuteMode, Top};
 
 include_cpp! {
     #include "TOP_CPlusPlusBase.h"
     #include "RustTopPlugin.h"
     safety!(unsafe)
-    extern_cpp_type!("OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
-    extern_cpp_type!("OP_String", td_rs_base::cxx::OP_String)
-    extern_cpp_type!("OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
-    extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
-    extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    extern_cpp_type!("OP_TOPInput", td_rs_base::cxx::OP_TOPInput)
-    extern_cpp_type!("OP_TOPInputDownloadOptions", td_rs_base::cxx::OP_TOPInputDownloadOptions)
-    extern_cpp_type!("OP_TOPInputDownloadType", td_rs_base::cxx::OP_TOPInputDownloadType)
-    pod!("OP_TOPInputDownloadType")
-    extern_cpp_type!("OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
-    pod!("OP_CPUMemPixelType")
-    generate_pod!("TOP_GeneralInfo")
-    generate_pod!("TOP_PluginInfo")
-    generate_pod!("TOP_OutputFormatSpecs")
+    extern_cpp_type!("TD::OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
+    extern_cpp_type!("TD::OP_String", td_rs_base::cxx::OP_String)
+    extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
+    extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
+    extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
+    extern_cpp_type!("TD::OP_TOPInput", td_rs_base::cxx::OP_TOPInput)
+    extern_cpp_type!("TD::OP_TOPInputDownloadOptions", td_rs_base::cxx::OP_TOPInputDownloadOptions)
+    extern_cpp_type!("TD::OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
+    pod!("TD::OP_CPUMemPixelType")
+    generate_pod!("TD::TOP_GeneralInfo")
+    generate_pod!("TD::TOP_PluginInfo")
 }
 
+pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::setString;
 
-fn foo() {}
-
 extern "C" {
     fn top_new_impl() -> Box<dyn Top>;
-    fn top_get_execute_mode_impl() -> ExecuteMode;
 }
 
 #[subclass(superclass("RustTopPlugin"))]
@@ -60,51 +56,18 @@ extern "C" fn top_new() -> *mut RustTopPluginImplCpp {
 
 impl RustTopPlugin_methods for RustTopPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut TOP_GeneralInfo>, inputs: &OP_Inputs) {
-        // let input = OperatorInputs::new(inputs);
-        // let gen_info = self.inner.general_info(&input);
-        // info.cookEveryFrame = gen_info.cook_every_frame;
-        // info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
-    }
-
-    fn getOutputFormat(
-        &mut self,
-        mut format: Pin<&mut TOP_OutputFormat>,
-        inputs: &OP_Inputs,
-    ) -> bool {
-        // let input = OperatorInputs::new(inputs);
-        // let output_format = self.inner.output_format(&input);
-        // format.width = output_format.width;
-        // format.height = output_format.height;
-        // format.color = output_format.color;
-        // format.bitsPerChannel = output_format.bits_per_channel;
-        false
+        let input = OperatorInputs::new(inputs);
+        let gen_info = self.inner.general_info(&input);
+        info.cookEveryFrame = gen_info.cook_every_frame;
+        info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
+        info.inputSizeIndex = gen_info.input_size_index;
     }
 
     // TOP_OutputFormatSpecs &output_specs, const OP_Inputs &inputs, TOP_Context &context
-    fn execute(
-        &mut self,
-        output_specs: Pin<&mut TOP_OutputFormatSpecs>,
-        inputs: &OP_Inputs,
-        context: Pin<&mut TOP_Context>,
-    ) {
-        // let input = OperatorInputs::new(inputs);
-        // let context = TopContext::new(context);
-
-        let foo: Option<ffi::OP_TOPInput> = None;
-        let boo: Option<ffi::OP_TOPInputDownloadOptions> = None;
-        let bar: Option<ffi::OP_TOPInputDownloadType> = None;
-
-        unsafe {
-            match top_get_execute_mode_impl() {
-                // ExecuteMode::OpenGL => self.inner.execute_opengl(&input, output_specs, context),
-                // // ExecuteMode::Cuda => self.inner.execute_cuda(&input, output_specs, context),
-                // ExecuteMode::CpuWrite | ExecuteMode::CpuReadWrite => {
-                //     let output = TopCpuOutput::new(output_specs);
-                //     self.inner.execute_cpu(&input, output)
-                // }
-                _ => panic!("Unsupported execute mode"),
-            }
-        }
+    fn execute(&mut self, output: Pin<&mut TOP_Output>, inputs: &OP_Inputs) {
+        let input = OperatorInputs::new(inputs);
+        let output = TopOutput::new(output);
+        self.inner.execute(output, &input);
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {

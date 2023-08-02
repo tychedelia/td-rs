@@ -1,0 +1,17 @@
+[package]
+name = "wasm-chop"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "chop"
+
+[lib]
+name = "wasm_chop"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../../td-rs-chop" }
+td-rs-derive = { path = "../../../td-rs-derive" }
+wasmtime = "10.0.1"
+wasmprinter = "0.2.60"

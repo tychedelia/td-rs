@@ -14,18 +14,19 @@ include_cpp! {
     #include "DAT_CPlusPlusBase.h"
     #include "RustDatPlugin.h"
     safety!(unsafe)
-    extern_cpp_type!("OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
-    extern_cpp_type!("OP_String", td_rs_base::cxx::OP_String)
-    extern_cpp_type!("OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
-    extern_cpp_type!("OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
-    extern_cpp_type!("OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    generate_pod!("OP_CustomOPInfo")
-    generate!("DAT_Output")
-    generate_pod!("DAT_GeneralInfo")
+    extern_cpp_type!("TD::OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
+    extern_cpp_type!("TD::OP_String", td_rs_base::cxx::OP_String)
+    extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
+    extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
+    extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
+    generate_pod!("TD::OP_CustomOPInfo")
+    generate!("TD::DAT_Output")
+    generate_pod!("TD::DAT_GeneralInfo")
 }
 
-pub use td_rs_base::cxx::setString;
 pub use ffi::*;
+pub use ffi::TD::*;
+pub use td_rs_base::cxx::setString;
 
 extern "C" {
     fn dat_new_impl() -> Box<dyn Dat>;
