@@ -1,7 +1,7 @@
-use std::ops::Index;
-use crate::{GetInput, OperatorInputs};
 use crate::cxx::OP_CHOPInput;
+use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
+use std::ops::Index;
 
 /// A chop input.
 #[repr(transparent)]
@@ -27,7 +27,12 @@ impl ChopInput {
             panic!("index out of bounds");
         }
 
-        unsafe { std::slice::from_raw_parts(*self.input.channelData.offset(index as isize), self.input.numSamples as usize) }
+        unsafe {
+            std::slice::from_raw_parts(
+                *self.input.channelData.offset(index as isize),
+                self.input.numSamples as usize,
+            )
+        }
     }
 }
 

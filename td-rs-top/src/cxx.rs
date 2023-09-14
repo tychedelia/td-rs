@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
@@ -6,7 +7,7 @@ use td_rs_base::{param::ParameterManager, OperatorInputs};
 
 use crate::TopOutput;
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
-use crate::{ExecuteMode, Top};
+use crate::Top;
 
 include_cpp! {
     #include "TOP_CPlusPlusBase.h"
@@ -71,7 +72,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
-        self.inner.num_info_chop_chans() as i32
+        self.inner.info_chop_num_chans() as i32
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {

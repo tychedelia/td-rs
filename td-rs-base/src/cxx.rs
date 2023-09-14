@@ -32,5 +32,5 @@ include_cpp! {
     generate!("setString")
 }
 
-pub use ffi::*;
 pub use ffi::TD::*;
+pub use ffi::*;

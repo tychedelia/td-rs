@@ -1,7 +1,7 @@
 #![allow(unused)]
 
-use td_rs_derive::*;
 use td_rs_base::*;
+use td_rs_derive::*;
 
 #[derive(Param)]
 enum TestEnum {
@@ -35,5 +35,12 @@ fn main() {
         menu: TestEnum::Hi,
     };
 
-    assert_eq!(TestEnum::names(), [String::from("Hi"), String::from("Hello"), String::from("Goodbye")]);
+    assert_eq!(
+        TestEnum::names(),
+        [
+            String::from("Hi"),
+            String::from("Hello"),
+            String::from("Goodbye")
+        ]
+    );
 }

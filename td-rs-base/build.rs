@@ -1,7 +1,6 @@
 fn main() -> miette::Result<()> {
     let path = std::path::PathBuf::from("src");
-    let mut b = autocxx_build::Builder::new("src/cxx.rs", &[&path])
-        .auto_allowlist(true);
+    let mut b = autocxx_build::Builder::new("src/cxx.rs", &[&path]).auto_allowlist(true);
 
     if cfg!(windows) {
         b = b.extra_clang_args(&["-std=c++17", "-D_CRT_USE_BUILTIN_OFFSETOF"]);

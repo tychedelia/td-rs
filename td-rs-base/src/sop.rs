@@ -1,6 +1,6 @@
-use auto_ops::impl_op_ex;
 use crate::{cxx, GetInput, OperatorInputs};
-use derive_more::{Deref, DerefMut, AsRef, From, Into};
+use auto_ops::impl_op_ex;
+use derive_more::{AsRef, Deref, DerefMut, From, Into};
 use ref_cast::RefCast;
 
 /// A sop input.
@@ -14,7 +14,10 @@ impl SopInput {
     pub fn point_positions(&self) -> &[Position] {
         let num_points = self.num_points();
         unsafe {
-            std::slice::from_raw_parts(Position::ref_cast(&*self.input.getPointPositions()), num_points)
+            std::slice::from_raw_parts(
+                Position::ref_cast(&*self.input.getPointPositions()),
+                num_points,
+            )
         }
     }
 
@@ -55,7 +58,8 @@ impl SopInput {
             let textures = self.input.getTextures();
             let num_textures = (*textures).numTextureLayers;
             let textures = (*textures).textures;
-            let textures = std::slice::from_raw_parts(TexCoord::ref_cast(&*textures), num_textures as usize);
+            let textures =
+                std::slice::from_raw_parts(TexCoord::ref_cast(&*textures), num_textures as usize);
             (textures, num_textures as usize)
         }
     }
@@ -137,7 +141,6 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
         z: a.z + b.z,
     })
 });
-
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]

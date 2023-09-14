@@ -6,6 +6,7 @@ build/
 .vs/
 Debug/
 Release/
+
 RustCHOP.xcodeproj/project.xcworkspace/xcuserdata
 *.xcodeproj/
 cmake-build*

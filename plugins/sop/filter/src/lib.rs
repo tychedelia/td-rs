@@ -1,13 +1,13 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
 use std::sync::Arc;
-use td_rs_sop::*;
 use td_rs_derive::Params;
 use td_rs_sop::param::ChopParam;
+use td_rs_sop::*;
 
 #[derive(Params, Default, Clone)]
 struct FilterSopParams {
-    translate: ChopParam
+    translate: ChopParam,
 }
 
 /// Struct representing our SOP's state
@@ -51,11 +51,9 @@ impl FilterSop {
     }
 
     fn copy_points_translated(output: &mut SopOutput, input: &SopInput, t: &Vec3) {
-        input.point_positions()
-            .iter()
-            .for_each(|p| {
-                output.add_point(&(p + t));
-            });
+        input.point_positions().iter().for_each(|p| {
+            output.add_point(&(p + t));
+        });
     }
 
     fn copy_normals(output: &mut SopOutput, input: &SopInput) {
@@ -129,8 +127,7 @@ impl OpInfo for FilterSop {
     const MIN_INPUTS: usize = 1;
 }
 
-impl Op for FilterSop {
-}
+impl Op for FilterSop {}
 
 impl Sop for FilterSop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {

@@ -4,7 +4,7 @@ Experiments integrating Rust into TouchDesigner's plugin framework.
 
 ## Status
 
-This is a work in progress that is capable of building plugins, but is not fully ready for production use. 
+This is a work in progress that is capable of building plugins, but is not fully ready for production use.
 The current implementation is not yet optimized for performance or safety and may have missing APIs.
 
 ## Structure

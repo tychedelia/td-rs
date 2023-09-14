@@ -8,19 +8,11 @@ pub mod sop;
 pub mod top;
 
 use crate::cxx::OP_SOPInput;
-use crate::cxx::{OP_CHOPInput, OP_TOPInputDownloadOptions};
-use auto_ops::*;
-use autocxx::cxx::UniquePtr;
-use derive_more::{AsRef, Deref, DerefMut, From, Into};
 pub use param::*;
 use ref_cast::RefCast;
 use std::cell::OnceCell;
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
-use std::path::PathBuf;
-use std::pin::Pin;
-use std::process::Output;
-use std::rc::Rc;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -52,13 +44,33 @@ pub trait OpInfo {
     const COOK_ON_START: bool = false;
 }
 
-/// Functionality for all operator plugin types.
-/// This can commonly be left as the default implementation for most plugins.
-pub trait Op {
-    fn num_info_chop_chans(&self) -> usize {
+pub trait InfoChop {
+    fn size(&self) -> usize {
         0
     }
 
+    fn channel(&self, index: usize) -> (String, f32) {
+        unimplemented!()
+    }
+}
+
+impl<T> InfoChop for T {}
+
+pub trait InfoDat {
+    fn size(&self) -> (u32, u32) {
+        (0, 0)
+    }
+
+    fn entry(&self, index: usize, entry_index: usize) -> String {
+        String::from("")
+    }
+}
+
+impl<T> InfoDat for T {}
+
+/// Functionality for all operator plugin types.
+/// This can commonly be left as the default implementation for most plugins.
+pub trait Op: InfoDat + InfoChop {
     fn set_info(&mut self, info: &str) {
         // # Safety
         // The plugin is held on a single thread, and setters
@@ -101,25 +113,13 @@ pub trait Op {
         unsafe { WARNING_STR.get_or_init(|| "".to_string()) }
     }
 
-    fn info_dat_entry(&self, index: usize, entry_index: usize) -> String {
-        String::from("")
-    }
-
-    fn info_dat_size(&self) -> (u32, u32) {
-        (0, 0)
-    }
-
-    fn info_chop_chan(&self, index: usize) -> (String, f32) {
-        unimplemented!()
-    }
-
     fn pulse_pressed(&mut self, name: &str) {}
 }
 
 /// Input to an operator, which can be used to get parameters, channels,
 /// and other information.
 pub struct OperatorInputs<'execute, Op> {
-    pub inputs: &'execute crate::cxx::OP_Inputs,
+    pub inputs: &'execute cxx::OP_Inputs,
     _marker: std::marker::PhantomData<Op>,
 }
 

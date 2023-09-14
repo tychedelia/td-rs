@@ -34,15 +34,19 @@ impl EuroFilterChop {
 }
 
 impl OpInfo for EuroFilterChop {
-    const OPERATOR_LABEL: &'static str = "Euro Filter";
     const OPERATOR_TYPE: &'static str = "Eurofilter";
-    const MAX_INPUTS: usize = 1;
+    const OPERATOR_LABEL: &'static str = "Euro Filter";
     const MIN_INPUTS: usize = 1;
+    const MAX_INPUTS: usize = 1;
 }
 
 impl Op for EuroFilterChop {}
 
 impl Chop for EuroFilterChop {
+    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
+        format!("chan{}", index)
+    }
+
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
@@ -84,10 +88,6 @@ impl Chop for EuroFilterChop {
             timeslice: true,
             input_match_index: 0,
         }
-    }
-
-    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
-        format!("chan{}", index)
     }
 
     fn output_info(&self, inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {

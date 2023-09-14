@@ -30,7 +30,7 @@ impl FilterChop {
                 scale: 1.0,
                 apply_offset: false,
                 offset: 0.0,
-            }
+            },
         }
     }
 }

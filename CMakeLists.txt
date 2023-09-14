@@ -19,15 +19,10 @@ include_directories(td-rs-chop/src)
 include_directories(td-rs-sop/src)
 
 add_executable(td_rs
-        target/aarch64-apple-darwin/cxxbridge/rust/cxx.h
-        target/aarch64-apple-darwin/release/build/cxx-84d007bc7faa016c/out/flag_check.cpp
-        target/aarch64-apple-darwin/release/build/link-cplusplus-0be262bd7c8e367d/out/dummy.cc
-        target/cxxbridge/rust/cxx.h
-        target/tests/trybuild/cxxbridge/rust/cxx.h
         td-rs-base/src/CPlusPlus_Common.h
         td-rs-chop/src/CHOP_CPlusPlusBase.h
         td-rs-chop/src/RustChopPlugin.cpp
-        td-rs-chop-autocxx/src/RustChopPlugin.h
+        td-rs-chop/src/RustChopPlugin.h
         td-rs-base/src/RustBase.h
         td-rs-sop/src/RustSopPlugin.h
         td-rs-top/src/RustTopPlugin.cpp
