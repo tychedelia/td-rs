@@ -1,12 +1,12 @@
-use std::ops::{Deref, Index, IndexMut};
-use std::pin::{Pin, pin};
-use std::sync::Arc;
+use crate::cxx::{SOP_CustomAttribData, Vector};
 use autocxx::prelude::*;
 use ref_cast::RefCast;
-pub use td_rs_base::*;
-use crate::cxx::{SOP_CustomAttribData, Vector};
+use std::ops::{Deref, Index, IndexMut};
+use std::pin::{pin, Pin};
+use std::sync::Arc;
 pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::sop::*;
+pub use td_rs_base::*;
 
 pub mod cxx;
 
@@ -34,19 +34,25 @@ impl<'execute> SopOutput<'execute> {
 
     pub fn add_particle_system(&mut self, num_pts: usize, start_idx: usize) {
         unsafe {
-            self.output.as_mut().addParticleSystem(num_pts as i32, start_idx as i32);
+            self.output
+                .as_mut()
+                .addParticleSystem(num_pts as i32, start_idx as i32);
         }
     }
 
     pub fn add_line(&mut self, indices: &[u32]) {
         unsafe {
-            self.output.as_mut().addLine(indices.as_ptr() as *const i32, indices.len() as i32);
+            self.output
+                .as_mut()
+                .addLine(indices.as_ptr() as *const i32, indices.len() as i32);
         }
     }
 
     pub fn add_triangles(&mut self, indices: &[u32]) {
         unsafe {
-            self.output.as_mut().addTriangles(indices.as_ptr() as *const i32, indices.len() as i32);
+            self.output
+                .as_mut()
+                .addTriangles(indices.as_ptr() as *const i32, indices.len() as i32);
         }
     }
 
@@ -56,26 +62,41 @@ impl<'execute> SopOutput<'execute> {
 
     pub fn set_normals(&mut self, normals: &[Vec3], start_idx: usize) {
         unsafe {
-            self.output.as_mut().setNormals(normals.as_ptr() as *const Vector, normals.len() as i32, start_idx as i32);
+            self.output.as_mut().setNormals(
+                normals.as_ptr() as *const Vector,
+                normals.len() as i32,
+                start_idx as i32,
+            );
         }
     }
 
     pub fn set_colors(&mut self, colors: &[Color], start_idx: usize) {
         unsafe {
-            self.output.as_mut().setColors(colors.as_ptr() as *const cxx::Color, colors.len() as i32, start_idx as i32);
+            self.output.as_mut().setColors(
+                colors.as_ptr() as *const cxx::Color,
+                colors.len() as i32,
+                start_idx as i32,
+            );
         }
     }
 
     pub fn set_textures(&mut self, textures: &[TexCoord], num_layers: usize, start_idx: usize) {
         unsafe {
-            self.output.as_mut().setTexCoords(textures.as_ptr() as *const cxx::TexCoord, textures.len() as i32, num_layers as i32, start_idx as i32);
+            self.output.as_mut().setTexCoords(
+                textures.as_ptr() as *const cxx::TexCoord,
+                textures.len() as i32,
+                num_layers as i32,
+                start_idx as i32,
+            );
         }
     }
 
     pub fn set_custom_attribute(&mut self, attr: &CustomAttributeData, num_pts: usize) {
         unsafe {
             let attr: *const CustomAttributeData = attr;
-            self.output.as_mut().setCustomAttribute(attr as *const SOP_CustomAttribData, num_pts as i32);
+            self.output
+                .as_mut()
+                .setCustomAttribute(attr as *const SOP_CustomAttribData, num_pts as i32);
         }
     }
 }
@@ -91,7 +112,6 @@ impl<'execute> SopVboOutput<'execute> {
         Self { output }
     }
 }
-
 
 /// Trait for defining a custom operator.
 pub trait Sop: Op {

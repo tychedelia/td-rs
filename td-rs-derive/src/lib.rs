@@ -5,7 +5,10 @@ use proc_macro2::TokenStream as TokenStream2;
 
 use quote::{quote, ToTokens};
 use syn::spanned::Spanned;
-use syn::{parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue, NestedMeta, Type, Variant};
+use syn::{
+    parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
+    NestedMeta, Type, Variant,
+};
 use td_rs_base::param::ParamOptions;
 
 #[proc_macro_derive(Param)]

@@ -4,7 +4,7 @@ use std::ops::{Index, IndexMut};
 pub struct Table<T> {
     size: [usize; 2],
     r: HashMap<[usize; 2], T>,
-    w: HashMap<[usize; 2], T>
+    w: HashMap<[usize; 2], T>,
 }
 
 impl<T> Table<T> {
@@ -12,7 +12,7 @@ impl<T> Table<T> {
         Self {
             size,
             r: HashMap::new(),
-            w: HashMap::new()
+            w: HashMap::new(),
         }
     }
 
@@ -25,7 +25,8 @@ impl<T> Table<T> {
     }
 
     pub fn for_each<F>(&self, mut f: F)
-        where F: FnMut(&[usize; 2], &T)
+    where
+        F: FnMut(&[usize; 2], &T),
     {
         for (k, v) in self.w.iter() {
             f(k, v);
@@ -47,15 +48,16 @@ impl<T> Index<[usize; 2]> for Table<T> {
         }
 
         if self.w.contains_key(&index) {
-            return &self.w[&index]
+            return &self.w[&index];
         }
 
         &self.r[&index]
     }
 }
 
-impl <T> IndexMut<[usize; 2]> for Table<T>
-    where T: Default
+impl<T> IndexMut<[usize; 2]> for Table<T>
+where
+    T: Default,
 {
     fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
         let [row, col] = index;
@@ -66,9 +68,6 @@ impl <T> IndexMut<[usize; 2]> for Table<T>
         self.w.entry(index).or_insert_with(|| T::default())
     }
 }
-
-
-
 
 #[cfg(test)]
 mod test {

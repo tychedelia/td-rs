@@ -40,8 +40,10 @@ impl OpInfo for WasmChop {
     const MAX_INPUTS: usize = 1;
 }
 
-impl Op for WasmChop {
-    fn info_dat_entry(&self, index: usize, entry_index: usize) -> String {
+impl Op for WasmChop {}
+
+impl InfoDat for WasmChop {
+    fn entry(&self, index: usize, entry_index: usize) -> String {
         let wasm_file = &self.params.wasm;
         if wasm_file.exists() && wasm_file.is_file() {
             wasmprinter::print_file(wasm_file.as_path()).expect("Failed to print wasm file")
@@ -50,7 +52,7 @@ impl Op for WasmChop {
         }
     }
 
-    fn info_dat_size(&self) -> (u32, u32) {
+    fn size(&self) -> (u32, u32) {
         (1, 1)
     }
 }

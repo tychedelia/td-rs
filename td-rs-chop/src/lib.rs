@@ -1,9 +1,9 @@
+use autocxx::prelude::*;
 use std::ops::{Index, IndexMut};
 use std::pin::Pin;
 use std::sync::Arc;
-use autocxx::prelude::*;
-pub use td_rs_base::*;
 pub use td_rs_base::chop::*;
+pub use td_rs_base::*;
 
 pub mod cxx;
 
@@ -112,12 +112,12 @@ impl IndexMut<usize> for ChopOutput<'_> {
 
 /// Trait for defining a custom operator.
 pub trait Chop: Op {
-    fn channel_name(&self, index: usize, input: &OperatorInputs<ChopInput>) -> String {
-        String::from("")
+    fn params_mut(&mut self) -> Option<&mut impl OperatorParams> {
+        None
     }
 
-    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-        None
+    fn channel_name(&self, index: usize, input: &OperatorInputs<ChopInput>) -> String {
+        String::from("")
     }
 
     fn execute(&mut self, output: &mut ChopOutput, input: &OperatorInputs<ChopInput>);

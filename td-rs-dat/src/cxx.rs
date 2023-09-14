@@ -1,14 +1,12 @@
-use std::cell::RefCell;
-use std::ffi::{c_void, CString};
-use std::ops::DerefMut;
+#![allow(non_snake_case)]
+use crate::{Dat, DatOutput};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
-use std::pin::Pin;
-use std::rc::Rc;
-use cxx::let_cxx_string;
 use cxx::memory::UniquePtrTarget;
-use crate::{Dat, DatOutput};
-use td_rs_base::{OperatorInputs, param::{ParameterManager}};
+use std::ffi::CString;
+use std::ops::DerefMut;
+use std::pin::Pin;
+use td_rs_base::{param::ParameterManager, OperatorInputs};
 
 include_cpp! {
     #include "DAT_CPlusPlusBase.h"
@@ -24,8 +22,8 @@ include_cpp! {
     generate_pod!("TD::DAT_GeneralInfo")
 }
 
-pub use ffi::*;
 pub use ffi::TD::*;
+pub use ffi::*;
 pub use td_rs_base::cxx::setString;
 
 extern "C" {
@@ -71,7 +69,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
-        self.inner.num_info_chop_chans() as i32
+        self.inner.info_chop_num_chans() as i32
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
@@ -96,7 +94,9 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
-        let entry_str = self.inner.info_dat_entry(index as usize, entryIndex as usize);
+        let entry_str = self
+            .inner
+            .info_dat_entry(index as usize, entryIndex as usize);
         unsafe {
             let new_string = CString::new(entry_str.as_str()).unwrap();
             let new_string_ptr = new_string.as_ptr();
@@ -137,6 +137,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     unsafe fn pulsePressed(&mut self, name: *const std::ffi::c_char) {
-        self.inner.pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+        self.inner
+            .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
     }
 }

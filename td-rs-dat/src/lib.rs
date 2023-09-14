@@ -41,7 +41,9 @@ impl<'execute> DatOutput<'execute> {
             output: self.output,
             table,
         };
-        table_out.table.resize(table_out.table_size().iter().product(), T::default());
+        table_out
+            .table
+            .resize(table_out.table_size().iter().product(), T::default());
         table_out
     }
 
@@ -61,7 +63,8 @@ pub struct DatTableOutput<'execute, T> {
 }
 
 impl<'execute, T> DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Default
+where
+    T: CellType<'execute> + Default,
 {
     pub fn get(&self, row: usize, col: usize) -> &T {
         T::get(self, row, col)
@@ -90,7 +93,8 @@ impl<'execute, T> DatTableOutput<'execute, T>
 /// A type which can be used as a cell in a DAT table. Should not be implemented manually or used
 /// directly.
 pub trait CellType<'execute>
-    where Self: Clone
+where
+    Self: Clone,
 {
     /// Get a reference to the value of this cell from the table.
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self;
@@ -98,14 +102,14 @@ pub trait CellType<'execute>
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self);
 }
 
-
 impl<'execute> CellType<'execute> for f64 {
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
         let mut out = f64::default();
-        let [rows, _]  = table.table_size();
+        let [rows, _] = table.table_size();
         let offset = row * rows + col;
         unsafe {
-            table.output
+            table
+                .output
                 .as_ref()
                 .getCellDouble(row as i32, col as i32, &mut out);
         }
@@ -124,7 +128,8 @@ impl<'execute> CellType<'execute> for f64 {
         let offset = row * rows + col;
         table.table[offset] = value.clone();
         unsafe {
-            table.output
+            table
+                .output
                 .as_mut()
                 .setCellDouble(row as i32, col as i32, value);
         }
@@ -137,7 +142,8 @@ impl<'execute> CellType<'execute> for i32 {
         let [rows, _] = table.table_size();
         let offset = row * rows + col;
         unsafe {
-            table.output
+            table
+                .output
                 .as_ref()
                 .getCellInt(row as i32, col as i32, &mut out);
         }
@@ -156,7 +162,8 @@ impl<'execute> CellType<'execute> for i32 {
         let offset = row.clone() * rows + col.clone();
         table.table[offset] = value.clone();
         unsafe {
-            table.output
+            table
+                .output
                 .as_mut()
                 .setCellInt(row as i32, col as i32, value);
         }
@@ -168,9 +175,7 @@ impl<'execute> CellType<'execute> for String {
         let rows = table.table_size()[0].clone();
         let offset = row.clone() * rows + col.clone();
         let out = unsafe {
-            let out = table.output
-                .as_ref()
-                .getCellString(row as i32, col as i32);
+            let out = table.output.as_ref().getCellString(row as i32, col as i32);
             std::ffi::CStr::from_ptr(out).to_str().unwrap()
         };
 
@@ -190,16 +195,17 @@ impl<'execute> CellType<'execute> for String {
         table.table[offset] = value.clone();
         let cstr = std::ffi::CString::new(value).unwrap();
         unsafe {
-            table.output
+            table
+                .output
                 .as_mut()
                 .setCellString(row as i32, col as i32, cstr.as_ptr());
         }
     }
 }
 
-
-impl <'execute, T, > Index<[usize; 2]> for DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Default
+impl<'execute, T> Index<[usize; 2]> for DatTableOutput<'execute, T>
+where
+    T: CellType<'execute> + Default,
 {
     type Output = T;
 
@@ -209,10 +215,10 @@ impl <'execute, T, > Index<[usize; 2]> for DatTableOutput<'execute, T>
     }
 }
 
-impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
-    where T: CellType<'execute> + Default
+impl<'execute, T> IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
+where
+    T: CellType<'execute> + Default,
 {
-
     fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
         let [row, col] = index;
         let [rows, _] = self.table_size();
@@ -222,8 +228,6 @@ impl <'execute, T, > IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
         &mut self.table[row * rows + col]
     }
 }
-
-
 
 pub struct DatTextOutput<'execute> {
     output: Pin<&'execute mut cxx::DAT_Output>,

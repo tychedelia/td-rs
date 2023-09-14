@@ -1,16 +1,16 @@
 use std::f64::consts::PI;
 use std::pin::Pin;
 use std::sync::Arc;
-use td_rs_chop::*;
 use td_rs_chop::param::MenuParam;
-use td_rs_derive::{Params, Param};
+use td_rs_chop::*;
+use td_rs_derive::{Param, Params};
 
 #[derive(Param, Default, Clone, Debug)]
 enum Operation {
     #[default]
     Add,
     Multiply,
-    Power
+    Power,
 }
 
 #[derive(Params, Default, Clone, Debug)]
@@ -42,7 +42,7 @@ impl GeneratorChop {
                 apply_scale: false,
                 scale: 1.0,
                 operation: Operation::Add,
-            }
+            },
         }
     }
 }
@@ -64,13 +64,17 @@ impl Chop for GeneratorChop {
         params.enable_param("Scale", self.params.apply_scale);
 
         for i in 0..output.num_channels() {
-            for j in 0..output.num_samples()  {
+            for j in 0..output.num_samples() {
                 let cur_value = match self.params.operation {
-                    Operation::Add =>  (i as f32) + (j as f32),
+                    Operation::Add => (i as f32) + (j as f32),
                     Operation::Multiply => (i as f32) * (j as f32),
-                    Operation::Power  =>  (i as f32).powf(j as f32),
+                    Operation::Power => (i as f32).powf(j as f32),
                 };
-                let scale = if self.params.apply_scale { self.params.scale } else { 1.0 };
+                let scale = if self.params.apply_scale {
+                    self.params.scale
+                } else {
+                    1.0
+                };
                 let cur_value = cur_value * scale;
                 output[i][j] = cur_value as f32;
             }
@@ -86,14 +90,13 @@ impl Chop for GeneratorChop {
         }
     }
 
-
     fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
 
     fn output_info(&self, inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         Some(ChopOutputInfo {
-            num_channels:  self.params.num_channels,
+            num_channels: self.params.num_channels,
             num_samples: self.params.length,
             start_index: 0,
             ..Default::default()

@@ -1,11 +1,11 @@
+use crate::chop::ChopInput;
+use crate::{cxx, ParamInputs};
+use ref_cast::RefCast;
 use std::ffi;
 use std::ffi::{c_char, CString};
 use std::ops::{Deref, DerefMut, Index};
 use std::path::PathBuf;
 use std::pin::Pin;
-use ref_cast::RefCast;
-use crate::chop::ChopInput;
-use crate::{cxx, ParamInputs};
 
 /// A numeric parameter.
 // TODO: switch to enum to describe parameter types
@@ -50,7 +50,6 @@ impl Default for NumericParameter {
         }
     }
 }
-
 
 /// Trait for defining operator parameters.
 pub trait OperatorParams {
@@ -112,11 +111,9 @@ impl<'execute> ParameterManager<'execute> {
     /// Create a new parameter manager. Should not be called by
     /// users.
     pub fn new(
-        mut manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>
+        mut manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>,
     ) -> ParameterManager {
-        Self {
-            manager
-        }
+        Self { manager }
     }
 
     /// Append a float parameter.
@@ -149,7 +146,6 @@ impl<'execute> ParameterManager<'execute> {
         self.manager.as_mut().appendXYZ(&param);
     }
 
-
     /// Append a uv parameter.
     pub fn append_uv(&mut self, param: NumericParameter) {
         let param = param.into();
@@ -167,7 +163,6 @@ impl<'execute> ParameterManager<'execute> {
         let param = param.into();
         self.manager.as_mut().appendRGB(&param);
     }
-
 
     /// Append a rgba parameter.
     pub fn append_rgba(&mut self, param: NumericParameter) {
@@ -234,7 +229,7 @@ impl<'execute> ParameterManager<'execute> {
         let name_ptrs: Vec<*const c_char> = c_strings.iter().map(|cs| cs.as_ptr()).collect();
         let names: *mut *const c_char = name_ptrs.as_ptr() as *mut *const c_char;
 
-        let c_strings: Vec<CString> =  labels
+        let c_strings: Vec<CString> = labels
             .iter()
             .map(|s| CString::new(s.as_bytes()).unwrap())
             .collect();
@@ -244,7 +239,9 @@ impl<'execute> ParameterManager<'execute> {
 
         let param = param.into();
         unsafe {
-            self.manager.as_mut().appendMenu(&param, n_items, names, labels);
+            self.manager
+                .as_mut()
+                .appendMenu(&param, n_items, names, labels);
         }
     }
 
@@ -257,7 +254,6 @@ impl<'execute> ParameterManager<'execute> {
         let param = param.into();
         self.manager.as_mut().appendSOP(&param);
     }
-
 
     /// Append a python parameter.
     pub fn append_python(&mut self, param: StringParameter) {
@@ -308,7 +304,6 @@ impl<'execute> ParameterManager<'execute> {
     }
 }
 
-
 /// Options for creating parameters in derive macro.
 /// Not intended for direct use.
 #[derive(Debug)]
@@ -358,7 +353,8 @@ macro_rules! impl_param_int {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
                 let mut param: NumericParameter = options.into();
                 param.default_values = [*self as f64, 0.0, 0.0, 0.0];
-                parameter_manager.append_int(param);            }
+                parameter_manager.append_int(param);
+            }
 
             fn update(&mut self, name: &str, inputs: &ParamInputs) {
                 *self = inputs.get_int(name, 0) as $t;
@@ -414,12 +410,7 @@ impl Param for String {
 impl Param for rgb::RGB8 {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: NumericParameter = options.into();
-        param.default_values = [
-            self.r as f64,
-            self.g as f64,
-            self.b as f64,
-            0.0,
-        ];
+        param.default_values = [self.r as f64, self.g as f64, self.b as f64, 0.0];
         parameter_manager.append_rgb(param);
     }
 
@@ -435,12 +426,7 @@ impl Param for rgb::RGB8 {
 impl Param for rgb::RGB16 {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: NumericParameter = options.into();
-        param.default_values = [
-            self.r as f64,
-            self.g as f64,
-            self.b as f64,
-            0.0,
-        ];
+        param.default_values = [self.r as f64, self.g as f64, self.b as f64, 0.0];
         parameter_manager.append_rgb(param);
     }
 
@@ -456,12 +442,7 @@ impl Param for rgb::RGB16 {
 impl Param for rgb::RGBA8 {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: NumericParameter = options.into();
-        param.default_values = [
-            self.r as f64,
-            self.g as f64,
-            self.b as f64,
-            self.a as f64,
-        ];
+        param.default_values = [self.r as f64, self.g as f64, self.b as f64, self.a as f64];
         parameter_manager.append_rgba(param);
     }
 
@@ -478,12 +459,7 @@ impl Param for rgb::RGBA8 {
 impl Param for rgb::RGBA16 {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let mut param: NumericParameter = options.into();
-        param.default_values = [
-            self.r as f64,
-            self.g as f64,
-            self.b as f64,
-            self.a as f64,
-        ];
+        param.default_values = [self.r as f64, self.g as f64, self.b as f64, self.a as f64];
         parameter_manager.append_rgba(param);
     }
 
@@ -590,7 +566,6 @@ impl Param for ChopParam {
         *self = inputs.get_chop(name);
     }
 }
-
 
 /// A chop parameter.
 #[derive(Default, Clone)]

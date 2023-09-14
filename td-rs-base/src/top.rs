@@ -8,9 +8,7 @@ pub struct TopInput {
     input: OP_TOPInput,
 }
 
-impl TopInput {
-    
-}
+impl TopInput {}
 
 impl<'execute> GetInput<'execute, TopInput> for OperatorInputs<'execute, TopInput> {
     fn num_inputs(&self) -> usize {

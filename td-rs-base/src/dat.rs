@@ -1,7 +1,7 @@
-use std::ops::Index;
-use crate::{GetInput, OperatorInputs};
 use crate::cxx::OP_DATInput;
+use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
+use std::ops::Index;
 
 /// A dat input.
 #[repr(transparent)]
@@ -42,7 +42,11 @@ impl DatInput {
             if cell.is_null() {
                 None
             } else {
-                Some(unsafe { std::ffi::CStr::from_ptr(cell) }.to_str().expect("invalid utf8"))
+                Some(
+                    unsafe { std::ffi::CStr::from_ptr(cell) }
+                        .to_str()
+                        .expect("invalid utf8"),
+                )
             }
         }
     }
