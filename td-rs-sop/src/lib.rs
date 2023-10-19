@@ -138,7 +138,7 @@ macro_rules! sop_plugin {
         use td_rs_sop::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
-        pub extern "C" fn sop_get_plugin_info_impl(mut op_info: Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn sop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
             unsafe {
                 let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();
                 let new_string_ptr = new_string.as_ptr();

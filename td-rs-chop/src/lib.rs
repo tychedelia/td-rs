@@ -112,7 +112,7 @@ impl IndexMut<usize> for ChopOutput<'_> {
 
 /// Trait for defining a custom operator.
 pub trait Chop: Op {
-    fn params_mut(&mut self) -> Option<&mut impl OperatorParams> {
+    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }
 
@@ -133,9 +133,10 @@ pub trait Chop: Op {
 macro_rules! chop_plugin {
     ($plugin_ty:ty) => {
         use td_rs_chop::cxx::OP_CustomOPInfo;
+        use td_rs_chop::cxx::c_void;
 
         #[no_mangle]
-        pub extern "C" fn chop_get_plugin_info_impl(mut op_info: Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn chop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
             unsafe {
                 let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();
                 let new_string_ptr = new_string.as_ptr();
@@ -160,6 +161,18 @@ macro_rules! chop_plugin {
                 let new_string_ptr = new_string.as_ptr();
                 td_rs_chop::cxx::setString(op_info.pythonVersion, new_string_ptr);
                 op_info.cookOnStart = <$plugin_ty>::COOK_ON_START;
+
+                println!("loading methods");
+                let methods = <$plugin_ty>::PYTHON_METHODS;
+                let mut methods_ffi: Vec<pyo3::ffi::PyMethodDef> = vec![];
+                for method in methods {
+                    println!("method: {:?}", method);
+                    methods_ffi.push(method.as_method_def().unwrap().0);
+                }
+                let mut methods = methods_ffi.into_boxed_slice();
+                let array = methods.as_mut_ptr() as *mut c_void;
+                let array_len: usize = methods.len();
+                td_rs_chop::cxx::setPyMethods(op_info, array, array_len);
             }
         }
 

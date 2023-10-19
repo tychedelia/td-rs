@@ -3,7 +3,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, OperatorInputs};
+use td_rs_base::{param::ParameterManager, OperatorInputs, InfoDat, InfoChop};
 
 use crate::TopOutput;
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -72,11 +72,11 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
-        self.inner.info_chop_num_chans() as i32
+        InfoChop::size(&self.inner) as i32
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
-        let (info_name, info_value) = self.inner.info_chop_chan(index as usize);
+        let (info_name, info_value) = InfoChop::channel(&self.inner, index as usize);
         unsafe {
             let new_string = CString::new(info_name.as_str()).unwrap();
             let new_string_ptr = new_string.as_ptr();
@@ -86,7 +86,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
     }
 
     fn getInfoDATSize(&mut self, mut info: Pin<&mut OP_InfoDATSize>) -> bool {
-        let (rows, cols) = self.inner.info_dat_size();
+        let (rows, cols) = InfoDat::size(&self.inner);
         if rows == 0 && cols == 0 {
             false
         } else {
@@ -97,9 +97,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
     }
 
     fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
-        let entry_str = self
-            .inner
-            .info_dat_entry(index as usize, entryIndex as usize);
+        let entry_str = InfoDat::entry(&self.inner, index as usize, entryIndex as usize);
         unsafe {
             let new_string = CString::new(entry_str.as_str()).unwrap();
             let new_string_ptr = new_string.as_ptr();

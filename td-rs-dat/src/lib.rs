@@ -1,6 +1,3 @@
-#![feature(associated_type_defaults)]
-#![feature(impl_trait_in_assoc_type)]
-
 use autocxx::prelude::*;
 use ref_cast::RefCast;
 use std::cell::RefCell;
@@ -262,7 +259,7 @@ macro_rules! dat_plugin {
         use td_rs_dat::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
-        pub extern "C" fn dat_get_plugin_info_impl(mut op_info: Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn dat_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
             unsafe {
                 let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();
                 let new_string_ptr = new_string.as_ptr();

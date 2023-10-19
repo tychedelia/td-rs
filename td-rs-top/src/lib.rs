@@ -49,7 +49,7 @@ macro_rules! top_plugin {
 
         #[no_mangle]
         pub extern "C" fn top_get_plugin_info_impl(
-            mut op_info: Pin<&mut OP_CustomOPInfo>,
+            mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>,
         ) -> cxx::TOP_ExecuteMode {
             unsafe {
                 let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();

@@ -1,5 +1,5 @@
 [package]
-name = "filter-top"
+name = "cpu-memory-top"
 version = "0.1.0"
 edition = "2021"
 
@@ -7,7 +7,7 @@ edition = "2021"
 type = "top"
 
 [lib]
-name = "filter_top"
+name = "cpu_memory_top"
 crate-type = ["staticlib"]
 
 [dependencies]

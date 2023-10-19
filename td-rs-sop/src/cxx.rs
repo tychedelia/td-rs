@@ -84,7 +84,7 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
-        self.inner.info_chop_num_chans() as i32
+        InfoChop::size(&self.inner) as i32
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
