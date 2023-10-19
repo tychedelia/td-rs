@@ -9,6 +9,7 @@ crate-type = ["lib", "staticlib"]
 
 [dependencies]
 autocxx = { path = "../../../google/autocxx" }
+pyo3 = { path = "../../pyo3" }
 cxx = "1.0.78"
 rgb = "0.8.36"
 ref-cast = "1.0"

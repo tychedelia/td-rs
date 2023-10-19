@@ -21,11 +21,14 @@ include_cpp! {
     generate_pod!("TD::CHOP_GeneralInfo")
     generate_pod!("TD::CHOP_OutputInfo")
     generate_pod!("TD::CHOP_Output")
+    generate!("setPyMethods")
 }
 
 pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::setString;
+pub use autocxx::c_void;
+// pub use td_rs_base::cxx::setPyMethods;
 
 extern "C" {
     fn chop_new_impl() -> Box<dyn Chop>;

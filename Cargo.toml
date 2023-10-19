@@ -24,7 +24,7 @@ members = [
     "plugins/chop/wasm",
     "plugins/dat/filter",
     "plugins/sop/filter",
-    "plugins/top/filter",
+    "plugins/top/cpu-memory-top",
     "td-rs-base",
     "td-rs-chop",
     "td-rs-dat",

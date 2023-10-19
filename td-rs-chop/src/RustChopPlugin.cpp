@@ -1,6 +1,7 @@
 #include "RustChopPlugin.h"
 #include "CPlusPlus_Common.h"
 #include <iostream>
+#include <Python.h>
 
 extern "C" {
 
@@ -12,6 +13,7 @@ void FillCHOPPluginInfo(CHOP_PluginInfo *info) {
   info->apiVersion = CHOPCPlusPlusAPIVersion;
   auto opInfo = &info->customOPInfo;
   chop_get_plugin_info_impl(*opInfo);
+  opInfo->pythonVersion->setString(PY_VERSION);
 }
 
 DLLEXPORT

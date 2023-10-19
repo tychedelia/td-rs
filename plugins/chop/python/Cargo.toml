@@ -1,9 +1,16 @@
 [package]
-name = "python"
+name = "python-chop"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.td-rs]
+type = "chop"
+
+[lib]
+name = "python_chop"
+crate-type = ["staticlib"]
 
 [dependencies]
-pyo3 = "0.19.1"
+pyo3 = { path = "../../../../pyo3" }
+td-rs-chop = { path = "../../../td-rs-chop" }
+td-rs-derive = { path = "../../../td-rs-derive" }

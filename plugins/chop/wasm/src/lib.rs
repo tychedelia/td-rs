@@ -1,5 +1,3 @@
-use std::pin::Pin;
-
 use wasmtime::{Engine, Linker, Module, Store};
 
 use td_rs_chop::*;

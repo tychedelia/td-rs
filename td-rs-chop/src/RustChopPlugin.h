@@ -2,9 +2,21 @@
 #include "CHOP_CPlusPlusBase.h"
 #include "CPlusPlus_Common.h"
 #include <iostream>
+#include "Python.h"
+#include <vector>
 
 #ifndef TD_RS_RUSTCHOP_H
 #define TD_RS_RUSTCHOP_H
+
+void setPyMethods(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size) {
+    std::vector<PyMethodDef> *methods = new std::vector<PyMethodDef>();
+    for (size_t i = 0; i < size; i++) {
+        methods->push_back(((PyMethodDef*) pymethods)[i]);
+    }
+    methods->push_back({NULL});
+    PyMethodDef *arr = methods->data();
+    opInfo.pythonMethods = (PyMethodDef*) methods;
+}
 
 using namespace TD;
 

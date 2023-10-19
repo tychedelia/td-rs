@@ -14,6 +14,9 @@ use std::cell::OnceCell;
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
 
+pub type PyMethodDef = pyo3::impl_::pyfunction::PyMethodDef;
+pub type PyGetSetsDef = pyo3::impl_::pymethods::PyGetterDef;
+
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
 static mut WARNING_STR: OnceCell<String> = OnceCell::new();
@@ -40,8 +43,11 @@ pub trait OpInfo {
     const MINOR_VERSION: i32 = 0;
     /// The python version of the operator.
     const PYTHON_VERSION: &'static str = "";
+    const PYTHON_METHODS: &'static [pyo3::impl_::pyfunction::PyMethodDef] = &[];
+    const PYTHON_GET_SETS: &'static [pyo3::ffi::PyGetSetDef] = &[];
     /// Whether to cook on start.
     const COOK_ON_START: bool = false;
+
 }
 
 pub trait InfoChop {

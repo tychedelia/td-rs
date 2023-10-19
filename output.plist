@@ -83,9 +83,9 @@
 			<key>lastKnownFileType</key>
 			<string>archive.ar</string>
 			<key>name</key>
-			<string></string>
+			<string>libpython_chop.a</string>
 			<key>path</key>
-			<string></string>
+			<string>target/aarch64-apple-darwin/release/libpython_chop.a</string>
 			<key>sourceTree</key>
 			<string>&lt;group&gt;</string>
 		</dict>
@@ -274,9 +274,9 @@
 			<key>isa</key>
 			<string>PBXNativeTarget</string>
 			<key>name</key>
-			<string></string>
+			<string>python_chop</string>
 			<key>productName</key>
-			<string></string>
+			<string>python_chop</string>
 			<key>productReference</key>
 			<string>E23329D61DF092AD0002B4FE</string>
 			<key>productType</key>
@@ -291,7 +291,7 @@
 			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>path</key>
-			<string></string>
+			<string>python_chop.plugin</string>
 			<key>sourceTree</key>
 			<string>BUILT_PRODUCTS_DIR</string>
 		</dict>
