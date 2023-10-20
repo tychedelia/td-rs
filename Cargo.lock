@@ -1768,7 +1768,7 @@ name = "pyo3-macros"
 version = "0.20.0"
 dependencies = [
  "proc-macro2",
- "pyo3-macros-backend",
+ "pyo3-macros-backend 0.20.0",
  "quote",
  "syn 2.0.22",
 ]
@@ -1784,12 +1784,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "pyo3-macros-backend"
+version = "0.20.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7774b5a8282bd4f25f803b1f0d945120be959a36c72e08e7cd031c792fdfd424"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
+ "syn 2.0.22",
+]
+
+[[package]]
 name = "python-chop"
 version = "0.1.0"
 dependencies = [
  "pyo3",
  "td-rs-chop",
  "td-rs-derive",
+ "td-rs-derive-py",
 ]
 
 [[package]]
@@ -2316,6 +2329,19 @@ name = "td-rs-derive"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",
+ "quote",
+ "rgb",
+ "syn 1.0.107",
+ "td-rs-base",
+ "trybuild",
+]
+
+[[package]]
+name = "td-rs-derive-py"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "pyo3-macros-backend 0.20.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "quote",
  "rgb",
  "syn 1.0.107",

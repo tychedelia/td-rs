@@ -29,6 +29,7 @@ members = [
     "td-rs-chop",
     "td-rs-dat",
     "td-rs-derive",
+    "td-rs-derive-py",
     "td-rs-sop",
     "td-rs-top",
     "td-rs-xtask",

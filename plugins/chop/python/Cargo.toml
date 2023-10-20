@@ -14,3 +14,4 @@ crate-type = ["staticlib"]
 pyo3 = { path = "../../../../pyo3" }
 td-rs-chop = { path = "../../../td-rs-chop" }
 td-rs-derive = { path = "../../../td-rs-derive" }
+td-rs-derive-py = { path = "../../../td-rs-derive-py" }
