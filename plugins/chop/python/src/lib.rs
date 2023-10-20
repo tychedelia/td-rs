@@ -1,7 +1,9 @@
 use td_rs_chop::param::MenuParam;
 use td_rs_chop::*;
 use td_rs_derive::{Param, Params};
+use td_rs_derive_py::PyOp;
 
+use pyo3::prelude::*;
 
 
 #[derive(Param, Default, Clone, Debug)]
@@ -26,7 +28,7 @@ struct PythonChopParams {
     operation: Operation,
 }
 
-/// Struct representing our CHOP's state
+#[derive(PyOp)]
 pub struct PythonChop {
     params: PythonChopParams,
 }
@@ -49,7 +51,7 @@ impl PythonChop {
 impl OpInfo for PythonChop {
     const OPERATOR_LABEL: &'static str = "Basic Python";
     const OPERATOR_TYPE: &'static str = "Basicgenerator";
-    const PYTHON_METHODS: &'static [PyMethodDef] = &[double::DEF];
+    const PYTHON_METHODS: &'static [PyMethodDef] = &METHODS;
 }
 
 impl Op for PythonChop {}
@@ -105,10 +107,3 @@ impl Chop for PythonChop {
 }
 
 chop_plugin!(PythonChop);
-
-use pyo3::prelude::*;
-
-#[pyfunction]
-fn double(x: usize) -> usize {
-    x * 2
-}
