@@ -22,11 +22,16 @@ include_cpp! {
     generate_pod!("TD::CHOP_OutputInfo")
     generate_pod!("TD::CHOP_Output")
     generate!("setPyMethods")
+    extern_cpp_type!("TD::PY_Struct", td_rs_base::cxx::PY_Struct)
+    extern_cpp_type!("TD::PY_GetInfo", td_rs_base::cxx::PY_GetInfo)
 }
 
 pub use ffi::TD::*;
 pub use ffi::*;
+pub use td_rs_base::cxx::PY_Struct;
+pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::setString;
+pub use td_rs_base::cxx::getPyContext;
 pub use autocxx::c_void;
 // pub use td_rs_base::cxx::setPyMethods;
 

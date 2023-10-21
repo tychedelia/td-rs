@@ -27,9 +27,13 @@ include_cpp! {
     generate_pod!("TD::OP_DATInput")
     generate!("TD::OP_TOPInput")
     generate_pod!("TD::OP_TOPInputDownloadOptions")
+    generate_pod!("TD::PY_Struct")
+    generate_pod!("TD::PY_GetInfo")
+    generate!("TD::PY_Context")
 
     // util fns
     generate!("setString")
+    generate!("getPyContext")
 }
 
 pub use ffi::TD::*;
