@@ -164,16 +164,8 @@ macro_rules! chop_plugin {
 
                 println!("loading methods");
                 let methods = <$plugin_ty>::PYTHON_METHODS;
-                let mut methods_ffi: Vec<pyo3::ffi::PyMethodDef> = vec![];
-                for method in methods {
-                    println!("method: {:?}", method);
-                    let m = method.as_method_def().unwrap().0;
-                    methods_ffi.push(m);
-                    std::mem::forget(m);
-                }
-                let mut methods = methods_ffi.into_boxed_slice();
                 let array_len: usize = methods.len();
-                let array = Box::into_raw(methods) as *mut c_void;
+                let array = methods.as_ptr() as *mut c_void;
                 td_rs_chop::cxx::setPyMethods(op_info, array, array_len);
             }
         }

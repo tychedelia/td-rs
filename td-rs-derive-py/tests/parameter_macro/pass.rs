@@ -9,7 +9,7 @@ enum TestEnum {
     Goodbye,
 }
 
-#[derive(PyOp)]
+#[py_op]
 struct TestParameter {
     float2: f32,
     float3: f64,

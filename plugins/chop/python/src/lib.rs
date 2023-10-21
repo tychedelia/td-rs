@@ -1,10 +1,7 @@
 use td_rs_chop::param::MenuParam;
 use td_rs_chop::*;
 use td_rs_derive::{Param, Params};
-use td_rs_derive_py::PyOp;
-
-use pyo3::prelude::*;
-
+use td_rs_derive_py::py_op;
 
 #[derive(Param, Default, Clone, Debug)]
 enum Operation {
@@ -28,12 +25,13 @@ struct PythonChopParams {
     operation: Operation,
 }
 
-#[derive(PyOp)]
+#[py_op]
 pub struct PythonChop {
     params: PythonChopParams,
 }
 
 /// Impl block providing default constructor for plugin
+
 impl PythonChop {
     pub(crate) fn new() -> Self {
         Self {
@@ -46,12 +44,20 @@ impl PythonChop {
             },
         }
     }
+
+    pub fn foo(&self) {
+        println!("foo!");
+    }
+
+    pub fn bar(&mut self) {
+        println!("bar!");
+    }
 }
 
 impl OpInfo for PythonChop {
     const OPERATOR_LABEL: &'static str = "Basic Python";
     const OPERATOR_TYPE: &'static str = "Basicgenerator";
-    const PYTHON_METHODS: &'static [PyMethodDef] = &METHODS;
+    const PYTHON_METHODS: &'static [pyo3_ffi::PyMethodDef] = &METHODS;
 }
 
 impl Op for PythonChop {}

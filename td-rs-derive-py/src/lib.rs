@@ -7,19 +7,18 @@ use syn::{
     DeriveInput, parse_macro_input,
 };
 
-#[proc_macro_derive(PyOp, attributes(method, get, set))]
-pub fn params_derive(input: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn py_op(attr: TokenStream, input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
-    impl_python(&input)
-}
-
-fn impl_python(input: &DeriveInput) -> TokenStream {
-    pub use pyo3_macros_backend::*;
     let struct_name = &input.ident;
     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
 
     let gen = quote! {
-        static mut METHODS: [PyMethodDef; 2] = [
+        use std::os::raw::c_char;
+        use std::ptr;
+        use pyo3_ffi::*;
+
+        pub const METHODS: [pyo3_ffi::PyMethodDef; 2] = [
             PyMethodDef {
                 ml_name: "sum_as_string\0".as_ptr().cast::<c_char>(),
                 ml_meth: PyMethodDefPointer {
@@ -38,6 +37,20 @@ fn impl_python(input: &DeriveInput) -> TokenStream {
             args: *mut *mut PyObject,
             nargs: Py_ssize_t,
         ) -> *mut PyObject {
+            let py_struct = _self as *mut td_rs_chop::cxx::PY_Struct;
+            println!("  Hello from Rust!");
+            println!("${:?}", (*py_struct).context);
+            let info = td_rs_chop::cxx::PY_GetInfo {
+                autoCook: false,
+                reserved: [0; 50]
+            };
+            let mut ctx = td_rs_chop::cxx::getPyContext(py_struct);
+            let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
+            let py_chop = {
+                  &mut *(me as *mut $struct_name)
+            };
+            py_chop.wow();
+
             if nargs != 2 {
                 PyErr_SetString(
                     PyExc_TypeError,
@@ -95,9 +108,9 @@ fn impl_python(input: &DeriveInput) -> TokenStream {
             }
         }
 
-        impl #impl_generics OperatorParams for #struct_name #ty_generics #where_clause {
-
-        }
+        // impl #impl_generics OperatorParams for #struct_name #ty_generics #where_clause {
+        //
+        // }
     };
     gen.into()
 }
