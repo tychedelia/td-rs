@@ -1,7 +1,8 @@
+use std::ops::DerefMut;
 use td_rs_chop::param::MenuParam;
 use td_rs_chop::*;
 use td_rs_derive::{Param, Params};
-use td_rs_derive_py::py_op;
+use td_rs_derive_py::*;
 
 #[derive(Param, Default, Clone, Debug)]
 enum Operation {
@@ -25,16 +26,19 @@ struct PythonChopParams {
     operation: Operation,
 }
 
-#[py_op]
+#[derive(PyOp)]
 pub struct PythonChop {
+    #[py(get)]
+    bar: i64,
     params: PythonChopParams,
 }
 
 /// Impl block providing default constructor for plugin
-
+#[py_op_methods]
 impl PythonChop {
     pub(crate) fn new() -> Self {
         Self {
+            bar: 666,
             params: PythonChopParams {
                 length: 0,
                 num_channels: 0,
@@ -45,19 +49,16 @@ impl PythonChop {
         }
     }
 
-    pub fn foo(&self) {
+    #[py_meth]
+    pub unsafe fn foo(&mut self, args: &mut pyo3_ffi::PyObject, nargs: usize) -> *mut pyo3_ffi::PyObject {
         println!("foo!");
-    }
-
-    pub fn bar(&mut self) {
-        println!("bar!");
+        pyo3_ffi::PyLong_FromLong(42)
     }
 }
 
 impl OpInfo for PythonChop {
     const OPERATOR_LABEL: &'static str = "Basic Python";
     const OPERATOR_TYPE: &'static str = "Basicgenerator";
-    const PYTHON_METHODS: &'static [pyo3_ffi::PyMethodDef] = &METHODS;
 }
 
 impl Op for PythonChop {}

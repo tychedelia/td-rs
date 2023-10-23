@@ -7,6 +7,7 @@ include_cpp! {
     safety!(unsafe)
     generate!("TD::OP_ParameterManager")
     generate!("TD::OP_String")
+    generate_pod!("TD::OP_CustomOPInfo")
     generate_pod!("TD::OP_CHOPInput")
     generate!("TD::OP_SOPInput")
     generate_pod!("TD::OP_NumericParameter")
@@ -34,6 +35,7 @@ include_cpp! {
     // util fns
     generate!("setString")
     generate!("getPyContext")
+    generate!("setPyInfo")
 }
 
 pub use ffi::TD::*;

@@ -1,44 +1,9 @@
 #include <memory>
 #include "CHOP_CPlusPlusBase.h"
 #include "CPlusPlus_Common.h"
-#include <iostream>
-#include "Python.h"
-#include <vector>
 
 #ifndef TD_RS_RUSTCHOP_H
 #define TD_RS_RUSTCHOP_H
-
-void setPyMethods(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size) {
-    if (size == 0) {
-        return;
-    }
-
-    PyMethodDef *pymethods2 = (PyMethodDef*) pymethods;
-
-    std::cout << "Calling" << std::endl;
-    PyMethodDef myMethod = pymethods2[0];
-    if (myMethod.ml_flags & METH_NOARGS) {
-        PyObject* result = ((PyCFunction)myMethod.ml_meth)(Py_None, NULL);
-        if (result == NULL) {
-            std::cout << "Error calling method" << std::endl;
-        } else {
-            std::cout << "Method called successfully" << std::endl;
-            // Use the result if needed
-            Py_DECREF(result);
-        }
-    }
-
-    std::vector<PyMethodDef> *methods = new std::vector<PyMethodDef>();
-    for (size_t i = 0; i < size; i++) {
-        methods->push_back(pymethods2[i]);
-    }
-    methods->push_back({NULL});
-    PyMethodDef *arr = methods->data();
-    std::cout << "setPyMethods" << std::endl;
-    std::cout << methods->size() << std::endl;
-    std::cout << opInfo.pythonMethods << std::endl;
-    opInfo.pythonMethods = arr;
-}
 
 using namespace TD;
 

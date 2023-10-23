@@ -138,35 +138,7 @@ macro_rules! chop_plugin {
         #[no_mangle]
         pub extern "C" fn chop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
             unsafe {
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.opType, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_LABEL).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.opLabel, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_ICON).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.opIcon, new_string_ptr);
-                op_info.minInputs = <$plugin_ty>::MIN_INPUTS as i32;
-                op_info.maxInputs = <$plugin_ty>::MAX_INPUTS as i32;
-                let new_string = std::ffi::CString::new(<$plugin_ty>::AUTHOR_NAME).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.authorName, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::AUTHOR_EMAIL).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.authorEmail, new_string_ptr);
-                op_info.majorVersion = <$plugin_ty>::MAJOR_VERSION;
-                op_info.minorVersion = <$plugin_ty>::MINOR_VERSION;
-                let new_string = std::ffi::CString::new(<$plugin_ty>::PYTHON_VERSION).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_chop::cxx::setString(op_info.pythonVersion, new_string_ptr);
-                op_info.cookOnStart = <$plugin_ty>::COOK_ON_START;
-
-                println!("loading methods");
-                let methods = <$plugin_ty>::PYTHON_METHODS;
-                let array_len: usize = methods.len();
-                let array = methods.as_ptr() as *mut c_void;
-                td_rs_chop::cxx::setPyMethods(op_info, array, array_len);
+                td_rs_chop::op_info::<$plugin_ty>(op_info);
             }
         }
 

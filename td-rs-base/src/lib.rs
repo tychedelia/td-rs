@@ -6,6 +6,7 @@ pub mod dat;
 pub mod param;
 pub mod sop;
 pub mod top;
+mod py;
 
 use crate::cxx::OP_SOPInput;
 pub use param::*;
@@ -13,6 +14,7 @@ use ref_cast::RefCast;
 use std::cell::OnceCell;
 use std::ffi;
 use std::ops::{Add, Deref, DerefMut, Index};
+use crate::py::{PyGetSets, PyMethods};
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -38,10 +40,6 @@ pub trait OpInfo {
     const MAJOR_VERSION: i32 = 0;
     /// The minor version of the operator.
     const MINOR_VERSION: i32 = 0;
-    /// The python version of the operator.
-    const PYTHON_VERSION: &'static str = "";
-    const PYTHON_METHODS: &'static [pyo3_ffi::PyMethodDef] = &[];
-    const PYTHON_GET_SETS: &'static [pyo3_ffi::PyGetSetDef] = &[];
     /// Whether to cook on start.
     const COOK_ON_START: bool = false;
 
@@ -240,4 +238,28 @@ where
     fn index(&self, index: usize) -> &Self::Output {
         self.input(index).expect("Invalid input index")
     }
+}
+
+pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>) {
+    let new_string = std::ffi::CString::new(T::OPERATOR_TYPE).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opType, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::OPERATOR_LABEL).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opLabel, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::OPERATOR_ICON).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opIcon, new_string_ptr);
+    op_info.minInputs = T::MIN_INPUTS as i32;
+    op_info.maxInputs = T::MAX_INPUTS as i32;
+    let new_string = std::ffi::CString::new(T::AUTHOR_NAME).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.authorName, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::AUTHOR_EMAIL).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.authorEmail, new_string_ptr);
+    op_info.majorVersion = T::MAJOR_VERSION;
+    op_info.minorVersion = T::MINOR_VERSION;
+    op_info.cookOnStart = T::COOK_ON_START;
+    py::py_op_info::<T>(op_info);
 }
