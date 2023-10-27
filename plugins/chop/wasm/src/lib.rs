@@ -1,3 +1,4 @@
+#![feature(min_specialization)]
 use wasmtime::{Engine, Linker, Module, Store};
 
 use td_rs_chop::*;

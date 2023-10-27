@@ -1,6 +1,7 @@
 #include <memory>
 #include "CHOP_CPlusPlusBase.h"
 #include "CPlusPlus_Common.h"
+#include <iostream>
 
 #ifndef TD_RS_RUSTCHOP_H
 #define TD_RS_RUSTCHOP_H
@@ -107,6 +108,10 @@ public:
 class RustChopPlugin : public ChopPlugin {
 public:
     virtual ~RustChopPlugin() {};
+
+    virtual void* inner() const = 0;
+
+    virtual void* innerMut() = 0;
 
     virtual void getGeneralInfo(CHOP_GeneralInfo &info, const OP_Inputs &inputs) = 0;
 

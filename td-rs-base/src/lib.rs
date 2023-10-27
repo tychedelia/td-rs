@@ -1,4 +1,13 @@
 #![feature(associated_type_defaults)]
+#![feature(min_specialization)]
+use std::cell::OnceCell;
+use std::ffi;
+use std::ops::{Add, Deref, DerefMut, Index};
+
+use ref_cast::RefCast;
+
+pub use param::*;
+pub use py::*;
 
 pub mod chop;
 pub mod cxx;
@@ -6,15 +15,7 @@ pub mod dat;
 pub mod param;
 pub mod sop;
 pub mod top;
-mod py;
-
-use crate::cxx::OP_SOPInput;
-pub use param::*;
-use ref_cast::RefCast;
-use std::cell::OnceCell;
-use std::ffi;
-use std::ops::{Add, Deref, DerefMut, Index};
-use crate::py::{PyGetSets, PyMethods};
+pub mod py;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -46,28 +47,36 @@ pub trait OpInfo {
 }
 
 pub trait InfoChop {
-    fn size(&self) -> usize {
+    fn size(&self) -> usize;
+
+    fn channel(&self, index: usize) -> (String, f32);
+}
+
+impl<T> InfoChop for T {
+    default fn size(&self) -> usize {
         0
     }
 
-    fn channel(&self, index: usize) -> (String, f32) {
-        unimplemented!()
+    default fn channel(&self, index: usize) -> (String, f32) {
+        todo!()
     }
 }
 
-impl<T> InfoChop for T {}
-
 pub trait InfoDat {
-    fn size(&self) -> (u32, u32) {
+    fn size(&self) -> (u32, u32);
+
+    fn entry(&self, index: usize, entry_index: usize) -> String;
+}
+
+impl<T> InfoDat for T {
+    default fn size(&self) -> (u32, u32) {
         (0, 0)
     }
 
-    fn entry(&self, index: usize, entry_index: usize) -> String {
-        String::from("")
+    default fn entry(&self, index: usize, entry_index: usize) -> String {
+        "".to_string()
     }
 }
-
-impl<T> InfoDat for T {}
 
 /// Functionality for all operator plugin types.
 /// This can commonly be left as the default implementation for most plugins.
