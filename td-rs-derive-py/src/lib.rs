@@ -20,6 +20,16 @@ struct PyOpArgs {
     doc: Option<syn::LitStr>,
 }
 
+impl Default for PyOpArgs {
+    fn default() -> Self {
+        Self {
+            get: true,
+            set: true,
+            force_cook: false,
+            doc: None,
+        }
+    }
+}
 
 fn parse_attribute_args(args: syn::AttributeArgs) -> Result<PyOpArgs, syn::Error> {
     let mut get = false;
@@ -54,12 +64,6 @@ fn parse_attribute_args(args: syn::AttributeArgs) -> Result<PyOpArgs, syn::Error
             _ => return Err(syn::Error::new_spanned(nested_meta, "Invalid option")),
         }
     }
-
-    if !get && !set {
-        get = true;
-        set = true;
-    }
-
     Ok(PyOpArgs { get, set, force_cook: auto_cook, doc })
 }
 
@@ -81,12 +85,12 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                     if let Some(attr) = field.attrs.iter().find(|attr| attr.path.is_ident("py")) {
                         let args = if let Ok(meta) = attr.parse_meta() {
                             if let syn::Meta::List(meta_list) = meta {
-                                parse_attribute_args(meta_list.nested.into_iter().collect()).unwrap()
+                                parse_attribute_args(meta_list.nested.into_iter().collect()).expect("Failed to parse attribute args")
                             } else {
-                                panic!("Failed to parse attribute arguments")
+                                PyOpArgs::default()
                             }
                         } else {
-                            panic!("Failed to parse attribute arguments")
+                            PyOpArgs::default()
                         };
                         let field_name = field.ident.as_ref().expect("Field must have a name").clone();
                         let field_type = &field.ty;
@@ -151,13 +155,13 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                             syn::Type::Path(type_path) if type_path.path.is_ident("bool") => {
                                 (
                                     quote! {
-                                        pyo3_ffi::PyBool_FromLong
+                                        bool_to_long
                                     },
                                     quote! {
                                         pyo3_ffi::PyBool_Check
                                     },
                                     quote! {
-                                        pyo3_ffi::PyLong_AsLong
+                                       long_to_bool
                                     }
                                 )
                             }
@@ -172,19 +176,26 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     _self: *mut pyo3_ffi::PyObject,
                                     closure: *mut std::ffi::c_void
                                 ) -> *mut pyo3_ffi::PyObject {
-                                    let py_struct = _self as *mut td_rs_chop::cxx::PY_Struct;
-                                    let info = td_rs_chop::cxx::PY_GetInfo {
+                                    unsafe fn bool_to_long(value: bool) -> *mut pyo3_ffi::PyObject {
+                                        if value {
+                                            pyo3_ffi::Py_False()
+                                        } else {
+                                            pyo3_ffi::Py_True()
+                                        }
+                                    }
+                                    let py_struct = _self as *mut cxx::PY_Struct;
+                                    let info = cxx::PY_GetInfo {
                                         autoCook: #auto_cook,
                                         reserved: [0; 50]
                                     };
-                                    let mut ctx = td_rs_chop::cxx::getPyContext(py_struct);
+                                    let mut ctx = cxx::getPyContext(py_struct);
                                     let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
                                     std::mem::forget(ctx);
                                     if me.is_null() {
                                             return std::ptr::null_mut();
                                     }
                                     let py_chop = {
-                                        let me = &mut *(me as *mut td_rs_chop::cxx::RustChopPluginImplCpp);
+                                        let me = &mut *(me as *mut cxx::RustChopPluginImplCpp);
                                         let me = me.As_RustChopPlugin().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
@@ -202,6 +213,15 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     value: *mut pyo3_ffi::PyObject,
                                     closure: *mut std::ffi::c_void
                                 ) -> i32 {
+                                    unsafe fn long_to_bool(value: *mut pyo3_ffi::PyObject) -> bool {
+                                        let ret = if value == pyo3_ffi::Py_True() {
+                                            true
+                                        } else {
+                                            false
+                                        };
+                                        ret
+                                    }
+
                                     if #arg_checker(value) == 0 {
                                         pyo3_ffi::PyErr_SetString(
                                             pyo3_ffi::PyExc_TypeError,
@@ -222,12 +242,12 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         return -1;
                                     }
 
-                                    let py_struct = _self as *mut td_rs_chop::cxx::PY_Struct;
-                                    let info = td_rs_chop::cxx::PY_GetInfo {
+                                    let py_struct = _self as *mut cxx::PY_Struct;
+                                    let info = cxx::PY_GetInfo {
                                         autoCook: #auto_cook,
                                         reserved: [0; 50]
                                     };
-                                    let mut ctx = td_rs_chop::cxx::getPyContext(py_struct);
+                                    let mut ctx = cxx::getPyContext(py_struct);
                                     let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
                                     if me.is_null() {
                                         pyo3_ffi::PyErr_SetString(
@@ -239,7 +259,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         return -1;
                                     }
                                     let py_chop = {
-                                        let me = &mut *(me as *mut td_rs_chop::cxx::RustChopPluginImplCpp);
+                                        let me = &mut *(me as *mut cxx::RustChopPluginImplCpp);
                                         let me = me.As_RustChopPlugin().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
@@ -372,12 +392,12 @@ pub fn py_op_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
                             args: *mut *mut pyo3_ffi::PyObject,
                             nargs: pyo3_ffi::Py_ssize_t,
                         ) -> *mut pyo3_ffi::PyObject {
-                            let py_struct = _self as *mut td_rs_chop::cxx::PY_Struct;
-                            let info = td_rs_chop::cxx::PY_GetInfo {
+                            let py_struct = _self as *mut cxx::PY_Struct;
+                            let info = cxx::PY_GetInfo {
                                 autoCook: true,
                                 reserved: [0; 50]
                             };
-                            let mut ctx = td_rs_chop::cxx::getPyContext(py_struct);
+                            let mut ctx = cxx::getPyContext(py_struct);
                             let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
                             if me.is_null() {
                                 pyo3_ffi::PyErr_SetString(
