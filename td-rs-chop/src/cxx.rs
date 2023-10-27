@@ -4,6 +4,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use cxx::memory::UniquePtrTarget;
 use std::ffi::CString;
+use std::mem::ManuallyDrop;
 use std::ops::DerefMut;
 use std::pin::Pin;
 use td_rs_base::{InfoChop, InfoDat, OperatorInputs, ParameterManager};
@@ -17,7 +18,8 @@ include_cpp! {
     extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
     extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
     extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    // extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    generate_pod!("TD::OP_CustomOPInfo")
     generate_pod!("TD::CHOP_PluginInfo")
     generate_pod!("TD::CHOP_GeneralInfo")
     generate_pod!("TD::CHOP_OutputInfo")
@@ -26,15 +28,14 @@ include_cpp! {
     extern_cpp_type!("TD::PY_GetInfo", td_rs_base::cxx::PY_GetInfo)
 }
 
+pub use autocxx::c_void;
 pub use ffi::TD::*;
 pub use ffi::*;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
-pub use td_rs_base::cxx::PY_Struct;
-pub use td_rs_base::cxx::PY_GetInfo;
-pub use td_rs_base::cxx::setString;
 pub use td_rs_base::cxx::getPyContext;
-pub use autocxx::c_void;
-// pub use td_rs_base::cxx::setPyMethods;
+pub use td_rs_base::cxx::setString;
+pub use td_rs_base::cxx::OP_CustomOPInfo;
+pub use td_rs_base::cxx::PY_GetInfo;
+pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
     fn chop_new_impl() -> Box<dyn Chop>;
@@ -42,7 +43,7 @@ extern "C" {
 
 #[subclass(superclass("RustChopPlugin"))]
 pub struct RustChopPluginImpl {
-    inner: Box<dyn Chop>,
+    pub inner: Box<dyn Chop>,
 }
 
 impl Default for RustChopPluginImpl {
@@ -58,10 +59,19 @@ impl Default for RustChopPluginImpl {
 
 #[no_mangle]
 extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
+    let foo = RustChopPluginImpl::default_cpp_owned();
     RustChopPluginImpl::default_cpp_owned().into_raw()
 }
 
 impl RustChopPlugin_methods for RustChopPluginImpl {
+    fn inner(&self) -> *mut c_void {
+        self.inner.as_ref() as *const dyn Chop as *mut c_void
+    }
+
+    fn innerMut(&mut self) -> *mut c_void {
+        self.inner.as_mut() as *mut dyn Chop as *mut c_void
+    }
+
     fn getGeneralInfo(&mut self, mut info: Pin<&mut CHOP_GeneralInfo>, input: &OP_Inputs) {
         let input = OperatorInputs::new(input);
         let gen_info = self.inner.general_info(&input);

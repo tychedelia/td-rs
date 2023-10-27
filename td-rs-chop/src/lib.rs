@@ -1,3 +1,4 @@
+#![feature(min_specialization)]
 use autocxx::prelude::*;
 use std::ops::{Index, IndexMut};
 use std::pin::Pin;
@@ -112,6 +113,10 @@ impl IndexMut<usize> for ChopOutput<'_> {
 
 /// Trait for defining a custom operator.
 pub trait Chop: Op {
+    fn as_any(&self) -> &dyn std::any::Any;
+
+    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
+
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }
