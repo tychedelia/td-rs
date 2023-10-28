@@ -8,21 +8,19 @@ struct CpuMemoryTopParams {
     #[param(label = "Speed", min = -10.0, max = 10.0, default = 1.0)]
     speed: f64,
     #[param(label = "Reset")]
-    reset: bool,
+    reset: Pulse,
 }
 
 /// Struct representing our SOP's state
-#[derive(Default)]
+#[derive(Params, Default)]
 pub struct CpuMemoryTop {
-    step: f64,
-    speed: f64,
-    brightness: f64,
+    execute_count: u32,
     params: CpuMemoryTopParams,
 }
 
 /// Impl block providing default constructor for plugin
 impl CpuMemoryTop {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(info: NodeInfo) -> Self {
         Self {
             ..Default::default()
         }
@@ -47,6 +45,17 @@ impl Op for CpuMemoryTop {
     }
 }
 
-impl Top for CpuMemoryTop {}
+impl Top for CpuMemoryTop {
+    fn execute(&mut self, _output: TopOutput, _input: &OperatorInputs<TopInput>) {
+        self.execute_count += 1;
+        let mut upload = UploadInfo::default();
+        upload.texture_desc.width = 256;
+        upload.texture_desc.height = 256;
+        upload.texture_desc.tex_dim = TexDim::E2D;
+        upload.texture_desc.pixel_format = PixelFormat::RGBA32Float;
+        let size = upload.texture_desc.width * upload.texture_desc.height * 4;
+
+    }
+}
 
 top_plugin!(CpuMemoryTop);

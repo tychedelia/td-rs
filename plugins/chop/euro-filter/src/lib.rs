@@ -24,7 +24,7 @@ pub struct EuroFilterChop {
 
 /// Impl block providing default constructor for plugin
 impl EuroFilterChop {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(info: NodeInfo) -> Self {
         Default::default()
     }
 }

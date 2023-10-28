@@ -24,7 +24,7 @@ pub struct FilterDat {
 
 /// Impl block providing default constructor for plugin
 impl FilterDat {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(info: NodeInfo) -> Self {
         Self {
             params: Default::default(),
         }

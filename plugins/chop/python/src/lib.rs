@@ -94,6 +94,12 @@ impl Op for PythonChop {
     fn info_chop(&self) -> Option<Box<&dyn InfoChop>> {
         Some(Box::new(self))
     }
+
+    fn pulse_pressed(&mut self, name: &str) {
+        if name == "Reset" {
+            self.reset_filter();
+        }
+    }
 }
 
 impl Chop for PythonChop {
