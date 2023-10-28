@@ -42,13 +42,13 @@ impl OpInfo for FilterChop {
     const MAX_INPUTS: usize = 1;
 }
 
-impl Op for FilterChop {}
-
-impl Chop for FilterChop {
+impl Op for FilterChop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
+}
 
+impl Chop for FilterChop {
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         let params = inputs.params();
         params.enable_param("Scale", true);

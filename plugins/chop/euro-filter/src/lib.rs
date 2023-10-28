@@ -40,15 +40,15 @@ impl OpInfo for EuroFilterChop {
     const MAX_INPUTS: usize = 1;
 }
 
-impl Op for EuroFilterChop {}
+impl Op for EuroFilterChop {
+    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
+        Some(Box::new(&mut self.params))
+    }
+}
 
 impl Chop for EuroFilterChop {
     fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
-    }
-
-    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-        Some(Box::new(&mut self.params))
     }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {

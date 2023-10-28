@@ -52,13 +52,13 @@ impl OpInfo for GeneratorChop {
     const OPERATOR_TYPE: &'static str = "Basicgenerator";
 }
 
-impl Op for GeneratorChop {}
-
-impl Chop for GeneratorChop {
+impl Op for GeneratorChop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
+}
 
+impl Chop for GeneratorChop {
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         let params = inputs.params();
         params.enable_param("Scale", self.params.apply_scale);
