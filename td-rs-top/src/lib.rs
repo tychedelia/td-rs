@@ -31,11 +31,11 @@ pub enum ExecuteMode {
 }
 
 pub trait Top: Op {
-    fn general_info(&self, input: &OperatorInputs<TopInput>) -> TopGeneralInfo {
+    fn general_info(&self, _input: &OperatorInputs<TopInput>) -> TopGeneralInfo {
         TopGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: TopOutput, input: &OperatorInputs<TopInput>) {}
+    fn execute(&mut self, _output: TopOutput, _input: &OperatorInputs<TopInput>) {}
 }
 
 #[macro_export]

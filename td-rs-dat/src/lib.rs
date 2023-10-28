@@ -1,13 +1,13 @@
 use autocxx::prelude::*;
-use ref_cast::RefCast;
-use std::cell::RefCell;
-use std::collections::HashMap;
-use std::ffi::{CStr, CString};
-use std::marker::PhantomData;
-use std::ops::{Deref, DerefMut, Index, IndexMut};
-use std::pin::{pin, Pin};
-use std::rc::Rc;
-use std::sync::{Arc, Mutex, RwLock};
+
+
+
+use std::ffi::{CString};
+
+use std::ops::{Index, IndexMut};
+use std::pin::{Pin};
+
+
 pub use td_rs_base::dat::*;
 pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::*;
@@ -33,7 +33,7 @@ impl<'execute> DatOutput<'execute> {
         self.output
             .as_mut()
             .setOutputDataType(cxx::DAT_OutDataType::Table);
-        let mut table = Vec::new();
+        let table = Vec::new();
         let mut table_out = DatTableOutput {
             output: self.output,
             table,
@@ -240,11 +240,11 @@ impl<'execute> DatTextOutput<'execute> {
 }
 
 pub trait Dat: Op {
-    fn general_info(&self, input: &OperatorInputs<DatInput>) -> DatGeneralInfo {
+    fn general_info(&self, _input: &OperatorInputs<DatInput>) -> DatGeneralInfo {
         DatGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: DatOutput, input: &OperatorInputs<DatInput>) {
+    fn execute(&mut self, _output: DatOutput, _input: &OperatorInputs<DatInput>) {
         // Do nothing by default.
     }
 }

@@ -51,7 +51,7 @@ impl PythonChop {
     }
 
     #[py_meth]
-    pub unsafe fn reset(&mut self, args: *mut *mut pyo3_ffi::PyObject, nargs: usize) -> *mut pyo3_ffi::PyObject {
+    pub unsafe fn reset(&mut self, _args: *mut *mut pyo3_ffi::PyObject, _nargs: usize) -> *mut pyo3_ffi::PyObject {
         self.reset_filter();
         let none = pyo3_ffi::Py_None();
         pyo3_ffi::Py_INCREF(none);
@@ -81,7 +81,7 @@ impl Op for PythonChop {
 }
 
 impl Chop for PythonChop {
-    fn channel_name(&self, index: usize, input: &OperatorInputs<ChopInput>) -> String {
+    fn channel_name(&self, _index: usize, _input: &OperatorInputs<ChopInput>) -> String {
         "chan1".to_string()
     }
 
@@ -112,7 +112,7 @@ impl Chop for PythonChop {
             let phase = 2.0 * std::f32::consts::PI / output.num_channels() as f32;
             let num_samples = output.num_samples();
             let num_channels = output.num_channels();
-            let mut step = self.params.speed * 0.01;
+            let step = self.params.speed * 0.01;
             for channel in 0..num_channels {
                 let mut offset = self.offset + phase * channel as f32;
                 let v = match self.params.shape {
@@ -133,7 +133,7 @@ impl Chop for PythonChop {
 
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,

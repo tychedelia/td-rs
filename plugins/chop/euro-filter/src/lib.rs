@@ -1,11 +1,11 @@
-use crate::filter::{LowPassFilter, OneEuroImpl};
-use std::f64::consts::PI;
-use std::iter::Filter;
-use std::pin::Pin;
-use std::sync::Arc;
-use td_rs_chop::param::MenuParam;
+use crate::filter::{OneEuroImpl};
+
+
+
+
+
 use td_rs_chop::*;
-use td_rs_derive::{Param, Params};
+use td_rs_derive::{Params};
 
 mod filter;
 
@@ -47,13 +47,13 @@ impl Op for EuroFilterChop {
 }
 
 impl Chop for EuroFilterChop {
-    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
+    fn channel_name(&self, index: usize, _inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         if let Some(input) = &inputs.input(0) {
-            for mut filter in &mut self.filters {
+            for filter in &mut self.filters {
                 filter.change_input(
                     input.num_samples() as f64,
                     self.params.min_cutoff,
@@ -81,7 +81,7 @@ impl Chop for EuroFilterChop {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,
@@ -90,7 +90,7 @@ impl Chop for EuroFilterChop {
         }
     }
 
-    fn output_info(&self, inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
+    fn output_info(&self, _inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         None
     }
 }

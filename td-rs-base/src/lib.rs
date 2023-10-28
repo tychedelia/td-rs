@@ -2,9 +2,9 @@
 #![feature(min_specialization)]
 use std::cell::OnceCell;
 use std::ffi;
-use std::ops::{Add, Deref, DerefMut, Index};
+use std::ops::{Index};
 
-use ref_cast::RefCast;
+
 
 pub use param::*;
 pub use py::*;
@@ -116,7 +116,7 @@ pub trait Op  {
         unsafe { WARNING_STR.get_or_init(|| "".to_string()) }
     }
 
-    fn pulse_pressed(&mut self, name: &str) {}
+    fn pulse_pressed(&mut self, _name: &str) {}
 }
 
 /// Input to an operator, which can be used to get parameters, channels,

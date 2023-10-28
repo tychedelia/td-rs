@@ -12,7 +12,7 @@ fn main() -> miette::Result<()> {
     b.flag_if_supported("-std=c++17");
 
     if !cfg!(windows) {
-        let mut b = b
+        let _b = b
             .flag("-Wno-unused-parameter")
             .flag("-Wno-reorder-ctor")
             .flag("-Wno-mismatched-tags")

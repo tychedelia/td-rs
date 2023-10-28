@@ -2,9 +2,9 @@
 use crate::{Dat, DatOutput};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
-use cxx::memory::UniquePtrTarget;
+
 use std::ffi::CString;
-use std::ops::DerefMut;
+
 use std::pin::Pin;
 use td_rs_base::{param::ParameterManager, OperatorInputs, InfoDat, InfoChop};
 
@@ -66,8 +66,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
 
     fn execute(&mut self, outputs: Pin<&mut DAT_Output>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
-        let mut output = DatOutput::new(outputs);
-        if let Some(mut params) = self.inner.params_mut() {
+        let output = DatOutput::new(outputs);
+        if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         self.inner.execute(output, &input);
@@ -144,7 +144,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
         let params = self.inner.params_mut();
-        if let Some(mut params) = params {
+        if let Some(params) = params {
             let mut manager = ParameterManager::new(manager);
             params.register(&mut manager);
         }

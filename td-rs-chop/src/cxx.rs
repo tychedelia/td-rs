@@ -2,10 +2,10 @@
 use crate::{Chop, ChopOutput};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
-use cxx::memory::UniquePtrTarget;
+
 use std::ffi::CString;
-use std::mem::ManuallyDrop;
-use std::ops::DerefMut;
+
+
 use std::pin::Pin;
 use td_rs_base::{InfoChop, InfoDat, OperatorInputs, ParameterManager};
 
@@ -58,7 +58,7 @@ impl Default for RustChopPluginImpl {
 
 #[no_mangle]
 extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
-    let foo = RustChopPluginImpl::default_cpp_owned();
+    let _foo = RustChopPluginImpl::default_cpp_owned();
     RustChopPluginImpl::default_cpp_owned().into_raw()
 }
 
@@ -82,7 +82,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getOutputInfo(&mut self, mut info: Pin<&mut CHOP_OutputInfo>, input: &OP_Inputs) -> bool {
         let input = OperatorInputs::new(input);
-        if let Some(mut params) = self.inner.params_mut() {
+        if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         let out_info = self.inner.output_info(&input);
@@ -110,7 +110,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
     fn execute(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
         let input = OperatorInputs::new(input);
         let mut output = ChopOutput::new(output);
-        if let Some(mut params) = self.inner.params_mut() {
+        if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         self.inner.execute(&mut output, &input);
@@ -187,7 +187,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
         let params = self.inner.params_mut();
-        if let Some(mut params) = params {
+        if let Some(params) = params {
             let mut manager = ParameterManager::new(manager);
             params.register(&mut manager);
         }

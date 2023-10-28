@@ -1,4 +1,4 @@
-use std::pin::Pin;
+
 use td_rs_dat::*;
 use td_rs_derive::{Param, Params};
 
@@ -99,7 +99,7 @@ impl Dat for FilterDat {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<DatInput>) -> DatGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<DatInput>) -> DatGeneralInfo {
         DatGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
