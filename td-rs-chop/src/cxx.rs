@@ -118,40 +118,47 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
-        InfoChop::size(&self.inner) as i32
+        if let Some(info_chop) = self.inner.info_chop() {
+            info_chop.size() as i32
+        } else {
+            0
+        }
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
-        let (info_name, info_value) = InfoChop::channel(&self.inner, index as usize);
-
-        unsafe {
-            let new_string = CString::new(info_name.as_str()).unwrap();
-            let new_string_ptr = new_string.as_ptr();
-            name.setString(new_string_ptr);
+        if let Some(info_chop) = self.inner.info_chop() {
+            let (info_name, info_value) = info_chop.channel(index as usize);
+            unsafe {
+                let new_string = CString::new(info_name.as_str()).unwrap();
+                let new_string_ptr = new_string.as_ptr();
+                name.setString(new_string_ptr);
+            }
+            value.set(info_value);
         }
-        value.set(info_value);
     }
 
     fn getInfoDATSize(&mut self, mut info: Pin<&mut OP_InfoDATSize>) -> bool {
-        let (rows, cols) = InfoDat::size(&self.inner);
-        if rows == 0 && cols == 0 {
-            false
-        } else {
+        if let Some(info_dat) = self.inner.info_dat() {
+            let (rows, cols) = info_dat.size();
             info.rows = rows as i32;
             info.cols = cols as i32;
             true
+        } else {
+            false
         }
     }
 
     fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
-        let entry_str = InfoDat::entry(&self.inner, index as usize, entryIndex as usize);
-        if entry_str.is_empty() {
-            return;
-        }
-        unsafe {
-            let new_string = CString::new(entry_str.as_str()).unwrap();
-            let new_string_ptr = new_string.as_ptr();
-            entry.setString(new_string_ptr);
+        if let Some(info_dat) = self.inner.info_dat() {
+            let entry_str = info_dat.entry(index as usize, entryIndex as usize);
+            if entry_str.is_empty() {
+                return;
+            }
+            unsafe {
+                let new_string = CString::new(entry_str.as_str()).unwrap();
+                let new_string_ptr = new_string.as_ptr();
+                entry.setString(new_string_ptr);
+            }
         }
     }
 

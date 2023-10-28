@@ -113,14 +113,6 @@ impl IndexMut<usize> for ChopOutput<'_> {
 
 /// Trait for defining a custom operator.
 pub trait Chop: Op {
-    fn as_any(&self) -> &dyn std::any::Any;
-
-    fn as_any_mut(&mut self) -> &mut dyn std::any::Any;
-
-    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-        None
-    }
-
     fn channel_name(&self, index: usize, input: &OperatorInputs<ChopInput>) -> String {
         String::from("")
     }
@@ -132,6 +124,7 @@ pub trait Chop: Op {
     fn output_info(&self, input: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         None
     }
+
 }
 
 #[macro_export]

@@ -556,6 +556,18 @@ impl Param for bool {
     }
 }
 
+#[derive(Default, Debug, Clone, Copy)]
+pub struct Pulse;
+
+impl Param for Pulse {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param: NumericParameter = options.into();
+        parameter_manager.append_pulse(param);
+    }
+
+    fn update(&mut self, _name: &str, _inputs: &ParamInputs) {}
+}
+
 impl Param for ChopParam {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let param: StringParameter = options.into();

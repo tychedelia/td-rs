@@ -52,35 +52,28 @@ pub trait InfoChop {
     fn channel(&self, index: usize) -> (String, f32);
 }
 
-impl<T> InfoChop for T {
-    default fn size(&self) -> usize {
-        0
-    }
-
-    default fn channel(&self, index: usize) -> (String, f32) {
-        todo!()
-    }
-}
-
 pub trait InfoDat {
     fn size(&self) -> (u32, u32);
 
     fn entry(&self, index: usize, entry_index: usize) -> String;
 }
 
-impl<T> InfoDat for T {
-    default fn size(&self) -> (u32, u32) {
-        (0, 0)
-    }
-
-    default fn entry(&self, index: usize, entry_index: usize) -> String {
-        "".to_string()
-    }
-}
 
 /// Functionality for all operator plugin types.
 /// This can commonly be left as the default implementation for most plugins.
-pub trait Op: InfoDat + InfoChop {
+pub trait Op  {
+    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
+        None
+    }
+
+    fn info_dat(&self) -> Option<Box<&dyn InfoDat>> {
+        None
+    }
+
+    fn info_chop(&self) -> Option<Box<&dyn InfoChop>> {
+        None
+    }
+
     fn set_info(&mut self, info: &str) {
         // # Safety
         // The plugin is held on a single thread, and setters
@@ -156,6 +149,14 @@ where
         OperatorInputs<'execute, Op>: GetInput<'execute, Op>,
     {
         GetInput::input(self, index)
+    }
+
+    /// Get the number of input channels.
+    pub fn num_inputs(&self) -> usize
+    where
+        OperatorInputs<'execute, Op>: GetInput<'execute, Op>,
+    {
+        GetInput::num_inputs(self)
     }
 }
 
