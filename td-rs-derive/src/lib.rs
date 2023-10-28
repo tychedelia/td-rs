@@ -3,13 +3,11 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 
-use quote::{quote};
+use quote::quote;
 
 use syn::{
-    parse_macro_input, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
-    NestedMeta, Variant,
+    parse_macro_input, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue, NestedMeta, Variant,
 };
-
 
 #[proc_macro_derive(Param)]
 pub fn derive_param(input: TokenStream) -> TokenStream {

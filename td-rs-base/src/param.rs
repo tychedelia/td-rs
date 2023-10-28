@@ -110,9 +110,7 @@ pub struct ParameterManager<'execute> {
 impl<'execute> ParameterManager<'execute> {
     /// Create a new parameter manager. Should not be called by
     /// users.
-    pub fn new(
-        manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>,
-    ) -> ParameterManager {
+    pub fn new(manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>) -> ParameterManager {
         Self { manager }
     }
 

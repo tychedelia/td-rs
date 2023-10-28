@@ -65,7 +65,6 @@ impl InfoDat for WasmChop {
 }
 
 impl Chop for WasmChop {
-
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         let params = inputs.params();
         params.enable_param("Wasm", false);

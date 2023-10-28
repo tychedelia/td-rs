@@ -1,6 +1,3 @@
-
-
-
 use td_rs_derive::Params;
 use td_rs_sop::param::ChopParam;
 use td_rs_sop::*;

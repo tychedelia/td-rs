@@ -1,12 +1,9 @@
 use autocxx::prelude::*;
 
-
-
-use std::ffi::{CString};
+use std::ffi::CString;
 
 use std::ops::{Index, IndexMut};
-use std::pin::{Pin};
-
+use std::pin::Pin;
 
 pub use td_rs_base::dat::*;
 pub use td_rs_base::param::OperatorParams;
@@ -252,11 +249,13 @@ pub trait Dat: Op {
 #[macro_export]
 macro_rules! dat_plugin {
     ($plugin_ty:ty) => {
-        use td_rs_dat::cxx::OP_CustomOPInfo;
         use td_rs_dat::cxx::c_void;
+        use td_rs_dat::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
-        pub extern "C" fn dat_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn dat_get_plugin_info_impl(
+            mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>,
+        ) {
             unsafe {
                 td_rs_dat::op_info::<$plugin_ty>(op_info);
             }

@@ -124,17 +124,18 @@ pub trait Chop: Op {
     fn output_info(&self, _input: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         None
     }
-
 }
 
 #[macro_export]
 macro_rules! chop_plugin {
     ($plugin_ty:ty) => {
-        use td_rs_chop::cxx::OP_CustomOPInfo;
         use td_rs_chop::cxx::c_void;
+        use td_rs_chop::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
-        pub extern "C" fn chop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn chop_get_plugin_info_impl(
+            mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>,
+        ) {
             unsafe {
                 td_rs_chop::op_info::<$plugin_ty>(op_info);
             }

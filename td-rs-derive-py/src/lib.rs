@@ -3,9 +3,7 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 
 use quote::{format_ident, quote, ToTokens};
-use syn::{
-    DeriveInput, parse_macro_input,
-};
+use syn::{parse_macro_input, DeriveInput};
 
 #[proc_macro_derive(PyOp, attributes(py))]
 pub fn params_derive(input: TokenStream) -> TokenStream {
@@ -55,7 +53,10 @@ fn parse_attribute_args(args: syn::AttributeArgs) -> Result<PyOpArgs, syn::Error
                     if let syn::Lit::Str(lit_str) = name_value.lit {
                         doc = Some(lit_str);
                     } else {
-                        return Err(syn::Error::new_spanned(name_value.lit, "Expected a string literal for 'doc'"));
+                        return Err(syn::Error::new_spanned(
+                            name_value.lit,
+                            "Expected a string literal for 'doc'",
+                        ));
                     }
                 } else {
                     return Err(syn::Error::new_spanned(name_value.path, "Unknown option"));
@@ -70,7 +71,12 @@ fn parse_attribute_args(args: syn::AttributeArgs) -> Result<PyOpArgs, syn::Error
         get = true;
         set = true;
     }
-    Ok(PyOpArgs { get, set, force_cook: auto_cook, doc })
+    Ok(PyOpArgs {
+        get,
+        set,
+        force_cook: auto_cook,
+        doc,
+    })
 }
 
 fn impl_py_op(input: &DeriveInput) -> TokenStream {
@@ -356,11 +362,13 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                     }
                 }).collect();
 
-                let defs: Vec<_> = generated_get_sets.iter().map(|gf| &gf.py_get_set_def).collect();
+                let defs: Vec<_> = generated_get_sets
+                    .iter()
+                    .map(|gf| &gf.py_get_set_def)
+                    .collect();
                 let getters: Vec<_> = generated_get_sets.iter().map(|gf| &gf.get_body).collect();
                 let setters: Vec<_> = generated_get_sets.iter().map(|gf| &gf.set_body).collect();
                 let size = generated_get_sets.len() + 1;
-
 
                 quote! {
                     pub const GETSETS: [pyo3_ffi::PyGetSetDef; #size] = [

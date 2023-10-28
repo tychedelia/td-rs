@@ -2,7 +2,6 @@ use crate::cxx::OP_DATInput;
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
 
-
 /// A dat input.
 #[repr(transparent)]
 #[derive(RefCast)]

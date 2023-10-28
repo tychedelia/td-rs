@@ -35,9 +35,9 @@ pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
+pub use td_rs_base::cxx::OP_CustomOPInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
 
 extern "C" {
     fn sop_new_impl() -> Box<dyn Sop>;
@@ -132,7 +132,6 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
             }
         }
     }
-
 
     fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
         unsafe {

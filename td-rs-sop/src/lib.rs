@@ -1,8 +1,6 @@
 use crate::cxx::{SOP_CustomAttribData, Vector};
 
-
-
-use std::pin::{Pin};
+use std::pin::Pin;
 
 pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::sop::*;
@@ -131,11 +129,13 @@ pub trait Sop: Op {
 #[macro_export]
 macro_rules! sop_plugin {
     ($plugin_ty:ty) => {
-        use td_rs_sop::cxx::OP_CustomOPInfo;
         use td_rs_sop::cxx::c_void;
+        use td_rs_sop::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
-        pub extern "C" fn sop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
+        pub extern "C" fn sop_get_plugin_info_impl(
+            mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>,
+        ) {
             unsafe {
                 td_rs_sop::op_info::<$plugin_ty>(op_info);
             }

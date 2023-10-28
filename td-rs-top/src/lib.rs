@@ -41,8 +41,8 @@ pub trait Top: Op {
 #[macro_export]
 macro_rules! top_plugin {
     ($plugin_ty:ty) => {
-        use td_rs_top::cxx::OP_CustomOPInfo;
         use td_rs_top::cxx::c_void;
+        use td_rs_top::cxx::OP_CustomOPInfo;
 
         #[no_mangle]
         pub extern "C" fn top_get_plugin_info_impl(
