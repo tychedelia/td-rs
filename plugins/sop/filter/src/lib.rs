@@ -15,7 +15,7 @@ pub struct FilterSop {
 
 /// Impl block providing default constructor for plugin
 impl FilterSop {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(info: NodeInfo) -> Self {
         Self {
             warning: "".to_string(),
             params: Default::default(),

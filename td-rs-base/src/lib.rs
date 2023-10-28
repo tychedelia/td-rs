@@ -321,7 +321,7 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
     op_info.majorVersion = T::MAJOR_VERSION;
     op_info.minorVersion = T::MINOR_VERSION;
     op_info.cookOnStart = T::COOK_ON_START;
-    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DAT).unwrap();
+    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DA).unwrap();
     op_info.pythonCallbacksDAT = callbacks.as_ptr();
     std::mem::forget(callbacks); // Callbacks are static
     py::py_op_info::<T>(op_info);
