@@ -20,8 +20,9 @@ impl<T> PyMethods for T {
     }
 }
 
-
-pub(crate) unsafe fn py_op_info<T: PyMethods + PyGetSets>(op_info: std::pin::Pin<&mut crate::cxx::OP_CustomOPInfo>) {
+pub(crate) unsafe fn py_op_info<T: PyMethods + PyGetSets>(
+    op_info: std::pin::Pin<&mut crate::cxx::OP_CustomOPInfo>,
+) {
     let methods = T::get_methods();
     let m_len = methods.len();
     let m_arr = methods.as_ptr() as *mut autocxx::prelude::c_void;

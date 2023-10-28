@@ -47,8 +47,6 @@ impl Op for CpuMemoryTop {
     }
 }
 
-impl Top for CpuMemoryTop {
-
-}
+impl Top for CpuMemoryTop {}
 
 top_plugin!(CpuMemoryTop);

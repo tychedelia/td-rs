@@ -1,8 +1,8 @@
 #![feature(min_specialization)]
 
 use td_rs_chop::*;
-use td_rs_derive_py::*;
 use td_rs_derive::*;
+use td_rs_derive_py::*;
 
 #[derive(Param, Default, Debug)]
 enum PythonChopShape {
@@ -18,17 +18,17 @@ struct PythonChopParams {
     speed: f32,
     #[param(label="Scale", min=-10.0, max=10.0, default=1.0)]
     scale: f32,
-    #[param(label="Shape")]
+    #[param(label = "Shape")]
     shape: PythonChopShape,
-    #[param(label="Reset")]
+    #[param(label = "Reset")]
     reset: Pulse,
 }
 
 #[derive(PyOp, Debug)]
 pub struct PythonChop {
-    #[py(doc="Get or Set the speed modulation.", auto_cook)]
+    #[py(doc = "Get or Set the speed modulation.", auto_cook)]
     speed: f32,
-    #[py(get, doc="Get executed count.")]
+    #[py(get, doc = "Get executed count.")]
     execute_count: u32,
     offset: f32,
     params: PythonChopParams,
@@ -51,7 +51,11 @@ impl PythonChop {
     }
 
     #[py_meth]
-    pub unsafe fn reset(&mut self, _args: *mut *mut pyo3_ffi::PyObject, _nargs: usize) -> *mut pyo3_ffi::PyObject {
+    pub unsafe fn reset(
+        &mut self,
+        _args: *mut *mut pyo3_ffi::PyObject,
+        _nargs: usize,
+    ) -> *mut pyo3_ffi::PyObject {
         self.reset_filter();
         let none = pyo3_ffi::Py_None();
         pyo3_ffi::Py_INCREF(none);
@@ -117,7 +121,13 @@ impl Chop for PythonChop {
                 let mut offset = self.offset + phase * channel as f32;
                 let v = match self.params.shape {
                     PythonChopShape::Sine => offset.sin(),
-                    PythonChopShape::Square => if (offset % 1.0).abs() > 0.5 { 1.0 } else { 0.0 },
+                    PythonChopShape::Square => {
+                        if (offset % 1.0).abs() > 0.5 {
+                            1.0
+                        } else {
+                            0.0
+                        }
+                    }
                     PythonChopShape::Ramp => (offset % 1.0).abs(),
                 };
                 let v = v * self.params.scale;
@@ -130,7 +140,6 @@ impl Chop for PythonChop {
             }
             self.offset += step * num_samples as f32;
         }
-
     }
 
     fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
@@ -183,7 +192,7 @@ impl InfoDat for PythonChop {
             (0, 1) => "offset".to_string(),
             (1, 0) => self.execute_count.to_string(),
             (1, 1) => self.offset.to_string(),
-            (_, _) => panic!("Invalid entry index")
+            (_, _) => panic!("Invalid entry index"),
         }
     }
 }

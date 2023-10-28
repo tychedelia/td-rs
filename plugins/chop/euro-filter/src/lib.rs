@@ -1,11 +1,7 @@
-use crate::filter::{OneEuroImpl};
-
-
-
-
+use crate::filter::OneEuroImpl;
 
 use td_rs_chop::*;
-use td_rs_derive::{Params};
+use td_rs_derive::Params;
 
 mod filter;
 

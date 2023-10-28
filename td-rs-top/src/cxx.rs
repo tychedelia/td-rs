@@ -3,7 +3,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, OperatorInputs, InfoDat, InfoChop};
+use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs};
 
 use crate::TopOutput;
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -31,9 +31,9 @@ pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
+pub use td_rs_base::cxx::OP_CustomOPInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
 
 extern "C" {
     fn top_new_impl() -> Box<dyn Top>;
@@ -120,7 +120,6 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
             }
         }
     }
-
 
     fn getWarningString(&mut self, warning: Pin<&mut OP_String>) {
         unsafe {

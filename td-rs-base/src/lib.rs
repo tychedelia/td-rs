@@ -2,9 +2,7 @@
 #![feature(min_specialization)]
 use std::cell::OnceCell;
 use std::ffi;
-use std::ops::{Index};
-
-
+use std::ops::Index;
 
 pub use param::*;
 pub use py::*;
@@ -13,9 +11,9 @@ pub mod chop;
 pub mod cxx;
 pub mod dat;
 pub mod param;
+pub mod py;
 pub mod sop;
 pub mod top;
-pub mod py;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -43,7 +41,6 @@ pub trait OpInfo {
     const MINOR_VERSION: i32 = 0;
     /// Whether to cook on start.
     const COOK_ON_START: bool = false;
-
 }
 
 pub trait InfoChop {
@@ -58,10 +55,9 @@ pub trait InfoDat {
     fn entry(&self, index: usize, entry_index: usize) -> String;
 }
 
-
 /// Functionality for all operator plugin types.
 /// This can commonly be left as the default implementation for most plugins.
-pub trait Op  {
+pub trait Op {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         None
     }
@@ -250,7 +246,9 @@ where
     }
 }
 
-pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>) {
+pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
+    mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>,
+) {
     let new_string = std::ffi::CString::new(T::OPERATOR_TYPE).unwrap();
     let new_string_ptr = new_string.as_ptr();
     cxx::setString(op_info.opType, new_string_ptr);

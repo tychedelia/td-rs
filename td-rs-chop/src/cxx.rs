@@ -5,7 +5,6 @@ use autocxx::subclass::*;
 
 use std::ffi::CString;
 
-
 use std::pin::Pin;
 use td_rs_base::{InfoChop, InfoDat, OperatorInputs, ParameterManager};
 
@@ -32,9 +31,9 @@ pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
+pub use td_rs_base::cxx::OP_CustomOPInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
 
 extern "C" {
     fn chop_new_impl() -> Box<dyn Chop>;

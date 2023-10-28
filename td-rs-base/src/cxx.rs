@@ -1,6 +1,5 @@
 use autocxx::prelude::*;
 
-
 include_cpp! {
     #include "CPlusPlus_Common.h"
     #include "RustBase.h"

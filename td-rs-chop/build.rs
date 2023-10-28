@@ -4,10 +4,12 @@ fn main() -> miette::Result<()> {
     let python_path = if cfg!(windows) {
         panic!()
     } else {
-        std::path::PathBuf::from("/Applications/TouchDesigner.app/Contents/Frameworks/Python.framework/Headers")
+        std::path::PathBuf::from(
+            "/Applications/TouchDesigner.app/Contents/Frameworks/Python.framework/Headers",
+        )
     };
-    let mut b =
-        autocxx_build::Builder::new("src/cxx.rs", &[&path, &base_path, &python_path]).auto_allowlist(true);
+    let mut b = autocxx_build::Builder::new("src/cxx.rs", &[&path, &base_path, &python_path])
+        .auto_allowlist(true);
 
     if cfg!(windows) {
         b = b.extra_clang_args(&["-std=c++17", "-D_CRT_USE_BUILTIN_OFFSETOF"]);

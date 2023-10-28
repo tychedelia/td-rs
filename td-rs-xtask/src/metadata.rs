@@ -1,8 +1,5 @@
 use cargo_metadata::{Metadata, MetadataCommand};
 
-
-
-
 pub enum PluginType {
     Chop,
     Sop,
