@@ -131,6 +131,7 @@ macro_rules! sop_plugin {
     ($plugin_ty:ty) => {
         use td_rs_sop::cxx::c_void;
         use td_rs_sop::cxx::OP_CustomOPInfo;
+        use td_rs_sop::NodeInfo;
 
         #[no_mangle]
         pub extern "C" fn sop_get_plugin_info_impl(
@@ -142,8 +143,8 @@ macro_rules! sop_plugin {
         }
 
         #[no_mangle]
-        pub extern "C" fn sop_new_impl() -> Box<dyn Sop> {
-            Box::new(<$plugin_ty>::new())
+        pub extern "C" fn sop_new_impl(info: NodeInfo) -> Box<dyn Sop> {
+            Box::new(<$plugin_ty>::new(info))
         }
     };
 }

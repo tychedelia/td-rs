@@ -43,6 +43,7 @@ macro_rules! top_plugin {
     ($plugin_ty:ty) => {
         use td_rs_top::cxx::c_void;
         use td_rs_top::cxx::OP_CustomOPInfo;
+        use td_rs_top::NodeInfo;
 
         #[no_mangle]
         pub extern "C" fn top_get_plugin_info_impl(
@@ -58,8 +59,8 @@ macro_rules! top_plugin {
         }
 
         #[no_mangle]
-        pub extern "C" fn top_new_impl() -> Box<dyn Top> {
-            Box::new(<$plugin_ty>::new())
+        pub extern "C" fn top_new_impl(info: NodeInfo) -> Box<dyn Top> {
+            Box::new(<$plugin_ty>::new(info))
         }
     };
 }

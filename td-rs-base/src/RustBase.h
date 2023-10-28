@@ -14,6 +14,10 @@ std::unique_ptr<TD::PY_Context> getPyContext(TD::PY_Struct *pyStruct) {
     return std::unique_ptr<TD::PY_Context>(ctx);
 }
 
+std::unique_ptr<TD::OP_Context> getOpContext(TD::OP_Context *ctx) {
+    return std::unique_ptr<TD::OP_Context>(ctx);
+}
+
 void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *pygetsets, size_t getsetsize) {
     if (size == 0) {
         return;

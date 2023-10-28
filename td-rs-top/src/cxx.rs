@@ -3,7 +3,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs};
+use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs, NodeInfo};
 
 use crate::TopOutput;
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -32,11 +32,12 @@ pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
 pub use td_rs_base::cxx::OP_CustomOPInfo;
+pub use td_rs_base::cxx::OP_NodeInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
-    fn top_new_impl() -> Box<dyn Top>;
+    fn top_new_impl(info: NodeInfo) -> Box<dyn Top>;
 }
 
 #[subclass(superclass("RustTopPlugin"))]
@@ -44,20 +45,15 @@ pub struct RustTopPluginImpl {
     inner: Box<dyn Top>,
 }
 
-impl Default for RustTopPluginImpl {
-    fn default() -> Self {
-        unsafe {
-            Self {
-                inner: top_new_impl(),
-                cpp_peer: Default::default(),
-            }
-        }
-    }
-}
-
 #[no_mangle]
-extern "C" fn top_new() -> *mut RustTopPluginImplCpp {
-    RustTopPluginImpl::default_cpp_owned().into_raw()
+extern "C" fn top_new(info: &'static OP_NodeInfo) -> *mut RustTopPluginImplCpp {
+    unsafe {
+        let info = NodeInfo::new(info);
+        RustTopPluginImpl::new_cpp_owned(RustTopPluginImpl {
+            inner: top_new_impl(info),
+            cpp_peer: CppSubclassCppPeerHolder::Empty,
+        }).into_raw()
+    }
 }
 
 impl RustTopPlugin_methods for RustTopPluginImpl {

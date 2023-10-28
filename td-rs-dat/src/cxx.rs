@@ -6,7 +6,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs};
+use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs, NodeInfo};
 
 include_cpp! {
     #include "DAT_CPlusPlusBase.h"
@@ -28,11 +28,12 @@ pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
 pub use td_rs_base::cxx::OP_CustomOPInfo;
+pub use td_rs_base::cxx::OP_NodeInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
-    fn dat_new_impl() -> Box<dyn Dat>;
+    fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat>;
 }
 
 #[subclass(superclass("RustDatPlugin"))]
@@ -40,20 +41,15 @@ pub struct RustDatPluginImpl {
     inner: Box<dyn Dat>,
 }
 
-impl Default for RustDatPluginImpl {
-    fn default() -> Self {
-        unsafe {
-            Self {
-                inner: dat_new_impl(),
-                cpp_peer: Default::default(),
-            }
-        }
-    }
-}
-
 #[no_mangle]
-extern "C" fn dat_new() -> *mut RustDatPluginImplCpp {
-    RustDatPluginImpl::default_cpp_owned().into_raw()
+extern "C" fn dat_new(info: &'static OP_NodeInfo) -> *mut RustDatPluginImplCpp {
+    unsafe {
+        let info = NodeInfo::new(info);
+        RustDatPluginImpl::new_cpp_owned(RustDatPluginImpl {
+            inner: dat_new_impl(info),
+            cpp_peer: CppSubclassCppPeerHolder::Empty,
+        }).into_raw()
+    }
 }
 
 impl RustDatPlugin_methods for RustDatPluginImpl {
@@ -67,7 +63,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     fn execute(&mut self, outputs: Pin<&mut DAT_Output>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         let output = DatOutput::new(outputs);
-        if let Some(params) = self.inner.params_mut() {
+        if let Some(mut params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         self.inner.execute(output, &input);

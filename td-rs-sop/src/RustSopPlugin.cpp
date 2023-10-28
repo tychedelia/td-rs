@@ -4,7 +4,7 @@
 
 extern "C" {
 
-RustSopPlugin *sop_new();
+RustSopPlugin *sop_new(const OP_NodeInfo &info);
 void sop_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
@@ -16,7 +16,7 @@ void FillSOPPluginInfo(SOP_PluginInfo *info) {
 
 DLLEXPORT
 SOP_CPlusPlusBase *CreateSOPInstance(const OP_NodeInfo *info) {
-    return sop_new();
+    return sop_new(*info);
 }
 
 DLLEXPORT

@@ -251,6 +251,7 @@ macro_rules! dat_plugin {
     ($plugin_ty:ty) => {
         use td_rs_dat::cxx::c_void;
         use td_rs_dat::cxx::OP_CustomOPInfo;
+        use td_rs_dat::NodeInfo;
 
         #[no_mangle]
         pub extern "C" fn dat_get_plugin_info_impl(
@@ -262,8 +263,8 @@ macro_rules! dat_plugin {
         }
 
         #[no_mangle]
-        pub extern "C" fn dat_new_impl() -> Box<dyn Dat> {
-            Box::new(<$plugin_ty>::new())
+        pub extern "C" fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat> {
+            Box::new(<$plugin_ty>::new(info))
         }
     };
 }

@@ -6,7 +6,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, OperatorInputs};
+use td_rs_base::{param::ParameterManager, OperatorInputs, NodeInfo};
 
 include_cpp! {
     #include "SOP_CPlusPlusBase.h"
@@ -36,11 +36,12 @@ pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
 pub use td_rs_base::cxx::OP_CustomOPInfo;
+pub use td_rs_base::cxx::OP_NodeInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
-    fn sop_new_impl() -> Box<dyn Sop>;
+    fn sop_new_impl(info: NodeInfo) -> Box<dyn Sop>;
 }
 
 #[subclass(superclass("RustSopPlugin"))]
@@ -48,20 +49,15 @@ pub struct RustSopPluginImpl {
     inner: Box<dyn Sop>,
 }
 
-impl Default for RustSopPluginImpl {
-    fn default() -> Self {
-        unsafe {
-            Self {
-                inner: sop_new_impl(),
-                cpp_peer: Default::default(),
-            }
-        }
-    }
-}
-
 #[no_mangle]
-extern "C" fn sop_new() -> *mut RustSopPluginImplCpp {
-    RustSopPluginImpl::default_cpp_owned().into_raw()
+extern "C" fn sop_new(info: &'static OP_NodeInfo) -> *mut RustSopPluginImplCpp {
+    unsafe {
+        let info = NodeInfo::new(info);
+        RustSopPluginImpl::new_cpp_owned(RustSopPluginImpl {
+            inner: sop_new_impl(info),
+            cpp_peer: CppSubclassCppPeerHolder::Empty,
+        }).into_raw()
+    }
 }
 
 impl RustSopPlugin_methods for RustSopPluginImpl {

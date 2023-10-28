@@ -5,7 +5,7 @@
 
 extern "C" {
 
-RustChopPlugin *chop_new();
+RustChopPlugin *chop_new(const OP_NodeInfo &info);
 void chop_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
@@ -18,7 +18,7 @@ void FillCHOPPluginInfo(CHOP_PluginInfo *info) {
 
 DLLEXPORT
 CHOP_CPlusPlusBase *CreateCHOPInstance(const OP_NodeInfo *info) {
-  return chop_new();
+  return chop_new(*info);
 }
 
 DLLEXPORT
