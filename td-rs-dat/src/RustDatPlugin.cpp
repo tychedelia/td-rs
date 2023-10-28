@@ -4,7 +4,7 @@
 
 extern "C" {
 
-RustDatPlugin *dat_new();
+RustDatPlugin *dat_new(const OP_NodeInfo &info);
 void dat_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
@@ -16,7 +16,7 @@ void FillDATPluginInfo(DAT_PluginInfo *info) {
 
 DLLEXPORT
 DAT_CPlusPlusBase *CreateDATInstance(const OP_NodeInfo *info) {
-    return dat_new();
+    return dat_new(*info);
 }
 
 DLLEXPORT

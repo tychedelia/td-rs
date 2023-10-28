@@ -25,6 +25,8 @@ include_cpp! {
     generate_pod!("TD::SOP_CustomAttribData")
     generate_pod!("TD::SOP_PrimitiveInfo")
     generate_pod!("TD::OP_DATInput")
+    generate_pod!("TD::OP_NodeInfo")
+    generate!("TD::OP_Context")
     generate!("TD::OP_TOPInput")
     generate_pod!("TD::OP_TOPInputDownloadOptions")
     generate_pod!("TD::PY_Struct")
@@ -35,6 +37,7 @@ include_cpp! {
     generate!("setString")
     generate!("getPyContext")
     generate!("setPyInfo")
+    generate!("getOpContext")
 }
 
 pub use ffi::TD::*;

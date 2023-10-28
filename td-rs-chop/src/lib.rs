@@ -131,6 +131,7 @@ macro_rules! chop_plugin {
     ($plugin_ty:ty) => {
         use td_rs_chop::cxx::c_void;
         use td_rs_chop::cxx::OP_CustomOPInfo;
+        use td_rs_chop::NodeInfo;
 
         #[no_mangle]
         pub extern "C" fn chop_get_plugin_info_impl(
@@ -142,8 +143,8 @@ macro_rules! chop_plugin {
         }
 
         #[no_mangle]
-        pub extern "C" fn chop_new_impl() -> Box<dyn Chop> {
-            Box::new(<$plugin_ty>::new())
+        pub extern "C" fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop> {
+            Box::new(<$plugin_ty>::new(info))
         }
     };
 }

@@ -32,22 +32,24 @@ pub struct PythonChop {
     execute_count: u32,
     offset: f32,
     params: PythonChopParams,
+    pub info: NodeInfo,
 }
 
 /// Impl block providing default constructor for plugin
 #[py_op_methods]
 impl PythonChop {
-    pub(crate) fn new() -> Self {
+    fn reset_filter(&mut self) {
+        self.offset = 0.0;
+    }
+
+    fn new(info: NodeInfo) -> Self {
         Self {
+            info,
             speed: 1.0,
             execute_count: 0,
             offset: 0.0,
             params: Default::default(),
         }
-    }
-
-    fn reset_filter(&mut self) {
-        self.offset = 0.0;
     }
 
     #[py_meth]
@@ -64,10 +66,20 @@ impl PythonChop {
 }
 
 impl OpInfo for PythonChop {
-    const OPERATOR_LABEL: &'static str = "Custom Signal Python";
     const OPERATOR_TYPE: &'static str = "Customsignalpython";
+    const OPERATOR_LABEL: &'static str = "Custom Signal Python";
     const MIN_INPUTS: usize = 0;
     const MAX_INPUTS: usize = 1;
+    const PYTHON_CALLBACKS_DAT: &'static str = "
+# This is an example callbacks DAT.
+#
+# op - The OP that is doing the callback
+# curSpeed - The current speed value the node will be using.
+#
+# Change the 0.0 to make the speed get adjusted by this callback.
+def getSpeedAdjust(op, curSpeed):
+    return curSpeed + 0.0
+";
 }
 
 impl Op for PythonChop {
@@ -112,6 +124,18 @@ impl Chop for PythonChop {
             inputs.params().enable_param("Shape", true);
             // Apply Python class modifications
             self.params.speed *= self.speed;
+
+            let arg_tuple = self.info.context().create_arguments_tuple(1);
+            unsafe {
+                pyo3_ffi::PyTuple_SET_ITEM(arg_tuple, 1, pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double));
+                let res = self.info.context().call_python_callback("getSpeedAdjust", arg_tuple, std::ptr::null_mut());
+                if !res.is_null() {
+                    if pyo3_ffi::PyFloat_Check(res) != 0 {
+                        self.params.speed = pyo3_ffi::PyFloat_AsDouble(res) as f32;
+                    }
+                    pyo3_ffi::Py_DECREF(res);
+                }
+            }
 
             let phase = 2.0 * std::f32::consts::PI / output.num_channels() as f32;
             let num_samples = output.num_samples();
@@ -181,12 +205,10 @@ impl InfoChop for PythonChop {
 
 impl InfoDat for PythonChop {
     fn size(&self) -> (u32, u32) {
-        println!("size");
         (2, 2)
     }
 
     fn entry(&self, index: usize, entry_index: usize) -> String {
-        println!("index {} entry_index {}", index, entry_index);
         match (index, entry_index) {
             (0, 0) => "executeCount".to_string(),
             (0, 1) => "offset".to_string(),

@@ -4,7 +4,7 @@
 
 extern "C" {
 
-RustTopPlugin *top_new();
+RustTopPlugin *top_new(const OP_NodeInfo &info);
 TOP_ExecuteMode top_get_plugin_info_impl(OP_CustomOPInfo &opInfo);
 
 DLLEXPORT
@@ -17,7 +17,7 @@ void FillTOPPluginInfo(TOP_PluginInfo *info) {
 
 DLLEXPORT
 TOP_CPlusPlusBase *CreateTOPInstance(const OP_NodeInfo *info) {
-  return top_new();
+  return top_new(*info);
 }
 
 DLLEXPORT

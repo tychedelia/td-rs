@@ -6,7 +6,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{InfoChop, InfoDat, OperatorInputs, ParameterManager};
+use td_rs_base::{InfoChop, InfoDat, NodeInfo, OperatorInputs, ParameterManager};
 
 include_cpp! {
     #include "CHOP_CPlusPlusBase.h"
@@ -32,11 +32,12 @@ pub use ffi::*;
 pub use td_rs_base::cxx::getPyContext;
 pub use td_rs_base::cxx::setString;
 pub use td_rs_base::cxx::OP_CustomOPInfo;
+pub use td_rs_base::cxx::OP_NodeInfo;
 pub use td_rs_base::cxx::PY_GetInfo;
 pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
-    fn chop_new_impl() -> Box<dyn Chop>;
+    fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop>;
 }
 
 #[subclass(superclass("RustChopPlugin"))]
@@ -44,21 +45,15 @@ pub struct RustChopPluginImpl {
     pub inner: Box<dyn Chop>,
 }
 
-impl Default for RustChopPluginImpl {
-    fn default() -> Self {
-        unsafe {
-            Self {
-                inner: chop_new_impl(),
-                cpp_peer: Default::default(),
-            }
-        }
-    }
-}
-
 #[no_mangle]
-extern "C" fn chop_new() -> *mut RustChopPluginImplCpp {
-    let _foo = RustChopPluginImpl::default_cpp_owned();
-    RustChopPluginImpl::default_cpp_owned().into_raw()
+extern "C" fn chop_new(info: &'static OP_NodeInfo) -> *mut RustChopPluginImplCpp {
+    unsafe {
+        let info = NodeInfo::new(info);
+        RustChopPluginImpl::new_cpp_owned(RustChopPluginImpl {
+            inner: chop_new_impl(info),
+            cpp_peer: CppSubclassCppPeerHolder::Empty,
+        }).into_raw()
+    }
 }
 
 impl RustChopPlugin_methods for RustChopPluginImpl {

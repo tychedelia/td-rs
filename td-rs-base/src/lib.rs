@@ -2,6 +2,7 @@
 #![feature(min_specialization)]
 use std::cell::OnceCell;
 use std::ffi;
+use std::fmt::Formatter;
 use std::ops::Index;
 
 pub use param::*;
@@ -41,6 +42,8 @@ pub trait OpInfo {
     const MINOR_VERSION: i32 = 0;
     /// Whether to cook on start.
     const COOK_ON_START: bool = false;
+    /// Python callbacks DAT.
+    const PYTHON_CALLBACKS_DAT: &'static str = "";
 }
 
 pub trait InfoChop {
@@ -113,6 +116,55 @@ pub trait Op {
     }
 
     fn pulse_pressed(&mut self, _name: &str) {}
+}
+
+pub struct NodeInfo {
+    info: &'static cxx::OP_NodeInfo,
+}
+
+impl NodeInfo {
+    pub fn new(info: &'static cxx::OP_NodeInfo) -> Self {
+        Self { info }
+    }
+
+    pub fn context(&self) -> Context {
+        Context {
+            context: unsafe { self.info.context },
+        }
+    }
+}
+
+pub struct Context {
+    context: *mut cxx::OP_Context,
+}
+
+impl Context {
+    pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
+        let obj = unsafe {
+            let mut ctx = cxx::getOpContext(self.context);
+            let tuple = ctx.pin_mut().createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
+            std::mem::forget(ctx);
+            tuple
+        };
+        obj as *mut pyo3_ffi::PyObject
+    }
+
+    pub fn call_python_callback(&self, callback: &str, args: *mut pyo3_ffi::PyObject, kw: *mut pyo3_ffi::PyObject) -> *mut pyo3_ffi::PyObject {
+        let callback = ffi::CString::new(callback).unwrap();
+        let obj = unsafe {
+            let mut ctx = cxx::getOpContext(self.context);
+            let res = ctx.pin_mut().callPythonCallback(callback.as_ptr(), args as *mut cxx::_object, kw as *mut cxx::_object, std::ptr::null_mut());
+            std::mem::forget(ctx);
+            res
+        };
+        obj as *mut pyo3_ffi::PyObject
+    }
+}
+
+impl std::fmt::Debug for NodeInfo {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "NodeInfo")
+    }
 }
 
 /// Input to an operator, which can be used to get parameters, channels,
@@ -269,5 +321,8 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
     op_info.majorVersion = T::MAJOR_VERSION;
     op_info.minorVersion = T::MINOR_VERSION;
     op_info.cookOnStart = T::COOK_ON_START;
+    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DAT).unwrap();
+    op_info.pythonCallbacksDAT = callbacks.as_ptr();
+    std::mem::forget(callbacks); // Callbacks are static
     py::py_op_info::<T>(op_info);
 }
