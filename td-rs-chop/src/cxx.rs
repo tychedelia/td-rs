@@ -17,7 +17,8 @@ include_cpp! {
     extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
     extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
     extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
-    generate_pod!("TD::OP_CustomOPInfo")
+    extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    pod!("TD::OP_CustomOPInfo")
     generate_pod!("TD::CHOP_PluginInfo")
     generate_pod!("TD::CHOP_GeneralInfo")
     generate_pod!("TD::CHOP_OutputInfo")
@@ -27,14 +28,9 @@ include_cpp! {
 }
 
 pub use autocxx::c_void;
+pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
-pub use td_rs_base::cxx::getPyContext;
-pub use td_rs_base::cxx::setString;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
-pub use td_rs_base::cxx::OP_NodeInfo;
-pub use td_rs_base::cxx::PY_GetInfo;
-pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
     fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop>;

@@ -22,9 +22,8 @@ pub struct FilterDat {
     params: FilterDatParams,
 }
 
-/// Impl block providing default constructor for plugin
-impl FilterDat {
-    pub(crate) fn new(info: NodeInfo) -> Self {
+impl OpNew for FilterDat {
+    fn new(info: NodeInfo) -> Self {
         Self {
             params: Default::default(),
         }
@@ -34,9 +33,9 @@ impl FilterDat {
 impl OpInfo for FilterDat {
     const OPERATOR_TYPE: &'static str = "Basicfilter";
     const OPERATOR_LABEL: &'static str = "Basic Filter";
+    const MIN_INPUTS: usize = 1;
     // This Dat takes no input
     const MAX_INPUTS: usize = 1;
-    const MIN_INPUTS: usize = 1;
 }
 
 impl Op for FilterDat {

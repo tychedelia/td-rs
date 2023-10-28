@@ -42,4 +42,23 @@ void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *
     opInfo.pythonGetSets = arr2;
 }
 
+uint64_t getDownloadDataSize(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
+    uint64_t size = result->size;
+    return size;
+}
+
+void* getDownloadData(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
+    void* data = result->getData();
+    return data;
+}
+
+TD::OP_TextureDesc getDownloadTextureDesc(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
+    TD::OP_TextureDesc desc = result->textureDesc;
+    return desc;
+}
+
+void releaseDownloadResult(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
+    result.release();
+}
+
 #endif // TD_RS_RUSTBASE_H

@@ -13,6 +13,8 @@ crate-type = ["staticlib"]
 [dependencies]
 td-rs-top = { path = "../../../td-rs-top" }
 td-rs-derive = { path = "../../../td-rs-derive" }
+
+[target.'cfg(windows)'.dependencies]
 cudarc = "0.9"
 
 [build-dependencies]

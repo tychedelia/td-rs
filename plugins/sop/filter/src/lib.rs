@@ -8,20 +8,23 @@ struct FilterSopParams {
 }
 
 /// Struct representing our SOP's state
+#[derive(Default)]
 pub struct FilterSop {
     warning: String,
     params: FilterSopParams,
 }
 
-/// Impl block providing default constructor for plugin
-impl FilterSop {
-    pub(crate) fn new(info: NodeInfo) -> Self {
+impl OpNew for FilterSop {
+    fn new(info: NodeInfo) -> Self {
         Self {
             warning: "".to_string(),
-            params: Default::default(),
+            ..Default::default()
         }
     }
+}
 
+/// Impl block providing default constructor for plugin
+impl FilterSop {
     fn translate(&mut self) -> Vec3 {
         if let Some(chop) = self.params.translate.input() {
             let mut t = Vec3::zero();

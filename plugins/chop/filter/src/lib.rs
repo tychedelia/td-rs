@@ -18,9 +18,8 @@ pub struct FilterChop {
     params: FilterChopParams,
 }
 
-/// Impl block providing default constructor for plugin
-impl FilterChop {
-    pub(crate) fn new(info: NodeInfo) -> Self {
+impl OpNew for FilterChop {
+    fn new(info: NodeInfo) -> Self {
         Self {
             params: FilterChopParams {
                 apply_scale: true,

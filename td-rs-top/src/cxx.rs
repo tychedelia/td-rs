@@ -5,7 +5,7 @@ use std::ffi::CString;
 use std::pin::Pin;
 use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs, NodeInfo};
 
-use crate::TopOutput;
+use crate::{TopContext, TopOutput};
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
 use crate::Top;
 
@@ -13,6 +13,8 @@ include_cpp! {
     #include "TOP_CPlusPlusBase.h"
     #include "RustTopPlugin.h"
     safety!(unsafe)
+    extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    pod!("TD::OP_CustomOPInfo")
     extern_cpp_type!("TD::OP_ParameterManager", td_rs_base::cxx::OP_ParameterManager)
     extern_cpp_type!("TD::OP_String", td_rs_base::cxx::OP_String)
     extern_cpp_type!("TD::OP_InfoDATSize", td_rs_base::cxx::OP_InfoDATSize)
@@ -20,24 +22,33 @@ include_cpp! {
     extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
     extern_cpp_type!("TD::OP_TOPInput", td_rs_base::cxx::OP_TOPInput)
     extern_cpp_type!("TD::OP_TOPInputDownloadOptions", td_rs_base::cxx::OP_TOPInputDownloadOptions)
+    extern_cpp_type!("TD::OP_PixelFormat", td_rs_base::cxx::OP_PixelFormat)
+    extern_cpp_type!("TD::OP_TextureDesc", td_rs_base::cxx::OP_TextureDesc)
+    pod!("TD::OP_TextureDesc")
     extern_cpp_type!("TD::OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
-    pod!("TD::OP_CPUMemPixelType")
+    generate_pod!("TD::TOP_UploadInfo")
     generate_pod!("TD::TOP_GeneralInfo")
     generate_pod!("TD::TOP_PluginInfo")
+    generate!("TD::TOP_Context")
+    generate!("TD::TOP_Buffer")
+    generate!("TD::TOP_Output")
+    generate_pod!("TD::TOP_BufferFlags")
+
+    // utility fns
+    generate!("uploadBuffer")
+    generate!("getBufferData")
+    generate!("getBufferSize")
+    generate!("getBufferFlags")
+    generate!("releaseBuffer")
 }
 
 pub use autocxx::c_void;
+pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
-pub use td_rs_base::cxx::getPyContext;
-pub use td_rs_base::cxx::setString;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
-pub use td_rs_base::cxx::OP_NodeInfo;
-pub use td_rs_base::cxx::PY_GetInfo;
-pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
-    fn top_new_impl(info: NodeInfo) -> Box<dyn Top>;
+    fn top_new_impl(info: NodeInfo, context: TopContext) -> Box<dyn Top>;
 }
 
 #[subclass(superclass("RustTopPlugin"))]
@@ -46,11 +57,12 @@ pub struct RustTopPluginImpl {
 }
 
 #[no_mangle]
-extern "C" fn top_new(info: &'static OP_NodeInfo) -> *mut RustTopPluginImplCpp {
+extern "C" fn top_new(info: &'static OP_NodeInfo, context: Pin<&'static mut TOP_Context>) -> *mut RustTopPluginImplCpp {
     unsafe {
         let info = NodeInfo::new(info);
+        let context = TopContext::new(context);
         RustTopPluginImpl::new_cpp_owned(RustTopPluginImpl {
-            inner: top_new_impl(info),
+            inner: top_new_impl(info, context),
             cpp_peer: CppSubclassCppPeerHolder::Empty,
         }).into_raw()
     }
@@ -65,19 +77,19 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
         info.inputSizeIndex = gen_info.input_size_index;
     }
 
-    // TOP_OutputFormatSpecs &output_specs, const OP_Inputs &inputs, TOP_Context &context
-    fn execute(&mut self, output: Pin<&mut TOP_Output>, inputs: &OP_Inputs) {
-        let input = OperatorInputs::new(inputs);
-        let output = TopOutput::new(output);
-        self.inner.execute(output, &input);
-    }
-
     fn getNumInfoCHOPChans(&mut self) -> i32 {
         if let Some(info_chop) = self.inner.info_chop() {
             info_chop.size() as i32
         } else {
             0
         }
+    }
+
+    // TOP_OutputFormatSpecs &output_specs, const OP_Inputs &inputs, TOP_Context &context
+    fn execute(&mut self, output: Pin<&mut TOP_Output>, inputs: &OP_Inputs) {
+        let input = OperatorInputs::new(inputs);
+        let output = TopOutput::new(output);
+        self.inner.execute(output, &input);
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {

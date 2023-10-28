@@ -289,7 +289,7 @@ public:
   uint64_t bufferOffset = 0;
 
   // Describe the texture that should be created from the buffer
-  OP_TextureDesc textureDesc;
+  TD::OP_TextureDesc textureDesc;
 
   // For e2D texDim textures, you can flip the texture vertically by setting
   // this to TopLeft.

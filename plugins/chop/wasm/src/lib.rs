@@ -20,8 +20,8 @@ pub struct WasmChop {
     module: Option<Module>,
 }
 
-impl WasmChop {
-    pub(crate) fn new(info: NodeInfo) -> Self {
+impl OpNew for WasmChop {
+    fn new(info: NodeInfo) -> Self {
         Self {
             params: WasmChopParams {
                 ..Default::default()

@@ -28,17 +28,14 @@ include_cpp! {
     extern_cpp_type!("TD::BoundingBox", td_rs_base::cxx::BoundingBox)
     extern_cpp_type!("TD::SOP_CustomAttribData", td_rs_base::cxx::SOP_CustomAttribData)
     extern_cpp_type!("TD::SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
+    extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    pod!("TD::OP_CustomOPInfo")
 }
 
 pub use autocxx::c_void;
+pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
-pub use td_rs_base::cxx::getPyContext;
-pub use td_rs_base::cxx::setString;
-pub use td_rs_base::cxx::OP_CustomOPInfo;
-pub use td_rs_base::cxx::OP_NodeInfo;
-pub use td_rs_base::cxx::PY_GetInfo;
-pub use td_rs_base::cxx::PY_Struct;
 
 extern "C" {
     fn sop_new_impl(info: NodeInfo) -> Box<dyn Sop>;

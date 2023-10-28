@@ -13,3 +13,4 @@ crate-type = ["staticlib"]
 [dependencies]
 td-rs-top = { path = "../../../td-rs-top" }
 td-rs-derive = { path = "../../../td-rs-derive" }
+bytemuck = "1.14"

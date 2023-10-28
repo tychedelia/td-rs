@@ -32,12 +32,20 @@ include_cpp! {
     generate_pod!("TD::PY_Struct")
     generate_pod!("TD::PY_GetInfo")
     generate!("TD::PY_Context")
+    generate_pod!("TD::OP_TOPInputDownloadOptions")
+    generate!("TD::OP_SmartRef")
+    generate_pod!("TD::OP_TextureDesc")
+    generate_pod!("TD::OP_TexDim")
 
     // util fns
     generate!("setString")
     generate!("getPyContext")
     generate!("setPyInfo")
     generate!("getOpContext")
+    generate!("getDownloadDataSize")
+    generate!("getDownloadData")
+    generate!("getDownloadTextureDesc")
+    generate!("releaseDownloadResult")
 }
 
 pub use ffi::TD::*;
