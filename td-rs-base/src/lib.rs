@@ -58,6 +58,10 @@ pub trait InfoDat {
     fn entry(&self, index: usize, entry_index: usize) -> String;
 }
 
+pub trait OpNew {
+    fn new(info: NodeInfo) -> Self;
+}
+
 /// Functionality for all operator plugin types.
 /// This can commonly be left as the default implementation for most plugins.
 pub trait Op {
@@ -321,7 +325,7 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
     op_info.majorVersion = T::MAJOR_VERSION;
     op_info.minorVersion = T::MINOR_VERSION;
     op_info.cookOnStart = T::COOK_ON_START;
-    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DA).unwrap();
+    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DAT).unwrap();
     op_info.pythonCallbacksDAT = callbacks.as_ptr();
     std::mem::forget(callbacks); // Callbacks are static
     py::py_op_info::<T>(op_info);

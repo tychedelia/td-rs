@@ -3,6 +3,8 @@ pub mod cxx;
 use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
+pub use ::cxx::UniquePtr;
+use autocxx::c_void;
 
 pub struct TopOutput<'execute> {
     output: Pin<&'execute mut cxx::TOP_Output>,
@@ -12,6 +14,43 @@ impl<'execute> TopOutput<'execute> {
     pub fn new(output: Pin<&'execute mut cxx::TOP_Output>) -> TopOutput<'execute> {
         Self { output }
     }
+
+    pub fn upload_buffer(&mut self, mut buffer: TopBuffer, info: UploadInfo) {
+        let info = crate::cxx::TOP_UploadInfo {
+            bufferOffset: info.buffer_offset as u64,
+            textureDesc: crate::cxx::OP_TextureDesc {
+                aspectX: info.texture_desc.aspect_x,
+                aspectY: info.texture_desc.aspect_y,
+                depth: info.texture_desc.depth as u32,
+                height: info.texture_desc.height as u32,
+                width: info.texture_desc.width as u32,
+                texDim: match info.texture_desc.tex_dim {
+                    TexDim::EInvalid => cxx::OP_TexDim::eInvalid,
+                    TexDim::E2D => cxx::OP_TexDim::e2D,
+                    TexDim::E2DArray => cxx::OP_TexDim::e2DArray,
+                    TexDim::E3D => cxx::OP_TexDim::e3D,
+                    TexDim::ECube => cxx::OP_TexDim::eCube,
+                },
+                pixelFormat: info.texture_desc.pixel_format.to_cxx(),
+                reserved: Default::default(),
+            },
+            firstPixel: match info.first_pixel {
+                FirstPixel::BottomLeft => cxx::TOP_FirstPixel::BottomLeft,
+                FirstPixel::TopLeft => cxx::TOP_FirstPixel::TopLeft,
+            },
+            colorBufferIndex: info.color_buffer_index as u32,
+            reserved: Default::default(),
+        };
+
+        // TODO: this is bad. are we leaking memory here? or does unique_ptr take care of it?
+        // TODO: why does autocxx hate our uploadBuffer function? what's wrong with TOP_UploadInfo
+        let buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
+        unsafe { crate::cxx::uploadBuffer(self.output.as_mut(), buf.into_raw(), &info) };
+    }
+}
+
+pub trait TopNew {
+    fn new(info: NodeInfo, context: TopContext) -> Self;
 }
 
 pub trait TopInfo {
@@ -29,86 +68,69 @@ pub enum ExecuteMode {
     Cpu,
     Cuda,
 }
+pub struct TopContext {
+    context: Pin<&'static mut cxx::TOP_Context>,
+}
 
-#[derive(Debug, Default)]
-pub enum TexDim {
+impl TopContext {
+    pub fn new(context: Pin<&'static mut cxx::TOP_Context>) -> Self {
+        Self { context }
+    }
+
+    pub fn create_output_buffer(&mut self, size:usize, flags: TopBufferFlags) -> TopBuffer {
+        let flags = match flags {
+            TopBufferFlags::None => cxx::TOP_BufferFlags::None,
+            TopBufferFlags::Readable => cxx::TOP_BufferFlags::Readable,
+        };
+        let buf = unsafe {
+            self.context.as_mut().createOutputBuffer(size as u64, flags, std::ptr::null_mut())
+        };
+        TopBuffer::new(buf)
+    }
+}
+
+#[derive(Debug, Default, Eq, PartialEq)]
+pub enum TopBufferFlags {
     #[default]
-    EInvalid,
-    E2D,
-    E2DArray,
-    E3D,
-    ECube,
+    None,
+    Readable,
 }
 
-#[derive(Debug, Default)]
-pub enum PixelFormat {
-    #[default]
-    Invalid,
-
-    // 8-bit per color, BGRA pixels. This is preferred for 4 channel 8-bit data
-    BGRA8Fixed,
-    // 8-bit per color, RGBA pixels. Only use this one if absolutely nessessary.
-    RGBA8Fixed,
-    RGBA16Fixed,
-    RGBA16Float,
-    RGBA32Float,
-
-    Mono8Fixed,
-    Mono16Fixed,
-    Mono16Float,
-    Mono32Float,
-
-    // RG two channel
-    RG8Fixed,
-    RG16Fixed,
-    RG16Float,
-    RG32Float,
-
-    // Alpha only
-    A8Fixed,
-    A16Fixed,
-    A16Float,
-    A32Float,
-
-    // Mono with Alpha
-    MonoA8Fixed,
-    MonoA16Fixed,
-    MonoA16Float,
-    MonoA32Float,
-
-    // sRGB. use SBGRA if possible since that's what most GPUs use
-    SBGRA8Fixed,
-    SRGBA8Fixed,
-
-    RGB10A2Fixed,
-    // 11-bit float, positive values only. B is actually 10 bits
-    RGB11Float,
+pub struct TopBuffer {
+    buffer: UniquePtr<cxx::TD_OP_SmartRef_TD_TOP_Buffer_AutocxxConcrete>,
 }
 
-pub struct TextureDesc {
-    pub width: usize,
-    pub height: usize,
-    pub depth: usize,
-    pub tex_dim: TexDim,
-    pub pixel_format: PixelFormat,
-    pub aspect_x: f32,
-    pub aspect_y: f32,
-}
+impl TopBuffer {
+    pub fn new(
+        buffer: UniquePtr<cxx::TD_OP_SmartRef_TD_TOP_Buffer_AutocxxConcrete>,
+    ) -> Self {
+        Self { buffer }
+    }
 
-impl Default for TextureDesc {
-    fn default() -> Self {
-        Self {
-            width: 0,
-            height: 0,
-            depth: 1,
-            tex_dim: TexDim::EInvalid,
-            pixel_format: PixelFormat::Invalid,
-            aspect_x: 0.0,
-            aspect_y: 0.0,
+    pub fn size(&self) -> usize {
+        crate::cxx::getBufferSize(&self.buffer) as usize
+    }
+
+    pub fn data<T>(&mut self) -> &[T] {
+        let size = self.size();
+        let data = crate::cxx::getBufferData(self.buffer.pin_mut());
+        unsafe { std::slice::from_raw_parts(data as *const T, size) }
+    }
+
+    pub fn flags(&self) -> TopBufferFlags {
+        let flags = crate::cxx::getBufferFlags(&self.buffer);
+        match flags {
+            cxx::TOP_BufferFlags::None => TopBufferFlags::None,
+            cxx::TOP_BufferFlags::Readable => TopBufferFlags::Readable,
         }
     }
 }
 
+impl Drop for TopBuffer {
+    fn drop(&mut self) {
+        unsafe { crate::cxx::releaseBuffer(self.buffer.pin_mut()) }
+    }
+}
 
 #[derive(Debug, Default)]
 pub enum FirstPixel {
@@ -139,6 +161,7 @@ macro_rules! top_plugin {
         use td_rs_top::cxx::c_void;
         use td_rs_top::cxx::OP_CustomOPInfo;
         use td_rs_top::NodeInfo;
+        use td_rs_top::TopContext;
 
         #[no_mangle]
         pub extern "C" fn top_get_plugin_info_impl(
@@ -154,8 +177,8 @@ macro_rules! top_plugin {
         }
 
         #[no_mangle]
-        pub extern "C" fn top_new_impl(info: NodeInfo) -> Box<dyn Top> {
-            Box::new(<$plugin_ty>::new(info))
+        pub extern "C" fn top_new_impl(info: NodeInfo, context: TopContext) -> Box<dyn Top> {
+            Box::new(<$plugin_ty>::new(info, context))
         }
     };
 }

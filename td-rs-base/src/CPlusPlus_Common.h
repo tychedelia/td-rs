@@ -482,8 +482,8 @@ public:
   // Depth for 3D and 2D_ARRAY textures, 1 for other texture types
   uint32_t depth = 1;
 
-  OP_TexDim texDim = OP_TexDim::eInvalid;
-  OP_PixelFormat pixelFormat = OP_PixelFormat::Invalid;
+  TD::OP_TexDim texDim = OP_TexDim::eInvalid;
+  TD::OP_PixelFormat pixelFormat = OP_PixelFormat::Invalid;
 
   // If these are 0, then the aspect is simple the width and height ratio
   // (square pixels).

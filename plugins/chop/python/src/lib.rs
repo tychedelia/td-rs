@@ -35,13 +35,7 @@ pub struct PythonChop {
     pub info: NodeInfo,
 }
 
-/// Impl block providing default constructor for plugin
-#[py_op_methods]
-impl PythonChop {
-    fn reset_filter(&mut self) {
-        self.offset = 0.0;
-    }
-
+impl OpNew for PythonChop {
     fn new(info: NodeInfo) -> Self {
         Self {
             info,
@@ -50,6 +44,13 @@ impl PythonChop {
             offset: 0.0,
             params: Default::default(),
         }
+    }
+}
+
+#[py_op_methods]
+impl PythonChop {
+    fn reset_filter(&mut self) {
+        self.offset = 0.0;
     }
 
     #[py_meth]

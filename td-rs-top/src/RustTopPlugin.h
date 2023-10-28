@@ -4,6 +4,29 @@
 #ifndef TD_RS_RUSTTOPPLUGIN_H
 #define TD_RS_RUSTTOPPLUGIN_H
 
+void* getBufferData(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
+    void* data = buffer->data;
+    return data;
+}
+
+uint64_t getBufferSize(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
+    uint64_t size = buffer->size;
+    return size;
+}
+
+TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
+    TD::TOP_BufferFlags flags = buffer->flags;
+    return flags;
+}
+
+void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
+    buffer.release();
+}
+
+void uploadBuffer(TD::TOP_Output &output, TD::OP_SmartRef<TD::TOP_Buffer> *buffer, const TD::TOP_UploadInfo &info) {
+    output.uploadBuffer(buffer, info, 0);
+}
+
 using namespace TD;
 
 class TopPlugin : public TOP_CPlusPlusBase {
