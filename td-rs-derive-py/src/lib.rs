@@ -397,7 +397,7 @@ fn is_py_meth_attr(attr: &syn::Attribute) -> bool {
 }
 
 #[proc_macro_attribute]
-pub fn py_op_methods(attr: TokenStream, item: TokenStream) -> TokenStream {
+pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as syn::ItemImpl);
     let struct_name = &input.self_ty;
     struct PyMeth {

@@ -1,6 +1,6 @@
-use std::f64::consts::PI;
-use std::pin::Pin;
-use std::sync::Arc;
+
+
+
 use td_rs_chop::param::MenuParam;
 use td_rs_chop::*;
 use td_rs_derive::{Param, Params};
@@ -81,7 +81,7 @@ impl Chop for GeneratorChop {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -90,11 +90,11 @@ impl Chop for GeneratorChop {
         }
     }
 
-    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
+    fn channel_name(&self, index: usize, _inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
 
-    fn output_info(&self, inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
+    fn output_info(&self, _inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         Some(ChopOutputInfo {
             num_channels: self.params.num_channels,
             num_samples: self.params.length,

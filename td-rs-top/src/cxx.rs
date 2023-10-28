@@ -148,7 +148,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
         let params = self.inner.params_mut();
-        if let Some(mut params) = params {
+        if let Some(params) = params {
             let mut manager = ParameterManager::new(manager);
             params.register(&mut manager);
         }

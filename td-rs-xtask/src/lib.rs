@@ -12,7 +12,7 @@ use crate::macos::build_plugin;
 use crate::windows::build_plugin;
 use anyhow::Context;
 use std::env;
-use std::env::args;
+
 use std::process::Command;
 
 pub use anyhow::Result;

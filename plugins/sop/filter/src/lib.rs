@@ -1,6 +1,6 @@
-use std::f64::consts::PI;
-use std::pin::Pin;
-use std::sync::Arc;
+
+
+
 use td_rs_derive::Params;
 use td_rs_sop::param::ChopParam;
 use td_rs_sop::*;
@@ -146,7 +146,7 @@ impl Sop for FilterSop {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<SopInput>) -> SopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: true,

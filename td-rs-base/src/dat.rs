@@ -1,7 +1,7 @@
 use crate::cxx::OP_DATInput;
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
-use std::ops::Index;
+
 
 /// A dat input.
 #[repr(transparent)]

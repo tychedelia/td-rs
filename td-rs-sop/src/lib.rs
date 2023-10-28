@@ -1,9 +1,9 @@
 use crate::cxx::{SOP_CustomAttribData, Vector};
-use autocxx::prelude::*;
-use ref_cast::RefCast;
-use std::ops::{Deref, Index, IndexMut};
-use std::pin::{pin, Pin};
-use std::sync::Arc;
+
+
+
+use std::pin::{Pin};
+
 pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::sop::*;
 pub use td_rs_base::*;
@@ -115,15 +115,15 @@ impl<'execute> SopVboOutput<'execute> {
 
 /// Trait for defining a custom operator.
 pub trait Sop: Op {
-    fn general_info(&self, input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
+    fn general_info(&self, _input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo::default()
     }
 
-    fn execute(&mut self, output: &mut SopOutput, input: &OperatorInputs<SopInput>) {
+    fn execute(&mut self, _output: &mut SopOutput, _input: &OperatorInputs<SopInput>) {
         // Do nothing by default.
     }
 
-    fn execute_vbo(&mut self, output: &mut SopVboOutput, input: &OperatorInputs<SopInput>) {
+    fn execute_vbo(&mut self, _output: &mut SopVboOutput, _input: &OperatorInputs<SopInput>) {
         // Do nothing by default.
     }
 }

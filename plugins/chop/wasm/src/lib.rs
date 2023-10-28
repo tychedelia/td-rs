@@ -50,7 +50,7 @@ impl Op for WasmChop {
 }
 
 impl InfoDat for WasmChop {
-    fn entry(&self, index: usize, entry_index: usize) -> String {
+    fn entry(&self, _index: usize, _entry_index: usize) -> String {
         let wasm_file = &self.params.wasm;
         if wasm_file.exists() && wasm_file.is_file() {
             wasmprinter::print_file(wasm_file.as_path()).expect("Failed to print wasm file")
@@ -111,7 +111,7 @@ impl Chop for WasmChop {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -120,7 +120,7 @@ impl Chop for WasmChop {
         }
     }
 
-    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
+    fn channel_name(&self, index: usize, _inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
 }

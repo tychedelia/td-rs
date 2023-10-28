@@ -1,6 +1,6 @@
-use std::f64::consts::PI;
-use std::pin::Pin;
-use std::sync::Arc;
+
+
+
 use td_rs_chop::*;
 use td_rs_derive::Params;
 
@@ -63,7 +63,7 @@ impl Chop for FilterChop {
         }
     }
 
-    fn general_info(&self, inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
+    fn general_info(&self, _inputs: &OperatorInputs<ChopInput>) -> ChopGeneralInfo {
         ChopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -72,7 +72,7 @@ impl Chop for FilterChop {
         }
     }
 
-    fn channel_name(&self, index: usize, inputs: &OperatorInputs<ChopInput>) -> String {
+    fn channel_name(&self, index: usize, _inputs: &OperatorInputs<ChopInput>) -> String {
         format!("chan{}", index)
     }
 }

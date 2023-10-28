@@ -74,15 +74,15 @@ fn write_xcodeproj(
         "td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"
     ))
     .expect("Could not read xcode project");
-    let mut p = project.as_dictionary_mut().unwrap();
-    let mut objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
-    let mut lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
+    let p = project.as_dictionary_mut().unwrap();
+    let objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
+    let lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
     lib.insert("name".to_string(), Value::String(format!("lib{plugin}.a")));
     lib.insert(
         "path".to_string(),
         Value::String(format!("target/{target}/release/lib{plugin}.a")),
     );
-    let mut bundle = objs
+    let bundle = objs
         .get_mut(BUNDLE_KEY)
         .unwrap()
         .as_dictionary_mut()
@@ -91,7 +91,7 @@ fn write_xcodeproj(
         "name".to_string(),
         Value::String(format!("{plugin}.plugin")),
     );
-    let mut bundle_config = objs
+    let bundle_config = objs
         .get_mut(BUNDLE_CONFIGURATION_KEY)
         .unwrap()
         .as_dictionary_mut()

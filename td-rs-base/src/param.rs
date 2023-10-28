@@ -3,7 +3,7 @@ use crate::{cxx, ParamInputs};
 use ref_cast::RefCast;
 use std::ffi;
 use std::ffi::{c_char, CString};
-use std::ops::{Deref, DerefMut, Index};
+use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::pin::Pin;
 
@@ -111,7 +111,7 @@ impl<'execute> ParameterManager<'execute> {
     /// Create a new parameter manager. Should not be called by
     /// users.
     pub fn new(
-        mut manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>,
+        manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>,
     ) -> ParameterManager {
         Self { manager }
     }

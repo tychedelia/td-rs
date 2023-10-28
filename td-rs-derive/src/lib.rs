@@ -3,13 +3,13 @@ extern crate proc_macro;
 use proc_macro::TokenStream;
 use proc_macro2::TokenStream as TokenStream2;
 
-use quote::{quote, ToTokens};
-use syn::spanned::Spanned;
+use quote::{quote};
+
 use syn::{
-    parse_macro_input, AttributeArgs, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
-    NestedMeta, Type, Variant,
+    parse_macro_input, Data, DeriveInput, Fields, Lit, Meta, MetaNameValue,
+    NestedMeta, Variant,
 };
-use td_rs_base::param::ParamOptions;
+
 
 #[proc_macro_derive(Param)]
 pub fn derive_param(input: TokenStream) -> TokenStream {
@@ -125,7 +125,7 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
         if let Fields::Named(named_fields) = &data_struct.fields {
             for field in named_fields.named.iter() {
                 let field_name = field.ident.as_ref().unwrap();
-                let field_type = &field.ty;
+                let _field_type = &field.ty;
 
                 let mut label = None;
                 let mut page = None;
