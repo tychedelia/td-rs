@@ -127,13 +127,13 @@ impl OpInfo for FilterSop {
     const MIN_INPUTS: usize = 1;
 }
 
-impl Op for FilterSop {}
-
-impl Sop for FilterSop {
+impl Op for FilterSop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
+}
 
+impl Sop for FilterSop {
     fn execute(&mut self, output: &mut SopOutput, inputs: &OperatorInputs<SopInput>) {
         if let Some(input) = inputs.input(0) {
             let t = self.translate();

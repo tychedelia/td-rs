@@ -39,7 +39,15 @@ impl OpInfo for WasmChop {
     const MAX_INPUTS: usize = 1;
 }
 
-impl Op for WasmChop {}
+impl Op for WasmChop {
+    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
+        Some(Box::new(&mut self.params))
+    }
+
+    fn info_dat(&self) -> Option<Box<&dyn InfoDat>> {
+        Some(Box::new(self))
+    }
+}
 
 impl InfoDat for WasmChop {
     fn entry(&self, index: usize, entry_index: usize) -> String {
@@ -57,9 +65,6 @@ impl InfoDat for WasmChop {
 }
 
 impl Chop for WasmChop {
-    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-        Some(Box::new(&mut self.params))
-    }
 
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         let params = inputs.params();

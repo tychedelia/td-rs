@@ -41,12 +41,14 @@ impl TopInfo for CpuMemoryTop {
     const EXECUTE_MODE: ExecuteMode = ExecuteMode::Cpu;
 }
 
-impl Op for CpuMemoryTop {}
-
-impl Top for CpuMemoryTop {
+impl Op for CpuMemoryTop {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
+}
+
+impl Top for CpuMemoryTop {
+
 }
 
 top_plugin!(CpuMemoryTop);

@@ -115,10 +115,6 @@ impl<'execute> SopVboOutput<'execute> {
 
 /// Trait for defining a custom operator.
 pub trait Sop: Op {
-    fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
-        None
-    }
-
     fn general_info(&self, input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo::default()
     }
@@ -136,33 +132,12 @@ pub trait Sop: Op {
 macro_rules! sop_plugin {
     ($plugin_ty:ty) => {
         use td_rs_sop::cxx::OP_CustomOPInfo;
+        use td_rs_sop::cxx::c_void;
 
         #[no_mangle]
         pub extern "C" fn sop_get_plugin_info_impl(mut op_info: std::pin::Pin<&mut OP_CustomOPInfo>) {
             unsafe {
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_TYPE).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.opType, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_LABEL).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.opLabel, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::OPERATOR_ICON).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.opIcon, new_string_ptr);
-                op_info.minInputs = <$plugin_ty>::MIN_INPUTS as i32;
-                op_info.maxInputs = <$plugin_ty>::MAX_INPUTS as i32;
-                let new_string = std::ffi::CString::new(<$plugin_ty>::AUTHOR_NAME).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.authorName, new_string_ptr);
-                let new_string = std::ffi::CString::new(<$plugin_ty>::AUTHOR_EMAIL).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.authorEmail, new_string_ptr);
-                op_info.majorVersion = <$plugin_ty>::MAJOR_VERSION;
-                op_info.minorVersion = <$plugin_ty>::MINOR_VERSION;
-                let new_string = std::ffi::CString::new(<$plugin_ty>::PYTHON_VERSION).unwrap();
-                let new_string_ptr = new_string.as_ptr();
-                td_rs_sop::cxx::setString(op_info.pythonVersion, new_string_ptr);
-                op_info.cookOnStart = <$plugin_ty>::COOK_ON_START;
+                td_rs_sop::op_info::<$plugin_ty>(op_info);
             }
         }
 

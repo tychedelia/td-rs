@@ -40,13 +40,13 @@ impl OpInfo for FilterDat {
     const MIN_INPUTS: usize = 1;
 }
 
-impl Op for FilterDat {}
-
-impl Dat for FilterDat {
+impl Op for FilterDat {
     fn params_mut(&mut self) -> Option<Box<&mut dyn OperatorParams>> {
         Some(Box::new(&mut self.params))
     }
+}
 
+impl Dat for FilterDat {
     fn execute(&mut self, output: DatOutput, inputs: &OperatorInputs<DatInput>) {
         if let Some(input) = inputs.input(0) {
             if input.is_table() {
