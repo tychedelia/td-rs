@@ -417,7 +417,10 @@ public:
   // It's possible this will be 0 the first few times the operator cooks,
   // incase it cooks while TouchDesigner is still loading up
 #ifdef _WIN32
-  HWND mainWindowHandle;
+  // HWND
+  // This is a hack to avoid including windows.h in this header file
+  // which autocxx doesn't know how to handle
+  int64_t mainWindowHandle;
 #endif
 
   // The path to where the plugin's binary is located on this machine.
