@@ -3,7 +3,7 @@ on: [push, pull_request]
 name: Build
 
 jobs:
-  build_and_test:
+  macos:
     name: Build and test
     runs-on: macos-latest
     steps:
@@ -15,11 +15,11 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --all-features
-      - uses: actions-rs/cargo@v1
-        with:
-          command: xtask
-          args: build cpu-memory-top
+          args: --workspace --all-features
+#      - uses: actions-rs/cargo@v1
+#        with:
+#          command: xtask
+#          args: build cpu-memory-top
 #      - name: Check `cargo fmt` was run
 #        run: |
 #          cd protocol_codegen
