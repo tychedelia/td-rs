@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
-    let target = if cfg!(arch = "x86_64") {
+    let target = if cfg!(target_arch = "x86_64") {
         "x86_64-apple-darwin"
     } else {
         "aarch64-apple-darwin"
