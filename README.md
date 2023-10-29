@@ -30,6 +30,7 @@ cargo xtask build filter-chop
 ### Windows
 
 #### Dependencies
+- TouchDesigner, installed in the default location (`C:\Program Files\Derivative\TouchDesigner`).
 - MSVC toolchain (Desktop C++, including Clang from additional components). Note: it may be necessary to set the
   `LIBCLANG_PATH` environment variable to the path of the Clang DLL. This can be found in the Visual Studio
     installation directory, e.g. `C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Tools\Llvm\bin`.
@@ -38,4 +39,9 @@ cargo xtask build filter-chop
 ### macOS
 
 #### Dependencies
+- TouchDesigner, installed in the default location (`/Applications/TouchDesigner.app`).
 - Xcode (installable from App Store).
+
+---
+TouchDesigner is a registered trademark of Derivative Inc. This project is not affiliated with or endorsed 
+by Derivative Inc. 
