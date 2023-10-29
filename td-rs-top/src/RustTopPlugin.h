@@ -20,11 +20,10 @@ TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer
 }
 
 void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
-    buffer.release();
-}
-
-void uploadBuffer(TD::TOP_Output &output, TD::OP_SmartRef<TD::TOP_Buffer> *buffer, const TD::TOP_UploadInfo &info) {
-    output.uploadBuffer(buffer, info, 0);
+    // buffer may have been moved, so we need to check if it's valid
+    if (buffer) {
+        buffer.release();
+    }
 }
 
 using namespace TD;

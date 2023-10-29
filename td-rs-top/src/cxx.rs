@@ -35,7 +35,6 @@ include_cpp! {
     generate_pod!("TD::TOP_BufferFlags")
 
     // utility fns
-    generate!("uploadBuffer")
     generate!("getBufferData")
     generate!("getBufferSize")
     generate!("getBufferFlags")

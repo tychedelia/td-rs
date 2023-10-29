@@ -3,7 +3,7 @@ use std::collections::VecDeque;
 use td_rs_top::{TopBuffer, TopBufferFlags, TopContext, UploadInfo};
 
 pub struct BufferInfo {
-    pub buf: Option<Arc<TopBuffer>>,
+    pub buf: Option<TopBuffer>,
     pub upload_info: UploadInfo,
 }
 
@@ -20,7 +20,7 @@ impl FrameQueue {
         }
     }
 
-    pub fn get_buffer_to_update(&mut self, byte_size: usize, flags: TopBufferFlags) -> Option<Arc<TopBuffer>> {
+    pub fn get_buffer_to_update(&mut self, byte_size: usize, flags: TopBufferFlags) -> Option<TopBuffer> {
         let mut buffers = self.updated_buffers.lock().unwrap();
 
         const MAX_QUEUE_SIZE: usize = 2;
@@ -32,13 +32,13 @@ impl FrameQueue {
             if let Some(b) = &old_buf {
                 if b.size() < byte_size || b.size() > byte_size * 2 || b.flags() != flags {
                     let mut ctx = self.context.lock().unwrap();
-                    return Some(Arc::new(ctx.create_output_buffer(byte_size as usize, flags)));
+                    return Some(ctx.create_output_buffer(byte_size as usize, flags));
                 }
                 return old_buf;
             }
         }
         let mut ctx = self.context.lock().unwrap();
-        Some(Arc::new(ctx.create_output_buffer(byte_size as usize, flags)))
+        Some(ctx.create_output_buffer(byte_size as usize, flags))
     }
 
     pub fn update_complete(&self, buf_info: BufferInfo) {
