@@ -12,7 +12,6 @@ jobs:
         with:
           toolchain: nightly
           override: true
-          target: aarch64-apple-darwin
       - uses: actions-rs/cargo@v1
         with:
           command: build
