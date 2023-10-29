@@ -1,11 +1,23 @@
-# `td-rs`
+# `td-rs` 🎨👩‍💻 ![example workflow](https://github.com/tychedelia/td-rs/actions/workflows/build.yaml/badge.svg)
 
 Experiments integrating Rust into TouchDesigner's plugin framework.
 
-## Status
+## ⚠️ Status ⚠️
 
-This is a work in progress that is capable of building plugins, but is not fully ready for production use.
-The current implementation is not yet optimized for performance or safety and may have missing APIs.
+This project should be considered in **alpha** status. It is not yet ready for production use, however
+is mostly stable and usable for experimentation. Please file an issue if you encounter any problems,
+as it is our goal to make this project viable for production use.
+
+In particular, users may experience any of the following:
+- Crashes
+- Memory leaks
+- Missing APIs
+- Performance issues
+- Incomplete documentation
+- Breaking changes
+- Violations of Rust's aliasing rules leading to [scary things](https://predr.ag/blog/falsehoods-programmers-believe-about-undefined-behavior/)
+
+In other words, no warranty is provided, express or implied.
 
 ## Structure
 
