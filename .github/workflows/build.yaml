@@ -13,10 +13,12 @@ jobs:
           toolchain: nightly
       - uses: actions-rs/cargo@v1
         with:
+          toolchain: nightly
           command: build
           args: --all-features
       - uses: actions-rs/cargo@v1
         with:
+          toolchain: nightly
           command: xtask
           args: build cpu-memory-top
 #      - name: Check `cargo fmt` was run
