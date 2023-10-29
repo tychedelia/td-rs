@@ -12,6 +12,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 pyo3-ffi = "0.20"
-td-rs-chop = { path = "../../../td-rs-chop" }
+td-rs-chop = { path = "../../../td-rs-chop", features = ["python"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
 td-rs-derive-py = { path = "../../../td-rs-derive-py" }

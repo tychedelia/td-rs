@@ -62,6 +62,7 @@ fn fetch_cargo_metadata() -> Metadata {
         .expect("Failed to fetch cargo metadata")
 }
 
+#[allow(dead_code)]
 fn fetch_cargo_metadata_for_package(package: &str) -> Metadata {
     MetadataCommand::new()
         .manifest_path(package)
