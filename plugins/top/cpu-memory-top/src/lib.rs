@@ -5,7 +5,7 @@ use td_rs_derive::Params;
 use td_rs_top::*;
 use crate::frame_queue::FrameQueue;
 
-#[derive(Params, Default, Clone)]
+#[derive(Params, Default, Clone, Debug)]
 struct CpuMemoryTopParams {
     #[param(label = "Brightness", min = 0.0, max = 1.0)]
     brightness: f64,
@@ -59,6 +59,7 @@ impl CpuMemoryTop {
         mut num_layers: usize,
         color_buffer_index: usize,
     ) {
+        println!("fill_and_upload: {:?} {:?} {:?} {:?} {:?} {:?}", speed, width, height, tex_dim, num_layers, color_buffer_index);
         let depth = match tex_dim {
             TexDim::E2DArray | TexDim::E3D => num_layers,
             _ => 1,

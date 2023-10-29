@@ -88,6 +88,9 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
     fn execute(&mut self, output: Pin<&mut TOP_Output>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         let output = TopOutput::new(output);
+        if let Some(mut params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         self.inner.execute(output, &input);
     }
 
@@ -154,7 +157,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
         let params = self.inner.params_mut();
-        if let Some(params) = params {
+        if let Some(mut params) = params {
             let mut manager = ParameterManager::new(manager);
             params.register(&mut manager);
         }
