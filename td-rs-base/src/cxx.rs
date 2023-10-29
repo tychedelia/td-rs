@@ -39,8 +39,7 @@ include_cpp! {
 
     // util fns
     generate!("setString")
-    generate!("getPyContext")
-    generate!("setPyInfo")
+
     generate!("getOpContext")
     generate!("getDownloadDataSize")
     generate!("getDownloadData")
@@ -48,5 +47,27 @@ include_cpp! {
     generate!("releaseDownloadResult")
 }
 
+#[cfg(feature = "python")]
+mod python {
+    use autocxx::prelude::*;
+    include_cpp! {
+        #include "CPlusPlus_Common.h"
+        #include "RustPy.h"
+        name!(python_ffi)
+        safety!(unsafe)
+        extern_cpp_type!("TD::OP_CustomOPInfo", crate::cxx::OP_CustomOPInfo)
+        pod!("TD::OP_CustomOPInfo")
+        extern_cpp_type!("TD::PY_Context", crate::cxx::PY_Context)
+        extern_cpp_type!("TD::PY_Struct", crate::cxx::PY_Struct)
+        generate!("getPyContext")
+        generate!("setPyInfo")
+    }
+
+    pub use python_ffi::getPyContext;
+    pub use python_ffi::setPyInfo;
+}
+
+#[cfg(feature = "python")]
+pub use python::*;
 pub use ffi::TD::*;
 pub use ffi::*;

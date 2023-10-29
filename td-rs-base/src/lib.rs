@@ -6,15 +6,17 @@ use std::fmt::Formatter;
 use std::ops::Index;
 
 pub use param::*;
+#[cfg(feature = "python")]
 pub use py::*;
 
 pub mod chop;
 pub mod cxx;
 pub mod dat;
 pub mod param;
-pub mod py;
 pub mod sop;
 pub mod top;
+#[cfg(feature = "python")]
+pub mod py;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -143,6 +145,7 @@ pub struct Context {
 }
 
 impl Context {
+    #[cfg(feature = "python")]
     pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
         let obj = unsafe {
             let mut ctx = cxx::getOpContext(self.context);
@@ -153,6 +156,7 @@ impl Context {
         obj as *mut pyo3_ffi::PyObject
     }
 
+    #[cfg(feature = "python")]
     pub fn call_python_callback(&self, callback: &str, args: *mut pyo3_ffi::PyObject, kw: *mut pyo3_ffi::PyObject) -> *mut pyo3_ffi::PyObject {
         let callback = ffi::CString::new(callback).unwrap();
         let obj = unsafe {
@@ -302,6 +306,36 @@ where
     }
 }
 
+#[cfg(not(feature = "python"))]
+pub unsafe fn op_info<T: OpInfo>(
+    mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>,
+) {
+    let new_string = std::ffi::CString::new(T::OPERATOR_TYPE).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opType, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::OPERATOR_LABEL).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opLabel, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::OPERATOR_ICON).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.opIcon, new_string_ptr);
+    op_info.minInputs = T::MIN_INPUTS as i32;
+    op_info.maxInputs = T::MAX_INPUTS as i32;
+    let new_string = std::ffi::CString::new(T::AUTHOR_NAME).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.authorName, new_string_ptr);
+    let new_string = std::ffi::CString::new(T::AUTHOR_EMAIL).unwrap();
+    let new_string_ptr = new_string.as_ptr();
+    cxx::setString(op_info.authorEmail, new_string_ptr);
+    op_info.majorVersion = T::MAJOR_VERSION;
+    op_info.minorVersion = T::MINOR_VERSION;
+    op_info.cookOnStart = T::COOK_ON_START;
+    let callbacks = std::ffi::CString::new(T::PYTHON_CALLBACKS_DAT).unwrap();
+    op_info.pythonCallbacksDAT = callbacks.as_ptr();
+    std::mem::forget(callbacks); // Callbacks are static
+}
+
+#[cfg(feature = "python")]
 pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
     mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>,
 ) {

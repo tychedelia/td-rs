@@ -1,6 +1,10 @@
 #include "RustTopPlugin.h"
 #include "CPlusPlus_Common.h"
 #include <iostream>
+#ifdef PYTHON_ENABLED
+#include <Python.h>
+#endif
+
 
 extern "C" {
 
@@ -13,6 +17,9 @@ void FillTOPPluginInfo(TOP_PluginInfo *info) {
   auto opInfo = &info->customOPInfo;
   auto mode = top_get_plugin_info_impl(*opInfo);
   info->executeMode = mode;
+#ifdef PYTHON_ENABLED
+    opInfo->pythonVersion->setString(PY_VERSION);
+#endif
 }
 
 DLLEXPORT
