@@ -15,7 +15,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --workspace --all-features
+          args: --workspace
 #      - uses: actions-rs/cargo@v1
 #        with:
 #          command: xtask
