@@ -2,7 +2,7 @@ use crate::cxx::{OP_PixelFormat, OP_TOPInput};
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Eq, PartialEq)]
 pub enum TexDim {
     #[default]
     EInvalid,
@@ -147,9 +147,10 @@ impl PixelFormat {
     }
 }
 
+#[derive(Debug, Default)]
 pub struct DownloadOptions {
-    vertical_flip: bool,
-    pixel_format: PixelFormat,
+    pub vertical_flip: bool,
+    pub pixel_format: PixelFormat,
 }
 
 #[repr(transparent)]
@@ -159,12 +160,13 @@ pub struct TopInput {
 }
 
 impl TopInput {
-    pub fn download_texture(&self, opts: DownloadOptions) {
+    pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: false,
             pixelFormat:  opts.pixel_format.to_cxx(),
         };
         let mut download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
+        TopDownloadResult::new(download)
     }
 }
 
@@ -173,6 +175,10 @@ pub struct TopDownloadResult {
 }
 
 impl TopDownloadResult {
+    pub fn new(result: cxx::UniquePtr<crate::cxx::TD_OP_SmartRef_TD_OP_TOPDownloadResult_AutocxxConcrete>) -> Self {
+        Self { result }
+    }
+
     pub fn size(&mut self) -> usize {
         crate::cxx::getDownloadDataSize(self.result.pin_mut()) as usize
     }
@@ -205,6 +211,9 @@ impl TopDownloadResult {
 
 impl Drop for TopDownloadResult {
     fn drop(&mut self) {
+        if self.result.is_null() {
+            return;
+        }
         unsafe { crate::cxx::releaseDownloadResult(self.result.pin_mut()) }
     }
 }

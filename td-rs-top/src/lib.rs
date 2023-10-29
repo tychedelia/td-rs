@@ -15,7 +15,7 @@ impl<'execute> TopOutput<'execute> {
         Self { output }
     }
 
-    pub fn upload_buffer(&mut self, mut buffer: TopBuffer, info: UploadInfo) {
+    pub fn upload_buffer(&mut self, buffer: &mut TopBuffer, info: &UploadInfo) {
         let info = crate::cxx::TOP_UploadInfo {
             bufferOffset: info.buffer_offset as u64,
             textureDesc: crate::cxx::OP_TextureDesc {
@@ -42,10 +42,9 @@ impl<'execute> TopOutput<'execute> {
             reserved: Default::default(),
         };
 
-        // TODO: this is bad. are we leaking memory here? or does unique_ptr take care of it?
-        // TODO: why does autocxx hate our uploadBuffer function? what's wrong with TOP_UploadInfo
-        let buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
-        unsafe { crate::cxx::uploadBuffer(self.output.as_mut(), buf.into_raw(), &info) };
+        // uploadBuffer takes ownership of the buffer
+        let mut buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
+        unsafe { self.output.as_mut().uploadBuffer(buf.into_raw(), &info, std::ptr::null_mut()) };
     }
 }
 
@@ -111,10 +110,10 @@ impl TopBuffer {
         crate::cxx::getBufferSize(&self.buffer) as usize
     }
 
-    pub fn data<T>(&mut self) -> &[T] {
+    pub fn data_mut<T>(&mut self) -> &mut [T] {
         let size = self.size();
         let data = crate::cxx::getBufferData(self.buffer.pin_mut());
-        unsafe { std::slice::from_raw_parts(data as *const T, size) }
+        unsafe { std::slice::from_raw_parts_mut(data as *mut T, size) }
     }
 
     pub fn flags(&self) -> TopBufferFlags {
@@ -128,6 +127,9 @@ impl TopBuffer {
 
 impl Drop for TopBuffer {
     fn drop(&mut self) {
+        if self.buffer.is_null() {
+            return;
+        }
         unsafe { crate::cxx::releaseBuffer(self.buffer.pin_mut()) }
     }
 }
