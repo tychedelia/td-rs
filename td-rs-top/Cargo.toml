@@ -8,11 +8,11 @@ name = "td_rs_top"
 crate-type = ["lib", "staticlib"]
 
 [dependencies]
-autocxx = { path = "../../../google/autocxx" }
+autocxx = { git = "https://github.com/tychedelia/autocxx.git" }
 cxx = "1.0.78"
 td-rs-base = { path = "../td-rs-base" }
 ref-cast = "1.0"
 
 [build-dependencies]
-autocxx-build = { path = "../../../google/autocxx/gen/build" }
+autocxx-build = { git = "https://github.com/tychedelia/autocxx.git" }
 miette = { version="5", features = [ "fancy" ] }
