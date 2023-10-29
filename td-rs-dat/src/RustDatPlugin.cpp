@@ -1,6 +1,10 @@
 #include "CPlusPlus_Common.h"
 #include "RustDatPlugin.h"
 #include <iostream>
+#ifdef PYTHON_ENABLED
+#include <Python.h>
+#endif
+
 
 extern "C" {
 
@@ -12,6 +16,9 @@ void FillDATPluginInfo(DAT_PluginInfo *info) {
     info->apiVersion = DATCPlusPlusAPIVersion;
     auto opInfo = &info->customOPInfo;
     dat_get_plugin_info_impl(*opInfo);
+#ifdef PYTHON_ENABLED
+    opInfo->pythonVersion->setString(PY_VERSION);
+#endif
 }
 
 DLLEXPORT

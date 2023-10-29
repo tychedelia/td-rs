@@ -110,6 +110,7 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 [[package]]
 name = "autocxx"
 version = "0.26.0"
+source = "git+https://github.com/tychedelia/autocxx.git#c17f690952544156c7dd507222544f60fe63c0b5"
 dependencies = [
  "aquamarine",
  "autocxx-macro",
@@ -144,6 +145,7 @@ dependencies = [
 [[package]]
 name = "autocxx-build"
 version = "0.26.0"
+source = "git+https://github.com/tychedelia/autocxx.git#c17f690952544156c7dd507222544f60fe63c0b5"
 dependencies = [
  "autocxx-engine",
  "env_logger 0.9.3",
@@ -154,6 +156,7 @@ dependencies = [
 [[package]]
 name = "autocxx-engine"
 version = "0.26.0"
+source = "git+https://github.com/tychedelia/autocxx.git#c17f690952544156c7dd507222544f60fe63c0b5"
 dependencies = [
  "aquamarine",
  "autocxx-bindgen",
@@ -181,6 +184,7 @@ dependencies = [
 [[package]]
 name = "autocxx-macro"
 version = "0.26.0"
+source = "git+https://github.com/tychedelia/autocxx.git#c17f690952544156c7dd507222544f60fe63c0b5"
 dependencies = [
  "autocxx-parser",
  "proc-macro-error",
@@ -192,6 +196,7 @@ dependencies = [
 [[package]]
 name = "autocxx-parser"
 version = "0.26.0"
+source = "git+https://github.com/tychedelia/autocxx.git#c17f690952544156c7dd507222544f60fe63c0b5"
 dependencies = [
  "indexmap 1.9.2",
  "itertools 0.10.5",
@@ -2241,6 +2246,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "td-rs-autocxx-build"
+version = "0.1.0"
+dependencies = [
+ "autocxx-build",
+ "miette",
+]
+
+[[package]]
 name = "td-rs-base"
 version = "0.1.0"
 dependencies = [
@@ -2253,6 +2266,7 @@ dependencies = [
  "pyo3-ffi",
  "ref-cast",
  "rgb",
+ "td-rs-autocxx-build",
 ]
 
 [[package]]
@@ -2263,6 +2277,7 @@ dependencies = [
  "autocxx-build",
  "cxx",
  "miette",
+ "td-rs-autocxx-build",
  "td-rs-base",
 ]
 
@@ -2276,6 +2291,7 @@ dependencies = [
  "miette",
  "ref-cast",
  "sparsevec",
+ "td-rs-autocxx-build",
  "td-rs-base",
 ]
 
@@ -2312,6 +2328,7 @@ dependencies = [
  "cxx",
  "miette",
  "ref-cast",
+ "td-rs-autocxx-build",
  "td-rs-base",
 ]
 
@@ -2324,6 +2341,7 @@ dependencies = [
  "cxx",
  "miette",
  "ref-cast",
+ "td-rs-autocxx-build",
  "td-rs-base",
 ]
 

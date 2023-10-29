@@ -1,6 +1,9 @@
 #include "CPlusPlus_Common.h"
 #include "RustSopPlugin.h"
 #include <iostream>
+#ifdef PYTHON_ENABLED
+#include <Python.h>
+#endif
 
 extern "C" {
 
@@ -12,6 +15,9 @@ void FillSOPPluginInfo(SOP_PluginInfo *info) {
     info->apiVersion = SOPCPlusPlusAPIVersion;
     auto opInfo = &info->customOPInfo;
     sop_get_plugin_info_impl(*opInfo);
+#ifdef PYTHON_ENABLED
+    opInfo->pythonVersion->setString(PY_VERSION);
+#endif
 }
 
 DLLEXPORT

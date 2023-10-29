@@ -27,4 +27,4 @@ add_executable(td_rs
         td-rs-sop/src/RustSopPlugin.h
         td-rs-top/src/RustTopPlugin.cpp
         td-rs-top/src/TOP_CPlusPlusBase.h
-        td-rs-top/src/RustTopPlugin.h)
+        td-rs-top/src/RustTopPlugin.h td-rs-dat/src/RustDatPlugin.cpp td-rs-sop/src/RustSopPlugin.cpp td-rs-base/src/RustPy.h)
