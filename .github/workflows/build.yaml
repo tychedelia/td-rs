@@ -3,9 +3,11 @@ on: [push, pull_request]
 name: Build
 
 jobs:
-  macos:
-    name: Build and test
-    runs-on: macos-latest
+  build:
+    name: Build
+    strategy:
+      matrix:
+        os: [ macos-latest, windows-latest ]
     steps:
       - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1
@@ -15,7 +17,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --workspace
+          args: --workspace --exclude=python-chop
 #      - uses: actions-rs/cargo@v1
 #        with:
 #          command: xtask
