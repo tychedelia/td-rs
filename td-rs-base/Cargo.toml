@@ -8,7 +8,7 @@ name = "td_rs_base"
 crate-type = ["lib", "staticlib"]
 
 [dependencies]
-autocxx = { path = "../../../google/autocxx" }
+autocxx = { git = "https://github.com/tychedelia/autocxx.git" }
 pyo3-ffi = "0.20"
 cxx = "1.0.78"
 rgb = "0.8.36"
@@ -17,5 +17,5 @@ auto_ops = "0.3.0"
 derive_more = "0.99"
 
 [build-dependencies]
-autocxx-build = { path = "../../../google/autocxx/gen/build" }
+autocxx-build = { git = "https://github.com/tychedelia/autocxx.git" }
 miette = { version="5", features = [ "fancy" ] }
