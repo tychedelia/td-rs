@@ -70,12 +70,13 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
-      <AdditionalIncludeDirectories>.\td-rs-base\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\td-rs-base\src;C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\Include;C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\Include\PC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -86,14 +87,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>.\td-rs-base\src\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\td-rs-base\src;C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\Include;C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\Include\PC;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\Program Files\Derivative\TouchDesigner\Samples\CPlusPlus\3rdParty\Python\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalDependencies>python3.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
