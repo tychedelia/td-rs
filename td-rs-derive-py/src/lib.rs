@@ -114,11 +114,20 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                         let (return_converter, arg_checker, arg_reader) = match field_type {
                             syn::Type::Path(type_path) if type_path.path.is_ident("u32") => {
                                 (
-                                    quote! {
-                                        unsafe fn convert(val: u32) -> *mut pyo3_ffi::PyObject {
-                                            pyo3_ffi::PyLong_FromUnsignedLong(val as u64)
+                                    if cfg!(windows) {
+                                        quote! {
+                                            unsafe fn convert(val: u32) -> *mut pyo3_ffi::PyObject {
+                                                    pyo3_ffi::PyLong_FromUnsignedLong(val)
+                                            }
+                                            convert
                                         }
-                                        convert
+                                    } else {
+                                        quote! {
+                                            unsafe fn convert(val: u32) -> *mut pyo3_ffi::PyObject {
+                                                    pyo3_ffi::PyLong_FromUnsignedLong(val as u64)
+                                            }
+                                            convert
+                                        }
                                     },
                                     quote! {
                                         pyo3_ffi::PyLong_Check

@@ -11,14 +11,18 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     }
 
     if python_enabled {
-        let python_path = if cfg!(windows) {
-            panic!()
+        if cfg!(windows) {
+            incs.push(std::path::PathBuf::from(
+                "C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include"
+            ));
+            incs.push(std::path::PathBuf::from(
+                "C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include\\PC"
+            ));
         } else {
-            std::path::PathBuf::from(
+            incs.push(std::path::PathBuf::from(
                 "/Applications/TouchDesigner.app/Contents/Frameworks/Python.framework/Headers",
-            )
+            ));
         };
-        incs.push(python_path);
         clang_args.push("-DPYTHON_ENABLED");
     }
 
