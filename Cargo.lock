@@ -2338,6 +2338,7 @@ version = "0.1.0"
 dependencies = [
  "autocxx",
  "autocxx-build",
+ "cudarc",
  "cxx",
  "miette",
  "ref-cast",

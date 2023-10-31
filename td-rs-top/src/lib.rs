@@ -1,4 +1,6 @@
 pub mod cxx;
+#[cfg(feature = "cuda")]
+pub mod cuda;
 
 use std::pin::Pin;
 pub use td_rs_base::top::*;
@@ -172,7 +174,7 @@ macro_rules! top_plugin {
             unsafe {
                 td_rs_top::op_info::<$plugin_ty>(op_info);
                 match <$plugin_ty>::EXECUTE_MODE {
-                    td_rs_top::ExecuteMode::Cuda => panic!("Cuda not supported"),
+                    td_rs_top::ExecuteMode::Cuda => cxx::TOP_ExecuteMode::CUDA,
                     td_rs_top::ExecuteMode::Cpu => cxx::TOP_ExecuteMode::CPUMem,
                 }
             }
