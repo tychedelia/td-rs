@@ -64,8 +64,6 @@ impl<'execute> SopOutput<'execute> {
         self.output.as_mut().hasNormal()
     }
 
-
-
     pub fn set_color(&mut self, color: impl Into<Color>, start_idx: usize) {
         unsafe {
             self.output.as_mut().setColor(
@@ -123,8 +121,6 @@ impl<'execute> SopOutput<'execute> {
         self.output.as_mut().getNumTexCoordLayers() as usize
     }
 
-
-
     pub fn set_custom_attribute(&mut self, attr: &CustomAttributeData, num_pts: usize) {
         unsafe {
             let attr: *const CustomAttributeData = attr;
@@ -137,7 +133,6 @@ impl<'execute> SopOutput<'execute> {
     pub fn has_custom_attribute(&mut self) -> bool {
         self.output.as_mut().hasCustomAttibutes()
     }
-
 
     pub fn add_triangle(&mut self, x: u32, y: u32, z: u32) {
         unsafe {
@@ -201,7 +196,9 @@ impl<'execute> SopOutput<'execute> {
     pub fn destroy_group(&mut self, type_: GroupType, name: &str) {
         let name = std::ffi::CString::new(name).unwrap();
         unsafe {
-            self.output.as_mut().destroyGroup(type_.into(), name.as_ptr());
+            self.output
+                .as_mut()
+                .destroyGroup(type_.into(), name.as_ptr());
         }
     }
 
@@ -237,20 +234,18 @@ impl<'execute> SopOutput<'execute> {
     pub fn discard_from_point_group(&mut self, idx: usize, name: &str) {
         let name = std::ffi::CString::new(name).unwrap();
         unsafe {
-            self.output.as_mut().discardFromPointGroup(
-                autocxx::c_int(idx as std::ffi::c_int),
-                name.as_ptr(),
-            );
+            self.output
+                .as_mut()
+                .discardFromPointGroup(autocxx::c_int(idx as std::ffi::c_int), name.as_ptr());
         }
     }
 
     pub fn discard_from_prim_group(&mut self, idx: usize, name: &str) {
         let name = std::ffi::CString::new(name).unwrap();
         unsafe {
-            self.output.as_mut().discardFromPrimGroup(
-                autocxx::c_int(idx as std::ffi::c_int),
-                name.as_ptr(),
-            );
+            self.output
+                .as_mut()
+                .discardFromPrimGroup(autocxx::c_int(idx as std::ffi::c_int), name.as_ptr());
         }
     }
 

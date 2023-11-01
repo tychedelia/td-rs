@@ -1,4 +1,5 @@
 use crate::chop::ChopInput;
+use crate::sop::SopInput;
 use crate::{cxx, ParamInputs};
 use ref_cast::RefCast;
 use std::ffi;
@@ -6,7 +7,6 @@ use std::ffi::{c_char, CString};
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::pin::Pin;
-use crate::sop::SopInput;
 
 /// A numeric parameter.
 // TODO: switch to enum to describe parameter types
@@ -676,7 +676,6 @@ impl DatParam {
     }
 }
 
-
 #[cfg(feature = "python")]
 impl Param for *mut pyo3_ffi::PyObject {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
@@ -686,7 +685,9 @@ impl Param for *mut pyo3_ffi::PyObject {
 
     fn update(&mut self, name: &str, inputs: &ParamInputs) {
         // Ensure that the old object is decref'd
-        unsafe { pyo3_ffi::Py_XDECREF(*self); }
+        unsafe {
+            pyo3_ffi::Py_XDECREF(*self);
+        }
         *self = inputs.get_python(name);
     }
 }

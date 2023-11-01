@@ -6,7 +6,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs, NodeInfo};
+use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, NodeInfo, OperatorInputs};
 
 include_cpp! {
     #include "DAT_CPlusPlusBase.h"
@@ -24,10 +24,9 @@ include_cpp! {
 }
 
 pub use autocxx::c_void;
-pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
-
+pub use td_rs_base::cxx::*;
 
 extern "C" {
     fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat>;
@@ -45,7 +44,8 @@ extern "C" fn dat_new(info: &'static OP_NodeInfo) -> *mut RustDatPluginImplCpp {
         RustDatPluginImpl::new_cpp_owned(RustDatPluginImpl {
             inner: dat_new_impl(info),
             cpp_peer: CppSubclassCppPeerHolder::Empty,
-        }).into_raw()
+        })
+        .into_raw()
     }
 }
 

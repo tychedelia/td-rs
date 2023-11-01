@@ -134,8 +134,16 @@ impl Chop for PythonChop {
 
             let arg_tuple = self.info.context().create_arguments_tuple(1);
             unsafe {
-                pyo3_ffi::PyTuple_SET_ITEM(arg_tuple, 1, pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double));
-                let res = self.info.context().call_python_callback("getSpeedAdjust", arg_tuple, std::ptr::null_mut());
+                pyo3_ffi::PyTuple_SET_ITEM(
+                    arg_tuple,
+                    1,
+                    pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double),
+                );
+                let res = self.info.context().call_python_callback(
+                    "getSpeedAdjust",
+                    arg_tuple,
+                    std::ptr::null_mut(),
+                );
                 if !res.is_null() {
                     if pyo3_ffi::PyFloat_Check(res) != 0 {
                         self.params.speed = pyo3_ffi::PyFloat_AsDouble(res) as f32;

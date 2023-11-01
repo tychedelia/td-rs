@@ -1,10 +1,10 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
+use autocxx::name;
 use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
-use autocxx::name;
 
 pub use param::*;
 #[cfg(feature = "python")]
@@ -14,10 +14,10 @@ pub mod chop;
 pub mod cxx;
 pub mod dat;
 pub mod param;
-pub mod sop;
-pub mod top;
 #[cfg(feature = "python")]
 pub mod py;
+pub mod sop;
+pub mod top;
 
 static mut INFO_STR: OnceCell<String> = OnceCell::new();
 static mut ERROR_STR: OnceCell<String> = OnceCell::new();
@@ -150,7 +150,9 @@ impl Context {
     pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
         let obj = unsafe {
             let mut ctx = cxx::getOpContext(self.context);
-            let tuple = ctx.pin_mut().createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
+            let tuple = ctx
+                .pin_mut()
+                .createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
             std::mem::forget(ctx);
             tuple
         };
@@ -158,11 +160,21 @@ impl Context {
     }
 
     #[cfg(feature = "python")]
-    pub fn call_python_callback(&self, callback: &str, args: *mut pyo3_ffi::PyObject, kw: *mut pyo3_ffi::PyObject) -> *mut pyo3_ffi::PyObject {
+    pub fn call_python_callback(
+        &self,
+        callback: &str,
+        args: *mut pyo3_ffi::PyObject,
+        kw: *mut pyo3_ffi::PyObject,
+    ) -> *mut pyo3_ffi::PyObject {
         let callback = ffi::CString::new(callback).unwrap();
         let obj = unsafe {
             let mut ctx = cxx::getOpContext(self.context);
-            let res = ctx.pin_mut().callPythonCallback(callback.as_ptr(), args as *mut cxx::_object, kw as *mut cxx::_object, std::ptr::null_mut());
+            let res = ctx.pin_mut().callPythonCallback(
+                callback.as_ptr(),
+                args as *mut cxx::_object,
+                kw as *mut cxx::_object,
+                std::ptr::null_mut(),
+            );
             std::mem::forget(ctx);
             res
         };
@@ -361,9 +373,7 @@ where
 }
 
 #[cfg(not(feature = "python"))]
-pub unsafe fn op_info<T: OpInfo>(
-    mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>,
-) {
+pub unsafe fn op_info<T: OpInfo>(mut op_info: std::pin::Pin<&mut cxx::OP_CustomOPInfo>) {
     let new_string = std::ffi::CString::new(T::OPERATOR_TYPE).unwrap();
     let new_string_ptr = new_string.as_ptr();
     cxx::setString(op_info.opType, new_string_ptr);

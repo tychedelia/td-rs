@@ -213,7 +213,6 @@ impl SimpleShapesSop {
         num_tex_layers: usize,
         scale: f32,
     ) {
-
     }
 }
 

@@ -111,7 +111,7 @@ impl From<&OP_PixelFormat> for PixelFormat {
             OP_PixelFormat::SRGBA8Fixed => PixelFormat::SRGBA8Fixed,
             OP_PixelFormat::RGB10A2Fixed => PixelFormat::RGB10A2Fixed,
             OP_PixelFormat::RGB11Float => PixelFormat::RGB11Float,
-            _ => panic!("Unknown pixel format")
+            _ => panic!("Unknown pixel format"),
         }
     }
 }
@@ -165,7 +165,7 @@ impl TopInput {
     pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: false,
-            pixelFormat:  (&opts.pixel_format).into(),
+            pixelFormat: (&opts.pixel_format).into(),
         };
         let mut download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)
@@ -173,11 +173,13 @@ impl TopInput {
 }
 
 pub struct TopDownloadResult {
-    result: cxx::UniquePtr<crate::cxx::TD_OP_SmartRef_TD_OP_TOPDownloadResult_AutocxxConcrete>
+    result: cxx::UniquePtr<crate::cxx::TD_OP_SmartRef_TD_OP_TOPDownloadResult_AutocxxConcrete>,
 }
 
 impl TopDownloadResult {
-    pub fn new(result: cxx::UniquePtr<crate::cxx::TD_OP_SmartRef_TD_OP_TOPDownloadResult_AutocxxConcrete>) -> Self {
+    pub fn new(
+        result: cxx::UniquePtr<crate::cxx::TD_OP_SmartRef_TD_OP_TOPDownloadResult_AutocxxConcrete>,
+    ) -> Self {
         Self { result }
     }
 
@@ -219,7 +221,6 @@ impl Drop for TopDownloadResult {
         unsafe { crate::cxx::releaseDownloadResult(self.result.pin_mut()) }
     }
 }
-
 
 impl<'execute> GetInput<'execute, TopInput> for OperatorInputs<'execute, TopInput> {
     fn num_inputs(&self) -> usize {

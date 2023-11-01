@@ -67,7 +67,7 @@ mod python {
     pub use python_ffi::setPyInfo;
 }
 
-#[cfg(feature = "python")]
-pub use python::*;
 pub use ffi::TD::*;
 pub use ffi::*;
+#[cfg(feature = "python")]
+pub use python::*;
