@@ -1,5 +1,5 @@
-use std::sync::{Arc, Mutex};
 use std::collections::VecDeque;
+use std::sync::{Arc, Mutex};
 use td_rs_top::{TopBuffer, TopBufferFlags, TopContext, UploadInfo};
 
 pub struct BufferInfo {
@@ -20,7 +20,11 @@ impl FrameQueue {
         }
     }
 
-    pub fn get_buffer_to_update(&mut self, byte_size: usize, flags: TopBufferFlags) -> Option<TopBuffer> {
+    pub fn get_buffer_to_update(
+        &mut self,
+        byte_size: usize,
+        flags: TopBufferFlags,
+    ) -> Option<TopBuffer> {
         let mut buffers = self.updated_buffers.lock().unwrap();
 
         const MAX_QUEUE_SIZE: usize = 2;

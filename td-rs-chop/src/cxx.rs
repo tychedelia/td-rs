@@ -28,9 +28,9 @@ include_cpp! {
 }
 
 pub use autocxx::c_void;
-pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
+pub use td_rs_base::cxx::*;
 
 extern "C" {
     fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop>;
@@ -48,7 +48,8 @@ extern "C" fn chop_new(info: &'static OP_NodeInfo) -> *mut RustChopPluginImplCpp
         RustChopPluginImpl::new_cpp_owned(RustChopPluginImpl {
             inner: chop_new_impl(info),
             cpp_peer: CppSubclassCppPeerHolder::Empty,
-        }).into_raw()
+        })
+        .into_raw()
     }
 }
 

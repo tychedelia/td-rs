@@ -1,9 +1,9 @@
 mod frame_queue;
 
+use crate::frame_queue::FrameQueue;
 use std::sync::{Arc, Mutex};
 use td_rs_derive::Params;
 use td_rs_top::*;
-use crate::frame_queue::FrameQueue;
 
 #[derive(Params, Default, Clone, Debug)]
 struct CpuMemoryTopParams {
@@ -26,15 +26,24 @@ pub struct CpuMemoryTop {
 }
 
 impl CpuMemoryTop {
-    fn fill_buffer(buf: &mut TopBuffer, byte_offset: usize, width: usize, height: usize, step: f64, brightness: f64) {
+    fn fill_buffer(
+        buf: &mut TopBuffer,
+        byte_offset: usize,
+        width: usize,
+        height: usize,
+        step: f64,
+        brightness: f64,
+    ) {
         let required_size = byte_offset + width * height * 4 * std::mem::size_of::<f32>();
         assert!(buf.size() >= required_size);
 
         let byte_slice: &mut [f32] = &mut buf.data_mut()[byte_offset..];
         let mem: &mut [f32] = bytemuck::cast_slice_mut(byte_slice);
 
-        let xstep = ((step as isize).wrapping_rem(width as isize)).rem_euclid(width as isize) as usize;
-        let ystep = ((step as isize).wrapping_rem(height as isize)).rem_euclid(height as isize) as usize;
+        let xstep =
+            ((step as isize).wrapping_rem(width as isize)).rem_euclid(width as isize) as usize;
+        let ystep =
+            ((step as isize).wrapping_rem(height as isize)).rem_euclid(height as isize) as usize;
 
         for y in 0..height {
             for x in 0..width {
@@ -59,7 +68,10 @@ impl CpuMemoryTop {
         mut num_layers: usize,
         color_buffer_index: usize,
     ) {
-        println!("fill_and_upload: {:?} {:?} {:?} {:?} {:?} {:?}", speed, width, height, tex_dim, num_layers, color_buffer_index);
+        println!(
+            "fill_and_upload: {:?} {:?} {:?} {:?} {:?} {:?}",
+            speed, width, height, tex_dim, num_layers, color_buffer_index
+        );
         let depth = match tex_dim {
             TexDim::E2DArray | TexDim::E3D => num_layers,
             _ => 1,
@@ -83,7 +95,9 @@ impl CpuMemoryTop {
             color_buffer_index,
         };
 
-        let layer_bytes = (info.texture_desc.width * info.texture_desc.height * 4 * std::mem::size_of::<f32>()) as u64;
+        let layer_bytes =
+            (info.texture_desc.width * info.texture_desc.height * 4 * std::mem::size_of::<f32>())
+                as u64;
         let byte_size = layer_bytes * num_layers as u64;
         let mut ctx = self.ctx.lock().unwrap();
         let mut buf = ctx.create_output_buffer(byte_size as usize, TopBufferFlags::None);
@@ -91,7 +105,14 @@ impl CpuMemoryTop {
         let mut byte_offset = 0;
         for _ in 0..num_layers {
             self.step += speed;
-            Self::fill_buffer(&mut buf, byte_offset as usize, info.texture_desc.width, info.texture_desc.height, self.step, self.params.brightness);
+            Self::fill_buffer(
+                &mut buf,
+                byte_offset as usize,
+                info.texture_desc.width,
+                info.texture_desc.height,
+                self.step,
+                self.params.brightness,
+            );
             byte_offset += layer_bytes;
         }
 
@@ -166,8 +187,6 @@ impl Top for CpuMemoryTop {
 
             self.previous_result = Some(res);
         }
-
-
     }
 }
 

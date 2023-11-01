@@ -1,8 +1,8 @@
+use crate::cxx::SOP_CustomAttribInfo;
 use crate::{cxx, GetInput, OperatorInputs};
 use auto_ops::impl_op_ex;
 use derive_more::{AsRef, Deref, DerefMut, From, Into};
 use ref_cast::RefCast;
-use crate::cxx::SOP_CustomAttribInfo;
 
 /// A sop input.
 #[repr(transparent)]
@@ -125,7 +125,7 @@ impl PrimitiveInfo {
 #[derive(Debug)]
 pub enum AttributeType {
     Float,
-    Int
+    Int,
 }
 
 impl From<cxx::AttribType> for AttributeType {
@@ -168,7 +168,7 @@ impl CustomAttributeData {
     pub fn new_float(name: &str, data: &[f32], size: usize) -> Self {
         let name = std::ffi::CString::new(name).unwrap();
         let name = name.into_raw();
-        let attr =  cxx::SOP_CustomAttribData {
+        let attr = cxx::SOP_CustomAttribData {
             _base: SOP_CustomAttribInfo {
                 name,
                 numComponents: size as i32,
@@ -183,7 +183,7 @@ impl CustomAttributeData {
     pub fn new_int(name: &str, data: &[i32], size: usize) -> Self {
         let name = std::ffi::CString::new(name).unwrap();
         let name = name.into_raw();
-        let attr =  cxx::SOP_CustomAttribData {
+        let attr = cxx::SOP_CustomAttribData {
             _base: SOP_CustomAttribInfo {
                 name,
                 numComponents: size as i32,
@@ -252,31 +252,19 @@ impl From<(f64, f64, f64)> for Vec3 {
 
 impl From<(f32, f32, f64)> for Vec3 {
     fn from((x, y, z): (f32, f32, f64)) -> Self {
-        Self(cxx::Vector {
-            x,
-            y,
-            z: z as f32,
-        })
+        Self(cxx::Vector { x, y, z: z as f32 })
     }
 }
 
 impl From<(f32, f64, f32)> for Vec3 {
     fn from((x, y, z): (f32, f64, f32)) -> Self {
-        Self(cxx::Vector {
-            x,
-            y: y as f32,
-            z,
-        })
+        Self(cxx::Vector { x, y: y as f32, z })
     }
 }
 
 impl From<(f64, f32, f32)> for Vec3 {
     fn from((x, y, z): (f64, f32, f32)) -> Self {
-        Self(cxx::Vector {
-            x: x as f32,
-            y,
-            z,
-        })
+        Self(cxx::Vector { x: x as f32, y, z })
     }
 }
 
@@ -350,31 +338,19 @@ impl From<(f64, f64, f64)> for Position {
 
 impl From<(f32, f32, f64)> for Position {
     fn from((x, y, z): (f32, f32, f64)) -> Self {
-        Self(cxx::Position {
-            x,
-            y,
-            z: z as f32,
-        })
+        Self(cxx::Position { x, y, z: z as f32 })
     }
 }
 
 impl From<(f32, f64, f32)> for Position {
     fn from((x, y, z): (f32, f64, f32)) -> Self {
-        Self(cxx::Position {
-            x,
-            y: y as f32,
-            z,
-        })
+        Self(cxx::Position { x, y: y as f32, z })
     }
 }
 
 impl From<(f64, f32, f32)> for Position {
     fn from((x, y, z): (f64, f32, f32)) -> Self {
-        Self(cxx::Position {
-            x: x as f32,
-            y,
-            z,
-        })
+        Self(cxx::Position { x: x as f32, y, z })
     }
 }
 

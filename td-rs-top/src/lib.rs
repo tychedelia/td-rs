@@ -1,10 +1,10 @@
 pub mod cxx;
 
+pub use ::cxx::UniquePtr;
+use autocxx::c_void;
 use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
-pub use ::cxx::UniquePtr;
-use autocxx::c_void;
 
 pub struct TopOutput<'execute> {
     output: Pin<&'execute mut cxx::TOP_Output>,
@@ -44,7 +44,11 @@ impl<'execute> TopOutput<'execute> {
 
         // uploadBuffer takes ownership of the buffer
         let mut buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
-        unsafe { self.output.as_mut().uploadBuffer(buf.into_raw(), &info, std::ptr::null_mut()) };
+        unsafe {
+            self.output
+                .as_mut()
+                .uploadBuffer(buf.into_raw(), &info, std::ptr::null_mut())
+        };
     }
 }
 
@@ -76,13 +80,15 @@ impl TopContext {
         Self { context }
     }
 
-    pub fn create_output_buffer(&mut self, size:usize, flags: TopBufferFlags) -> TopBuffer {
+    pub fn create_output_buffer(&mut self, size: usize, flags: TopBufferFlags) -> TopBuffer {
         let flags = match flags {
             TopBufferFlags::None => cxx::TOP_BufferFlags::None,
             TopBufferFlags::Readable => cxx::TOP_BufferFlags::Readable,
         };
         let buf = unsafe {
-            self.context.as_mut().createOutputBuffer(size as u64, flags, std::ptr::null_mut())
+            self.context
+                .as_mut()
+                .createOutputBuffer(size as u64, flags, std::ptr::null_mut())
         };
         TopBuffer::new(buf)
     }
@@ -100,9 +106,7 @@ pub struct TopBuffer {
 }
 
 impl TopBuffer {
-    pub fn new(
-        buffer: UniquePtr<cxx::TD_OP_SmartRef_TD_TOP_Buffer_AutocxxConcrete>,
-    ) -> Self {
+    pub fn new(buffer: UniquePtr<cxx::TD_OP_SmartRef_TD_TOP_Buffer_AutocxxConcrete>) -> Self {
         Self { buffer }
     }
 

@@ -3,7 +3,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, OperatorInputs, NodeInfo};
+use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, NodeInfo, OperatorInputs};
 
 use crate::{TopContext, TopOutput};
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -42,9 +42,9 @@ include_cpp! {
 }
 
 pub use autocxx::c_void;
-pub use td_rs_base::cxx::*;
 pub use ffi::TD::*;
 pub use ffi::*;
+pub use td_rs_base::cxx::*;
 
 extern "C" {
     fn top_new_impl(info: NodeInfo, context: TopContext) -> Box<dyn Top>;
@@ -56,14 +56,18 @@ pub struct RustTopPluginImpl {
 }
 
 #[no_mangle]
-extern "C" fn top_new(info: &'static OP_NodeInfo, context: Pin<&'static mut TOP_Context>) -> *mut RustTopPluginImplCpp {
+extern "C" fn top_new(
+    info: &'static OP_NodeInfo,
+    context: Pin<&'static mut TOP_Context>,
+) -> *mut RustTopPluginImplCpp {
     unsafe {
         let info = NodeInfo::new(info);
         let context = TopContext::new(context);
         RustTopPluginImpl::new_cpp_owned(RustTopPluginImpl {
             inner: top_new_impl(info, context),
             cpp_peer: CppSubclassCppPeerHolder::Empty,
-        }).into_raw()
+        })
+        .into_raw()
     }
 }
 
