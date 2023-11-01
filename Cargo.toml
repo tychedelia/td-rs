@@ -25,7 +25,6 @@ members = [
     "plugins/dat/filter",
     "plugins/sop/filter",
     "plugins/top/cpu-memory-top",
-    "plugins/top/cuda-top",
     "td-rs-autocxx-build",
     "td-rs-base",
     "td-rs-chop",
