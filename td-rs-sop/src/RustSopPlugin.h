@@ -26,6 +26,9 @@ public:
     virtual void execute(SOP_Output &outputs, const OP_Inputs &inputs) {}
 
     void executeVBO(SOP_VBOOutput *output, const OP_Inputs *inputs, void *reserved1) {
+        if (output == nullptr) {
+            return;
+        }
         this->executeVBO(*output, *inputs);
     };
 

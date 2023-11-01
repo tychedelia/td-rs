@@ -317,7 +317,7 @@ impl<'execute> SopVboOutput<'execute> {
         self.output.as_mut().enableColor();
     }
 
-    pub fn enable_text_coord(&mut self, num_layers: usize) {
+    pub fn enable_tex_coord(&mut self, num_layers: usize) {
         self.output.as_mut().enableTexCoord(num_layers as i32);
     }
 
@@ -354,37 +354,37 @@ impl<'execute> SopVboOutput<'execute> {
             .allocVBO(num_vertices as i32, num_indices as i32, buffer_mode.into());
     }
 
-    pub fn get_pos(&mut self) -> &[Vec3] {
+    pub fn get_pos(&mut self) -> &'execute mut [Position] {
         if let Some(num_vertices) = self.num_vertices {
             let pos = unsafe { self.output.as_mut().getPos() };
-            unsafe { std::slice::from_raw_parts(pos as *const Vec3, num_vertices) }
+            unsafe { std::slice::from_raw_parts_mut(pos as *mut Position, num_vertices) }
         } else {
             panic!("Must call alloc_vbo first!!")
         }
     }
 
-    pub fn get_normals(&mut self) -> &[Vec3] {
+    pub fn get_normals(&mut self) -> &'execute mut [Vec3] {
         if let Some(num_vertices) = self.num_vertices {
             let normals = unsafe { self.output.as_mut().getNormals() };
-            unsafe { std::slice::from_raw_parts(normals as *const Vec3, num_vertices) }
+            unsafe { std::slice::from_raw_parts_mut(normals as *mut Vec3, num_vertices) }
         } else {
             panic!("Must call alloc_vbo first!!")
         }
     }
 
-    pub fn get_colors(&mut self) -> &[Color] {
+    pub fn get_colors(&mut self) -> &'execute mut [Color] {
         if let Some(num_vertices) = self.num_vertices {
             let colors = unsafe { self.output.as_mut().getColors() };
-            unsafe { std::slice::from_raw_parts(colors as *const Color, num_vertices) }
+            unsafe { std::slice::from_raw_parts_mut(colors as *mut Color, num_vertices) }
         } else {
             panic!("Must call alloc_vbo first!!")
         }
     }
 
-    pub fn get_tex_coords(&mut self) -> &[TexCoord] {
+    pub fn get_tex_coords(&mut self) -> &'execute mut [TexCoord] {
         if let Some(num_vertices) = self.num_vertices {
             let tex_coords = unsafe { self.output.as_mut().getTexCoords() };
-            unsafe { std::slice::from_raw_parts(tex_coords as *const TexCoord, num_vertices) }
+            unsafe { std::slice::from_raw_parts_mut(tex_coords as *mut TexCoord, num_vertices) }
         } else {
             panic!("Must call alloc_vbo first!!")
         }
@@ -394,16 +394,19 @@ impl<'execute> SopVboOutput<'execute> {
         unsafe { self.output.as_mut().getNumTexCoordLayers() as usize }
     }
 
-    pub fn add_triangles(&mut self, num_triangles: usize) {
-        self.output.as_mut().addTriangles(num_triangles as i32);
+    pub fn add_triangles(&mut self, num_triangles: usize) -> &'execute mut [u32] {
+        let triangles = self.output.as_mut().addTriangles(num_triangles as i32);
+        unsafe { std::slice::from_raw_parts_mut(triangles as *mut u32, num_triangles * 3) }
     }
 
-    pub fn add_particle_system(&mut self, num_particles: usize) {
-        self.output.as_mut().addParticleSystem(num_particles as i32);
+    pub fn add_particle_system(&mut self, num_particles: usize) -> &'execute mut [u32] {
+        let particles = self.output.as_mut().addParticleSystem(num_particles as i32);
+        unsafe { std::slice::from_raw_parts_mut(particles as *mut u32, num_particles) }
     }
 
-    pub fn add_lines(&mut self, num_lines: usize) {
-        self.output.as_mut().addLines(num_lines as i32);
+    pub fn add_lines(&mut self, num_lines: usize) -> &'execute mut [u32] {
+        let lines = self.output.as_mut().addLines(num_lines as i32);
+        unsafe { std::slice::from_raw_parts_mut(lines as *mut u32, num_lines) }
     }
 
     pub fn update_complete(&mut self) {
