@@ -202,22 +202,22 @@ impl SimpleShapesSop {
     }
 
     pub fn fill_face_vbo(
-        output: &mut SopVboOutput,
-        in_vert: &Position,
-        in_normal: &Vec3,
-        in_color: &Color,
-        in_tex_coord: &TexCoord,
-        idx: usize,
-        vert_size: usize,
-        tri_size: usize,
-        num_tex_layers: usize,
-        scale: f32,
+        _output: &mut SopVboOutput,
+        _in_vert: &Position,
+        _in_normal: &Vec3,
+        _in_color: &Color,
+        _in_tex_coord: &TexCoord,
+        _idx: usize,
+        _vert_size: usize,
+        _tri_size: usize,
+        _num_tex_layers: usize,
+        _scale: f32,
     ) {
     }
 }
 
 impl OpNew for SimpleShapesSop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Default::default()
     }
 }
@@ -237,7 +237,7 @@ impl Op for SimpleShapesSop {
 }
 
 impl Sop for SimpleShapesSop {
-    fn general_info(&self, input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
+    fn general_info(&self, _input: &OperatorInputs<SopInput>) -> SopGeneralInfo {
         SopGeneralInfo {
             cook_every_frame: false,
             cook_every_frame_if_asked: false,
@@ -299,8 +299,8 @@ impl Sop for SimpleShapesSop {
             inputs.params().enable_param("Scale", true);
 
             if let Some(chop) = self.params.chop.input() {
-                let num_samples = chop.num_samples();
-                let idx = 0;
+                let _num_samples = chop.num_samples();
+                let _idx = 0;
                 self.params.scale = chop.channel(0)[0] * self.params.scale;
             }
 

@@ -31,7 +31,7 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
         clang_args.push("-D_CRT_USE_BUILTIN_OFFSETOF");
     }
 
-    let mut b = autocxx_build::Builder::new("src/cxx.rs", &incs)
+    let b = autocxx_build::Builder::new("src/cxx.rs", &incs)
         .extra_clang_args(&clang_args)
         .auto_allowlist(true);
 

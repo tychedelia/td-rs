@@ -63,7 +63,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     fn execute(&mut self, outputs: Pin<&mut DAT_Output>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         let output = DatOutput::new(outputs);
-        if let Some(mut params) = self.inner.params_mut() {
+        if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         self.inner.execute(output, &input);

@@ -31,7 +31,7 @@ pub struct GeneratorChop {
 
 /// Impl block providing default constructor for plugin
 impl OpNew for GeneratorChop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             params: GeneratorChopParams {
                 length: 0,

@@ -80,7 +80,7 @@ impl CpuMemoryTop {
         if tex_dim == TexDim::ECube {
             num_layers = 6;
         };
-        let mut info = UploadInfo {
+        let info = UploadInfo {
             buffer_offset: 0,
             texture_desc: TextureDesc {
                 tex_dim,
@@ -121,7 +121,7 @@ impl CpuMemoryTop {
 }
 
 impl TopNew for CpuMemoryTop {
-    fn new(info: NodeInfo, context: TopContext) -> Self {
+    fn new(_info: NodeInfo, context: TopContext) -> Self {
         let ctx = Arc::new(Mutex::new(context));
         Self {
             frame_queue: FrameQueue::new(ctx.clone()),

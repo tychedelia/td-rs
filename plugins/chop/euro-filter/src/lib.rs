@@ -23,7 +23,7 @@ pub struct EuroFilterChop {
 }
 
 impl OpNew for EuroFilterChop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Default::default()
     }
 }

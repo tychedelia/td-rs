@@ -23,7 +23,7 @@ pub struct FilterDat {
 }
 
 impl OpNew for FilterDat {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             params: Default::default(),
         }

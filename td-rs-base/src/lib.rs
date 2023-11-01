@@ -1,6 +1,6 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
-use autocxx::name;
+
 use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;

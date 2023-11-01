@@ -19,7 +19,7 @@ pub struct FilterChop {
 }
 
 impl OpNew for FilterChop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             params: FilterChopParams {
                 apply_scale: true,

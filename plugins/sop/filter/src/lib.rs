@@ -15,7 +15,7 @@ pub struct FilterSop {
 }
 
 impl OpNew for FilterSop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             warning: "".to_string(),
             ..Default::default()
@@ -51,7 +51,7 @@ impl FilterSop {
 
     fn copy_points_translated(output: &mut SopOutput, input: &SopInput, t: &Vec3) {
         input.point_positions().iter().for_each(|p| {
-            output.add_point((p + t));
+            output.add_point(p + t);
         });
     }
 

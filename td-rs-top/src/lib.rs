@@ -1,7 +1,7 @@
 pub mod cxx;
 
 pub use ::cxx::UniquePtr;
-use autocxx::c_void;
+
 use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
@@ -43,7 +43,7 @@ impl<'execute> TopOutput<'execute> {
         };
 
         // uploadBuffer takes ownership of the buffer
-        let mut buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
+        let buf = std::mem::replace(&mut buffer.buffer, UniquePtr::null());
         unsafe {
             self.output
                 .as_mut()

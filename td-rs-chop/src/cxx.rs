@@ -104,7 +104,7 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
     fn execute(&mut self, output: Pin<&mut CHOP_Output>, input: &OP_Inputs) {
         let input = OperatorInputs::new(input);
         let mut output = ChopOutput::new(output);
-        if let Some(mut params) = self.inner.params_mut() {
+        if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
         }
         self.inner.execute(&mut output, &input);
