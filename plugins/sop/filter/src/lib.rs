@@ -30,7 +30,6 @@ impl FilterSop {
             let mut t = Vec3::zero();
             let last_sample = chop.num_samples() - 1;
             let num_channels = chop.num_channels();
-            println!("num_channels: {}", num_channels);
             if num_channels > 2 {
                 t.z = chop[2][last_sample]
             } else {
@@ -52,7 +51,7 @@ impl FilterSop {
 
     fn copy_points_translated(output: &mut SopOutput, input: &SopInput, t: &Vec3) {
         input.point_positions().iter().for_each(|p| {
-            output.add_point(&(p + t));
+            output.add_point((p + t));
         });
     }
 
@@ -76,7 +75,7 @@ impl FilterSop {
 
     fn copy_textures(output: &mut SopOutput, input: &SopInput) {
         let (textures, num_layers) = input.textures();
-        output.set_textures(textures, num_layers, 0);
+        output.set_tex_coords(textures, num_layers, 0);
     }
 
     fn copy_custom_attributes(output: &mut SopOutput, input: &SopInput) {

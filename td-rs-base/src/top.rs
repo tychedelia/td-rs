@@ -82,39 +82,8 @@ pub enum PixelFormat {
     RGB11Float,
 }
 
-impl PixelFormat {
-    pub fn to_cxx(&self) -> crate::cxx::OP_PixelFormat {
-        match self {
-            PixelFormat::Invalid => crate::cxx::OP_PixelFormat::Invalid,
-            PixelFormat::BGRA8Fixed => crate::cxx::OP_PixelFormat::BGRA8Fixed,
-            PixelFormat::RGBA8Fixed => crate::cxx::OP_PixelFormat::RGBA8Fixed,
-            PixelFormat::RGBA16Fixed => crate::cxx::OP_PixelFormat::RGBA16Fixed,
-            PixelFormat::RGBA16Float => crate::cxx::OP_PixelFormat::RGBA16Float,
-            PixelFormat::RGBA32Float => crate::cxx::OP_PixelFormat::RGBA32Float,
-            PixelFormat::Mono8Fixed => crate::cxx::OP_PixelFormat::Mono8Fixed,
-            PixelFormat::Mono16Fixed => crate::cxx::OP_PixelFormat::Mono16Fixed,
-            PixelFormat::Mono16Float => crate::cxx::OP_PixelFormat::Mono16Float,
-            PixelFormat::Mono32Float => crate::cxx::OP_PixelFormat::Mono32Float,
-            PixelFormat::RG8Fixed => crate::cxx::OP_PixelFormat::RG8Fixed,
-            PixelFormat::RG16Fixed => crate::cxx::OP_PixelFormat::RG16Fixed,
-            PixelFormat::RG16Float => crate::cxx::OP_PixelFormat::RG16Float,
-            PixelFormat::RG32Float => crate::cxx::OP_PixelFormat::RG32Float,
-            PixelFormat::A8Fixed => crate::cxx::OP_PixelFormat::A8Fixed,
-            PixelFormat::A16Fixed => crate::cxx::OP_PixelFormat::A16Fixed,
-            PixelFormat::A16Float => crate::cxx::OP_PixelFormat::A16Float,
-            PixelFormat::A32Float => crate::cxx::OP_PixelFormat::A32Float,
-            PixelFormat::MonoA8Fixed => crate::cxx::OP_PixelFormat::MonoA8Fixed,
-            PixelFormat::MonoA16Fixed => crate::cxx::OP_PixelFormat::MonoA16Fixed,
-            PixelFormat::MonoA16Float => crate::cxx::OP_PixelFormat::MonoA16Float,
-            PixelFormat::MonoA32Float => crate::cxx::OP_PixelFormat::MonoA32Float,
-            PixelFormat::SBGRA8Fixed => crate::cxx::OP_PixelFormat::SBGRA8Fixed,
-            PixelFormat::SRGBA8Fixed => crate::cxx::OP_PixelFormat::SRGBA8Fixed,
-            PixelFormat::RGB10A2Fixed => crate::cxx::OP_PixelFormat::RGB10A2Fixed,
-            PixelFormat::RGB11Float => crate::cxx::OP_PixelFormat::RGB11Float,
-        }
-    }
-
-    pub fn from_cxx(pixel_format: &crate::cxx::OP_PixelFormat) -> Self {
+impl From<&OP_PixelFormat> for PixelFormat {
+    fn from(pixel_format: &OP_PixelFormat) -> Self {
         match pixel_format {
             OP_PixelFormat::Invalid => PixelFormat::Invalid,
             OP_PixelFormat::BGRA8Fixed => PixelFormat::BGRA8Fixed,
@@ -147,6 +116,39 @@ impl PixelFormat {
     }
 }
 
+impl From<&PixelFormat> for OP_PixelFormat {
+    fn from(pixel_format: &PixelFormat) -> Self {
+        match pixel_format {
+            PixelFormat::Invalid => crate::cxx::OP_PixelFormat::Invalid,
+            PixelFormat::BGRA8Fixed => crate::cxx::OP_PixelFormat::BGRA8Fixed,
+            PixelFormat::RGBA8Fixed => crate::cxx::OP_PixelFormat::RGBA8Fixed,
+            PixelFormat::RGBA16Fixed => crate::cxx::OP_PixelFormat::RGBA16Fixed,
+            PixelFormat::RGBA16Float => crate::cxx::OP_PixelFormat::RGBA16Float,
+            PixelFormat::RGBA32Float => crate::cxx::OP_PixelFormat::RGBA32Float,
+            PixelFormat::Mono8Fixed => crate::cxx::OP_PixelFormat::Mono8Fixed,
+            PixelFormat::Mono16Fixed => crate::cxx::OP_PixelFormat::Mono16Fixed,
+            PixelFormat::Mono16Float => crate::cxx::OP_PixelFormat::Mono16Float,
+            PixelFormat::Mono32Float => crate::cxx::OP_PixelFormat::Mono32Float,
+            PixelFormat::RG8Fixed => crate::cxx::OP_PixelFormat::RG8Fixed,
+            PixelFormat::RG16Fixed => crate::cxx::OP_PixelFormat::RG16Fixed,
+            PixelFormat::RG16Float => crate::cxx::OP_PixelFormat::RG16Float,
+            PixelFormat::RG32Float => crate::cxx::OP_PixelFormat::RG32Float,
+            PixelFormat::A8Fixed => crate::cxx::OP_PixelFormat::A8Fixed,
+            PixelFormat::A16Fixed => crate::cxx::OP_PixelFormat::A16Fixed,
+            PixelFormat::A16Float => crate::cxx::OP_PixelFormat::A16Float,
+            PixelFormat::A32Float => crate::cxx::OP_PixelFormat::A32Float,
+            PixelFormat::MonoA8Fixed => crate::cxx::OP_PixelFormat::MonoA8Fixed,
+            PixelFormat::MonoA16Fixed => crate::cxx::OP_PixelFormat::MonoA16Fixed,
+            PixelFormat::MonoA16Float => crate::cxx::OP_PixelFormat::MonoA16Float,
+            PixelFormat::MonoA32Float => crate::cxx::OP_PixelFormat::MonoA32Float,
+            PixelFormat::SBGRA8Fixed => crate::cxx::OP_PixelFormat::SBGRA8Fixed,
+            PixelFormat::SRGBA8Fixed => crate::cxx::OP_PixelFormat::SRGBA8Fixed,
+            PixelFormat::RGB10A2Fixed => crate::cxx::OP_PixelFormat::RGB10A2Fixed,
+            PixelFormat::RGB11Float => crate::cxx::OP_PixelFormat::RGB11Float,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct DownloadOptions {
     pub vertical_flip: bool,
@@ -163,7 +165,7 @@ impl TopInput {
     pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: false,
-            pixelFormat:  opts.pixel_format.to_cxx(),
+            pixelFormat:  (&opts.pixel_format).into(),
         };
         let mut download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)
@@ -202,7 +204,7 @@ impl TopDownloadResult {
                 crate::cxx::OP_TexDim::e3D => TexDim::E3D,
                 crate::cxx::OP_TexDim::eCube => TexDim::ECube,
             },
-            pixel_format: PixelFormat::from_cxx(&desc.pixelFormat),
+            pixel_format: PixelFormat::from(&desc.pixelFormat),
             aspect_x: 0.0,
             aspect_y: 0.0,
         }

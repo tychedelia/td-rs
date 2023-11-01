@@ -1,0 +1,15 @@
+[package]
+name = "simple-shapes-sop"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "sop"
+
+[lib]
+name = "simple_shapes_sop"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-sop = { path = "../../../td-rs-sop" }
+td-rs-derive = { path = "../../../td-rs-derive" }
