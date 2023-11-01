@@ -2,7 +2,6 @@ use crate::cxx::{SOP_CustomAttribData, Vector};
 
 use std::pin::Pin;
 
-pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::sop::*;
 pub use td_rs_base::*;
 
