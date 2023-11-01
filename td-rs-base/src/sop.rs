@@ -224,6 +224,17 @@ impl Vec3 {
         })
     }
 }
+
+impl Clone for Vec3 {
+    fn clone(&self) -> Self {
+        Self(cxx::Vector {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        })
+    }
+}
+
 impl From<&Vec3> for Vec3 {
     fn from(v: &Vec3) -> Self {
         Self(cxx::Vector {
@@ -306,9 +317,20 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
     })
 });
 
+
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct Position(cxx::Position);
+
+impl Clone for Position {
+    fn clone(&self) -> Self {
+        Self(cxx::Position {
+            x: self.x,
+            y: self.y,
+            z: self.z,
+        })
+    }
+}
 
 impl From<&Position> for Position {
     fn from(p: &Position) -> Self {
@@ -391,10 +413,28 @@ impl_op_ex!(+ |a: &Position, b: &Vec3| -> Position {
         z: a.z + b.z,
     })
 });
+impl_op_ex!(* |a: &Position, b: f32| -> Position {
+    Position(cxx::Position {
+        x: a.x * b,
+        y: a.y * b,
+        z: a.z * b,
+    })
+});
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct Color(cxx::Color);
+
+impl Clone for Color {
+    fn clone(&self) -> Self {
+        Self(cxx::Color {
+            r: self.r,
+            g: self.g,
+            b: self.b,
+            a: self.a,
+        })
+    }
+}
 
 impl From<&Color> for Color {
     fn from(c: &Color) -> Self {
@@ -424,9 +464,41 @@ impl From<(f64, f64, f64, f64)> for Color {
     }
 }
 
+impl From<(u32, u32, u32, u32)> for Color {
+    fn from((r, g, b, a): (u32, u32, u32, u32)) -> Self {
+        Self(cxx::Color {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
+        })
+    }
+}
+
+impl From<(i32, i32, i32, i32)> for Color {
+    fn from((r, g, b, a): (i32, i32, i32, i32)) -> Self {
+        Self(cxx::Color {
+            r: r as f32 / 255.0,
+            g: g as f32 / 255.0,
+            b: b as f32 / 255.0,
+            a: a as f32 / 255.0,
+        })
+    }
+}
+
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct TexCoord(cxx::TexCoord);
+
+impl Clone for TexCoord {
+    fn clone(&self) -> Self {
+        Self(cxx::TexCoord {
+            u: self.u,
+            v: self.v,
+            w: self.w,
+        })
+    }
+}
 
 impl From<&TexCoord> for TexCoord {
     fn from(t: &TexCoord) -> Self {

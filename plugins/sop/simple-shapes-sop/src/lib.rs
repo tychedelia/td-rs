@@ -30,7 +30,7 @@ struct SimpleShapesSop {
     params: SimpleShapesSopParams,
     execute_count: u32,
     offset: f64,
-    vbo_tex_layers: i32,
+    vbo_tex_layers: usize,
 }
 
 impl SimpleShapesSop {
@@ -201,20 +201,517 @@ impl SimpleShapesSop {
         output.add_triangle(vertices[0], vertices[1], vertices[2]);
     }
 
-    pub fn fill_face_vbo(
-        _output: &mut SopVboOutput,
-        _in_vert: &Position,
-        _in_normal: &Vec3,
-        _in_color: &Color,
-        _in_tex_coord: &TexCoord,
-        _idx: usize,
-        _vert_size: usize,
-        _tri_size: usize,
-        _num_tex_layers: usize,
-        _scale: f32,
+    fn fill_face_vbo(
+        output: &mut SopVboOutput,
+        in_vert: Option<&[Position]>,
+        in_normal: Option<&[Vec3]>,
+        in_color: Option<&[Color]>,
+        in_tex_coord: Option<&[TexCoord]>,
+        in_idx: &[u32],
+        vert_sz: usize,
+        tri_size: usize,
+        num_tex_layers: usize,
+        scale: f32,
     ) {
+        if let Some(vert_out) = in_vert.map(|_| output.get_pos()) {
+            for (k, v) in in_vert.unwrap().iter().enumerate().take(vert_sz * 3) {
+                vert_out[k] = v * scale;
+            }
+        }
+
+        if let Some(normal_out) = in_normal.filter(|_| output.has_normal()) {
+            let normals = output.get_normals();
+            normals[..(vert_sz * 3)].clone_from_slice(normal_out);
+        }
+
+        if let Some(color_out) = in_color.filter(|_| output.has_color()) {
+            let colors = output.get_colors();
+            colors[..(vert_sz * 3)].clone_from_slice(color_out);
+        }
+
+        if let Some(tex_coords) = in_tex_coord.filter(|_| output.has_tex_coord()) {
+            let tex_coord_out = output.get_tex_coords();
+            for k in 0..vert_sz * 3 {
+                for t in 0..num_tex_layers + 1 {
+                    tex_coord_out[k * (num_tex_layers + 1) + t] = tex_coords[k * (num_tex_layers + 1) + t].clone();
+                }
+            }
+        }
+
+        let index_buffer = output.add_triangles(tri_size);
+        for (i, idx_chunk) in in_idx.chunks(3).enumerate().take(tri_size) {
+            let base_index = i * 3;
+            index_buffer[base_index..base_index + 3].clone_from_slice(idx_chunk);
+        }
+    }
+
+    fn fill_line_vbo(
+        output: &mut SopVboOutput,
+        in_vert: Option<&[Position]>,
+        in_normal: Option<&[Vec3]>,
+        in_color: Option<&[Color]>,
+        in_tex_coord: Option<&[TexCoord]>,
+        in_idx: &[u32],
+        vert_sz: usize,
+        line_size: usize,
+        num_tex_layers: usize,
+    ) {
+        if let Some(vert_out) = in_vert.map(|_| output.get_pos()) {
+            vert_out[..vert_sz].clone_from_slice(in_vert.unwrap());
+        }
+
+        if let Some(normal_out) = in_normal.filter(|_| output.has_normal()) {
+            let normals = output.get_normals();
+            normals[..vert_sz].clone_from_slice(normal_out);
+        }
+
+        if let Some(color_out) = in_color.filter(|_| output.has_color()) {
+            let colors = output.get_colors();
+            colors[..vert_sz].clone_from_slice(color_out);
+        }
+
+        if let Some(tex_coords) = in_tex_coord.filter(|_| output.has_tex_coord()) {
+            let tex_coord_out = output.get_tex_coords();
+            for k in 0..vert_sz {
+                for t in 0..num_tex_layers + 1 {
+                    tex_coord_out[k * (num_tex_layers + 1) + t] = tex_coords[k * (num_tex_layers + 1) + t].clone();
+                }
+            }
+        }
+
+        let index_buffer = output.add_lines(line_size);
+        index_buffer[..line_size].clone_from_slice(&in_idx[..line_size]);
+    }
+
+    fn fill_particle_vbo(
+        output: &mut SopVboOutput,
+        in_vert: Option<&[Position]>,
+        in_normal: Option<&[Vec3]>,
+        in_color: Option<&[Color]>,
+        in_tex_coord: Option<&[TexCoord]>,
+        in_idx: &[u32],
+        vert_sz: usize,
+        size: usize,
+        num_tex_layers: usize,
+    ) {
+        if let Some(vert_out) = in_vert.map(|_| output.get_pos()) {
+            vert_out[..vert_sz].clone_from_slice(in_vert.unwrap());
+        }
+
+        if let Some(normal_out) = in_normal.filter(|_| output.has_normal()) {
+            let normals = output.get_normals();
+            normals[..vert_sz].clone_from_slice(normal_out);
+        }
+
+        if let Some(color_out) = in_color.filter(|_| output.has_color()) {
+            let colors = output.get_colors();
+            colors[..vert_sz].clone_from_slice(color_out);
+        }
+
+        if let Some(tex_coords) = in_tex_coord.filter(|_| output.has_tex_coord()) {
+            let tex_coord_out = output.get_tex_coords();
+            for k in 0..vert_sz {
+                for t in 0..num_tex_layers + 1 {
+                    tex_coord_out[k * (num_tex_layers + 1) + t] = tex_coords[k * (num_tex_layers + 1) + t].clone();
+                }
+            }
+        }
+
+        let index_buffer = output.add_particle_system(size);
+        index_buffer[..size].clone_from_slice(&in_idx[..size]);
+    }
+
+    fn cube_geometry_vbo(&self, output: &mut SopVboOutput, scale: f32) {
+        let point_arr = [
+            //front
+            (1.0, -1.0, 1.0).into(), //v0
+            (3.0, -1.0, 1.0).into(), //v1
+            (3.0, 1.0, 1.0).into(),  //v2
+            (1.0, 1.0, 1.0).into(), //v3
+
+            //right
+            (3.0, 1.0, 1.0).into(), //v2
+            (3.0, 1.0, -1.0).into(), //v6
+            (3.0, -1.0, -1.0).into(),//v5
+            (3.0, -1.0, 1.0).into(),//v1
+
+            //back
+            (1.0, -1.0, -1.0).into(), //v4
+            (3.0, -1.0, -1.0).into(),  //v5
+            (3.0, 1.0, -1.0).into(),  //v6
+            (1.0, 1.0, -1.0).into(), //v7
+
+            //left
+            (1.0, -1.0, -1.0).into(), //v4
+            (1.0, -1.0, 1.0).into(),// v0
+            (1.0, 1.0, 1.0).into(),//v3
+            (1.0, 1.0, -1.0).into(),//v7
+
+            //upper
+            (3.0, 1.0, 1.0).into(),//v1
+            (1.0, 1.0, 1.0).into(),//v3
+            (1.0, 1.0, -1.0).into(),//v7
+            (3.0, 1.0, -1.0).into(),//v6
+
+            //bottom
+            (1.0, -1.0, -1.0).into(),//v4
+            (3.0, -1.0, -1.0).into(),//v5
+            (3.0, -1.0, 1.0).into(),//v1
+            (1.0, -1.0, 1.0).into(),//v0
+        ];
+
+        let normals = [
+            //front
+            (1.0, 0.0, 0.0).into(), //v0
+            (0.0, 1.0, 0.0).into(),//v1
+            (0.0, 0.0, 1.0).into(),//v2
+            (1.0, 1.0, 1.0).into(),//v3
+
+            //right
+            (0.0, 0.0, 1.0).into(),//v2
+            (0.0, 0.0, 1.0).into(), //v6
+            (0.0, 1.0, 0.0).into(),//v5
+            (0.0, 1.0, 0.0).into(),//v1
+
+            //back
+            (1.0, 0.0, 0.0).into(), //v4
+            (0.0, 1.0, 0.0).into(), //v5
+            (0.0, 0.0, 1.0).into(),//v6
+            (1.0, 1.0, 1.0).into(),//v7
+
+            //left
+            (1.0, 0.0, 0.0).into(), //v4
+            (1.0, 0.0, 0.0).into(),// v0
+            (1.0, 1.0, 1.0).into(),//v3
+            (1.0, 1.0, 1.0).into(),//v7
+
+            //upper
+            (0.0, 1.0, 0.0).into(),//v1
+            (1.0, 1.0, 1.0).into(),//v3
+            (1.0, 1.0, 1.0).into(),//v7
+            (0.0, 0.0, 1.0).into(),//v6
+
+            //bottom
+            (1.0, 0.0, 0.0).into(),//v4
+            (0.0, 1.0, 0.0).into(),//v5
+            (0.0, 1.0, 0.0).into(),//v1
+            (1.0, 0.0, 0.0).into(),//v0
+        ];
+
+        let colors = [
+            //front
+            (0, 0, 1, 1).into(),
+            (1, 0, 1, 1).into(),
+            (1, 1, 1, 1).into(),
+            (0, 1, 1, 1).into(),
+
+            //right
+            (1, 1, 1, 1).into(),
+            (1, 1, 0, 1).into(),
+            (1, 0, 0, 1).into(),
+            (1, 0, 1, 1).into(),
+
+            //back
+            (0, 0, 0, 1).into(),
+            (1, 0, 0, 1).into(),
+            (1, 1, 0, 1).into(),
+            (0, 1, 0, 1).into(),
+
+            //left
+            (0, 0, 0, 1).into(),
+            (0, 0, 1, 1).into(),
+            (0, 1, 1, 1).into(),
+            (0, 1, 0, 1).into(),
+
+            //up
+            (1, 1, 1, 1).into(),
+            (0, 1, 1, 1).into(),
+            (0, 1, 0, 1).into(),
+            (1, 1, 0, 1).into(),
+
+            //bottom
+            (0, 0, 0, 1).into(),
+            (1, 0, 0, 1).into(),
+            (1, 0, 1, 1).into(),
+            (0, 0, 1, 1).into(),
+        ];
+
+        let tex_coords = [
+            //front
+            (0.0, 0.0, 0.0).into(),//v0
+            (0.0, 1.0, 0.0).into(),//v1
+            (1.0, 1.0, 0.0).into(),//v2
+            (1.0, 0.0, 0.0).into(),//v3
+
+            //right
+            (1.0, 0.0, 0.0).into(),//v2
+            (1.0, 1.0, 0.0).into(),//v6
+            (1.0, 1.0, 0.0).into(),//v5
+            (1.0, 0.0, 0.0).into(),//v1
+
+
+            //back
+            (1.0, 0.0, 0.0).into(),//v4
+            (1.0, 1.0, 0.0).into(),//v5
+            (0.0, 1.0, 0.0).into(),//v6
+            (0.0, 0.0, 0.0).into(),//v7
+
+            //left
+            (0.0, 0.0, 0.0).into(), //v4
+            (0.0, 1.0, 0.0).into(), //v0
+            (0.0, 1.0, 0.0).into(),//v3
+            (0.0, 0.0, 0.0).into(),//v7
+
+
+            //upper
+            (0.0, 0.0, 0.0).into(),//v1
+            (0.0, 0.0, 0.0).into(),//v3
+            (1.0, 0.0, 0.0).into(),//v7
+            (1.0, 0.0, 0.0).into(),//v6
+
+
+            //bottom
+            (0.0, 0.0, 0.0).into(),//v4
+            (0.0, 1.0, 0.0).into(),//v5
+            (1.0, 1.0, 0.0).into(),//v1
+            (1.0, 1.0, 0.0).into(),//v0
+        ];
+
+        let vertices = [
+            0,  1,  2,  0,  2,  3,   //front
+            4,  5,  6,  4,  6,  7,   //right
+            8,  9,  10, 8,  10, 11,  //back
+            12, 13, 14, 12, 14, 15,  //left
+            16, 17, 18, 16, 18, 19,  //upper
+            20, 21, 22, 20, 22, 23
+        ];
+
+        Self::fill_face_vbo(output, Some(&point_arr), Some(&normals), Some(&colors), Some(&tex_coords), &vertices, 8, 12, self.vbo_tex_layers , scale);
+    }
+
+    fn line_geometry_vbo(&self, output: &mut SopVboOutput) {
+        let point_arr = [
+            (-0.8, 0.0, 1.0).into(),
+            (-0.6, 0.4, 1.0).into(),
+            (-0.4, 0.8, 1.0).into(),
+            (-0.2, 0.4, 1.0).into(),
+            (0.0,  0.0, 1.0).into(),
+            (0.2, -0.4, 1.0).into(),
+            (0.4, -0.8, 1.0).into(),
+            (0.6, -0.4, 1.0).into(),
+            (0.8,  0.0, 1.0).into(),
+        ];
+
+        let normals = [
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+        ];
+
+        let colors = [
+            (0, 0, 1, 1).into(),
+            (1, 0, 1, 1).into(),
+            (1, 1, 1, 1).into(),
+            (0, 1, 1, 1).into(),
+            (1, 1, 1, 1).into(),
+            (1, 1, 0, 1).into(),
+            (1, 0, 0, 1).into(),
+            (1, 0, 1, 1).into(),
+            (0, 0, 0, 1).into(),
+        ];
+
+        let tex_coords = [
+            (0.0, 0.0, 0.0).into(),
+            (0.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+        ];
+
+        let vertices = [
+            0,  1,  2,  3,  4,  5,
+            6,  7,  8
+        ];
+
+        Self::fill_line_vbo(output, Some(&point_arr), Some(&normals), Some(&colors), Some(&tex_coords), &vertices, 9, 9, self.vbo_tex_layers);
+    }
+
+    fn triangle_geometry_vbo(&self, output: &mut SopVboOutput) {
+        let normals = [
+            (1.0, 0.0, 0.0).into(), //v0
+            (0.0, 1.0, 0.0).into(), //v1
+            (0.0, 0.0, 1.0).into(), //v2
+        ];
+
+        let color = [
+            (0.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+        ];
+
+        let point_arr = [
+            (0.0, 0.0, 0.0).into(),
+            (0.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+        ];
+
+        let vertices = [
+            0, 1, 2
+        ];
+
+        Self::fill_face_vbo(output, Some(&point_arr), Some(&normals), Some(&color), None, &vertices, 1, self.vbo_tex_layers, 1, 1.0);
+    }
+
+    fn particle_geometry_vbo(&self, output: &mut SopVboOutput) {
+        let point_arr = [
+            (-0.8, 0.0, 1.0).into(),
+            (-0.6, 0.4, 1.0).into(),
+            (-0.4, 0.8, 1.0).into(),
+            (-0.2, 0.4, 1.0).into(),
+            (0.0,  0.0, 1.0).into(),
+            (0.2, -0.4, 1.0).into(),
+            (0.4, -0.8, 1.0).into(),
+            (0.6, -0.4, 1.0).into(),
+            (0.8, -0.2, 1.0).into(),
+
+            (-0.8, 0.2, 1.0).into(),
+            (-0.6, 0.6, 1.0).into(),
+            (-0.4, 1.0, 1.0).into(),
+            (-0.2, 0.6, 1.0).into(),
+            (0.0,  0.2, 1.0).into(),
+            (0.2, -0.2, 1.0).into(),
+            (0.4, -0.6, 1.0).into(),
+            (0.6, -0.2, 1.0).into(),
+            (0.8,  0.0, 1.0).into(),
+
+            (-0.8, -0.2, 1.0).into(),
+            (-0.6,  0.2, 1.0).into(),
+            (-0.4,  0.6, 1.0).into(),
+            (-0.2,  0.2, 1.0).into(),
+            (0.0, -0.2, 1.0).into(),
+            (0.2, -0.6, 1.0).into(),
+            (0.4, -1.0, 1.0).into(),
+            (0.6, -0.6, 1.0).into(),
+            (0.8, -0.4, 1.0).into(),
+        ];
+
+        let normals = [
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0).into(),
+        ];
+
+        let colors = [
+            (0.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (0.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (0.0, 0.0, 0.0, 1.0).into(),
+
+            (0.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (0.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (0.0, 0.0, 0.0, 1.0).into(),
+
+            (0.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (0.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 1.0, 1.0).into(),
+            (1.0, 1.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 0.0, 1.0).into(),
+            (1.0, 0.0, 1.0, 1.0).into(),
+            (0.0, 0.0, 0.0, 1.0).into(),
+        ];
+
+        let tex_coords = [
+            (0.0, 0.0, 0.0).into(),
+            (0.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+
+            (0.0, 0.0, 0.0).into(),
+            (0.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+
+            (0.0, 0.0, 0.0).into(),
+            (0.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 1.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+            (1.0, 0.0, 0.0).into(),
+        ];
+
+        let vertices = [
+            0,  1,  2,  3,  4,  5,
+            6,  7,  8, 9, 10, 11, 12,
+            13, 14, 15, 16, 17, 18, 19, 20,
+            21, 22, 23, 24, 25, 26
+        ];
+
+        Self::fill_particle_vbo(output, Some(&point_arr), Some(&normals), Some(&colors), Some(&tex_coords), &vertices, 27, 27, self.vbo_tex_layers);
     }
 }
+
 
 impl OpNew for SimpleShapesSop {
     fn new(_info: NodeInfo) -> Self {
@@ -299,8 +796,6 @@ impl Sop for SimpleShapesSop {
             inputs.params().enable_param("Scale", true);
 
             if let Some(chop) = self.params.chop.input() {
-                let _num_samples = chop.num_samples();
-                let _idx = 0;
                 self.params.scale = chop.channel(0)[0] * self.params.scale;
             }
 
@@ -338,6 +833,51 @@ impl Sop for SimpleShapesSop {
                 }
             }
         }
+    }
+
+    fn execute_vbo(&mut self, output: &mut SopVboOutput, inputs: &OperatorInputs<SopInput>) {
+        self.execute_count += 1;
+
+        if inputs.num_inputs() > 0 {
+            inputs.params().enable_param("Reset", false);
+            inputs.params().enable_param("Shape", false);
+            inputs.params().enable_param("Scale", false);
+        } else {
+            inputs.params().enable_param("Shape", false);
+            inputs.params().enable_param("Scale", true);
+
+            if let Some(chop) = self.params.chop.input() {
+                self.params.scale = chop.channel(0)[0] * self.params.scale;
+            }
+
+            output.enable_normal();
+            output.enable_color();
+
+            self.vbo_tex_layers = 1;
+            output.enable_tex_coord(self.vbo_tex_layers);
+
+            let cu1 =  CustomAttributeInfo {
+                name: "customColor".to_string(),
+                num_components: 4,
+                attr_type: AttributeType::Float,
+            };
+            output.add_custom_attribute(cu1);
+            let cu2 = CustomAttributeInfo {
+                name: "customVert".to_string(),
+                num_components: 1,
+                attr_type: AttributeType::Float,
+            };
+            output.add_custom_attribute(cu2);
+
+            let num_vertices = 36;
+            let num_indices = 36;
+
+            output.alloc_vbo(num_vertices,num_indices, BufferMode::Static);
+
+            self.cube_geometry_vbo(output, self.params.scale);
+            output.set_bounding_box((1.0, -1.0, -1.0, 3.0, 1.0, 1.0));
+        }
+
     }
 }
 
