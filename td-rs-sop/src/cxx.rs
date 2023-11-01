@@ -30,6 +30,7 @@ include_cpp! {
     extern_cpp_type!("TD::SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
     extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
     pod!("TD::OP_CustomOPInfo")
+    generate_pod!("TD::SOP_Winding")
 }
 
 pub use autocxx::c_void;
@@ -60,10 +61,14 @@ extern "C" fn sop_new(info: &'static OP_NodeInfo) -> *mut RustSopPluginImplCpp {
 impl RustSopPlugin_methods for RustSopPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut SOP_GeneralInfo>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
+        if let Some(params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
         info.directToGPU = gen_info.direct_to_gpu;
+        info.winding = SOP_Winding::CCW;
     }
 
     fn execute(&mut self, outputs: Pin<&mut SOP_Output>, inputs: &OP_Inputs) {

@@ -70,6 +70,9 @@ extern "C" fn top_new(info: &'static OP_NodeInfo, context: Pin<&'static mut TOP_
 impl RustTopPlugin_methods for RustTopPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut TOP_GeneralInfo>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
+        if let Some(params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;

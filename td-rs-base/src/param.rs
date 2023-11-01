@@ -6,6 +6,7 @@ use std::ffi::{c_char, CString};
 use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::pin::Pin;
+use crate::sop::SopInput;
 
 /// A numeric parameter.
 // TODO: switch to enum to describe parameter types
@@ -566,6 +567,12 @@ impl Param for Pulse {
     fn update(&mut self, _name: &str, _inputs: &ParamInputs) {}
 }
 
+/// A chop parameter.
+#[derive(Default, Debug, Clone)]
+pub struct ChopParam {
+    pub(crate) input: Option<*const cxx::OP_CHOPInput>,
+}
+
 impl Param for ChopParam {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let param: StringParameter = options.into();
@@ -577,12 +584,6 @@ impl Param for ChopParam {
     }
 }
 
-/// A chop parameter.
-#[derive(Default, Clone)]
-pub struct ChopParam {
-    pub(crate) input: Option<*const cxx::OP_CHOPInput>,
-}
-
 impl ChopParam {
     /// Get the chop input for this parameter, if it exists.
     pub fn input(&self) -> Option<&ChopInput> {
@@ -591,6 +592,102 @@ impl ChopParam {
         } else {
             None
         }
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct SopParam {
+    pub(crate) input: Option<*const cxx::OP_SOPInput>,
+}
+
+impl Param for SopParam {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param: StringParameter = options.into();
+        parameter_manager.append_sop(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_sop(name);
+    }
+}
+
+impl SopParam {
+    /// Get the sop input for this parameter, if it exists.
+    pub fn input(&self) -> Option<&SopInput> {
+        if let Some(input) = self.input {
+            Some(unsafe { SopInput::ref_cast(&*input) })
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct TopParam {
+    pub(crate) input: Option<*const cxx::OP_TOPInput>,
+}
+
+impl Param for TopParam {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param: StringParameter = options.into();
+        parameter_manager.append_top(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_top(name);
+    }
+}
+
+impl TopParam {
+    /// Get the top input for this parameter, if it exists.
+    pub fn input(&self) -> Option<&crate::top::TopInput> {
+        if let Some(input) = self.input {
+            Some(unsafe { crate::top::TopInput::ref_cast(&*input) })
+        } else {
+            None
+        }
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct DatParam {
+    pub(crate) input: Option<*const cxx::OP_DATInput>,
+}
+
+impl Param for DatParam {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param: StringParameter = options.into();
+        parameter_manager.append_dat(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        *self = inputs.get_dat(name);
+    }
+}
+
+impl DatParam {
+    /// Get the dat input for this parameter, if it exists.
+    pub fn input(&self) -> Option<&crate::dat::DatInput> {
+        if let Some(input) = self.input {
+            Some(unsafe { crate::dat::DatInput::ref_cast(&*input) })
+        } else {
+            None
+        }
+    }
+}
+
+
+#[cfg(feature = "python")]
+impl Param for *mut pyo3_ffi::PyObject {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param = options.into();
+        parameter_manager.append_python(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        // Ensure that the old object is decref'd
+        unsafe { pyo3_ffi::Py_XDECREF(*self); }
+        *self = inputs.get_python(name);
     }
 }
 

@@ -4,6 +4,7 @@ use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
+use autocxx::name;
 
 pub use param::*;
 #[cfg(feature = "python")]
@@ -280,6 +281,59 @@ impl<'execute> ParamInputs<'execute> {
                 ChopParam { input: None }
             } else {
                 ChopParam { input: Some(chop) }
+            }
+        }
+    }
+
+    fn get_sop(&self, name: &str) -> SopParam {
+        unsafe {
+            let sop = self
+                .inputs
+                .getParSOP(ffi::CString::new(name).unwrap().into_raw());
+            if sop.is_null() {
+                SopParam { input: None }
+            } else {
+                SopParam { input: Some(sop) }
+            }
+        }
+    }
+
+    fn get_top(&self, name: &str) -> TopParam {
+        unsafe {
+            let top = self
+                .inputs
+                .getParTOP(ffi::CString::new(name).unwrap().into_raw());
+            if top.is_null() {
+                TopParam { input: None }
+            } else {
+                TopParam { input: Some(top) }
+            }
+        }
+    }
+
+    fn get_dat(&self, name: &str) -> DatParam {
+        unsafe {
+            let dat = self
+                .inputs
+                .getParDAT(ffi::CString::new(name).unwrap().into_raw());
+            if dat.is_null() {
+                DatParam { input: None }
+            } else {
+                DatParam { input: Some(dat) }
+            }
+        }
+    }
+
+    #[cfg(feature = "python")]
+    fn get_python(&self, name: &str) -> *mut pyo3_ffi::PyObject {
+        unsafe {
+            let python = self
+                .inputs
+                .getParPython(ffi::CString::new(name).unwrap().into_raw());
+            if python.is_null() {
+                std::ptr::null_mut()
+            } else {
+                python as *mut pyo3_ffi::PyObject
             }
         }
     }

@@ -63,6 +63,9 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
 
     fn getGeneralInfo(&mut self, mut info: Pin<&mut CHOP_GeneralInfo>, input: &OP_Inputs) {
         let input = OperatorInputs::new(input);
+        if let Some(params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;

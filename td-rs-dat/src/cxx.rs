@@ -52,6 +52,9 @@ extern "C" fn dat_new(info: &'static OP_NodeInfo) -> *mut RustDatPluginImplCpp {
 impl RustDatPlugin_methods for RustDatPluginImpl {
     fn getGeneralInfo(&mut self, mut info: Pin<&mut DAT_GeneralInfo>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
+        if let Some(params) = self.inner.params_mut() {
+            params.update(&input.params());
+        }
         let gen_info = self.inner.general_info(&input);
         info.cookEveryFrame = gen_info.cook_every_frame;
         info.cookEveryFrameIfAsked = gen_info.cook_every_frame_if_asked;
