@@ -31,7 +31,7 @@ impl<'execute> TopOutput<'execute> {
                     TexDim::E3D => cxx::OP_TexDim::e3D,
                     TexDim::ECube => cxx::OP_TexDim::eCube,
                 },
-                pixelFormat: info.texture_desc.pixel_format.to_cxx(),
+                pixelFormat: (&info.texture_desc.pixel_format).into(),
                 reserved: Default::default(),
             },
             firstPixel: match info.first_pixel {

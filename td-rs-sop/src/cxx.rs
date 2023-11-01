@@ -30,6 +30,7 @@ include_cpp! {
     extern_cpp_type!("TD::SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
     extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
     pod!("TD::OP_CustomOPInfo")
+    generate_pod!("TD::SOP_GroupType")
     generate_pod!("TD::SOP_Winding")
 }
 
