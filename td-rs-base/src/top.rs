@@ -167,7 +167,7 @@ impl TopInput {
             verticalFlip: false,
             pixelFormat: (&opts.pixel_format).into(),
         };
-        let mut download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
+        let download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)
     }
 }

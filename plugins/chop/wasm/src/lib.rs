@@ -21,7 +21,7 @@ pub struct WasmChop {
 }
 
 impl OpNew for WasmChop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             params: WasmChopParams {
                 ..Default::default()
