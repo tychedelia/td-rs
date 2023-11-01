@@ -172,7 +172,7 @@ macro_rules! top_plugin {
             unsafe {
                 td_rs_top::op_info::<$plugin_ty>(op_info);
                 match <$plugin_ty>::EXECUTE_MODE {
-                    td_rs_top::ExecuteMode::Cuda => panic!("Cuda is not supported yet")
+                    td_rs_top::ExecuteMode::Cuda => panic!("Cuda is not supported yet"),
                     td_rs_top::ExecuteMode::Cpu => cxx::TOP_ExecuteMode::CPUMem,
                 }
             }
