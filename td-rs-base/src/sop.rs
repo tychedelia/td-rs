@@ -2,6 +2,7 @@ use crate::{cxx, GetInput, OperatorInputs};
 use auto_ops::impl_op_ex;
 use derive_more::{AsRef, Deref, DerefMut, From, Into};
 use ref_cast::RefCast;
+use crate::cxx::SOP_CustomAttribInfo;
 
 /// A sop input.
 #[repr(transparent)]
@@ -75,17 +76,27 @@ impl SopInput {
         }
     }
 
-    pub fn num_primitives(&self) -> usize {
-        self.input.getNumPrimitives() as usize
+    pub fn custom_attributes(&self) -> impl Iterator<Item = &CustomAttributeData> + '_ {
+        let num_custom_attributes = self.num_custom_attributes();
+        (0..num_custom_attributes).map(move |i| self.custom_attribute(i))
     }
 
-    pub fn num_vertices(&self) -> usize {
-        self.input.getNumVertices() as usize
+    pub fn num_primitives(&self) -> usize {
+        self.input.getNumPrimitives() as usize
     }
 
     pub fn primitive(&self, index: usize) -> PrimitiveInfo {
         let info = self.input.getPrimitive(index as i32);
         PrimitiveInfo(info)
+    }
+
+    pub fn primitives(&self) -> impl Iterator<Item = PrimitiveInfo> + '_ {
+        let num_primitives = self.num_primitives();
+        (0..num_primitives).map(move |i| self.primitive(i))
+    }
+
+    pub fn num_vertices(&self) -> usize {
+        self.input.getNumVertices() as usize
     }
 }
 
@@ -99,11 +110,91 @@ impl PrimitiveInfo {
             std::slice::from_raw_parts(self.pointIndices as *const u32, self.numVertices as usize)
         }
     }
+
+    pub fn point_indices(&self) -> &[u32] {
+        unsafe {
+            std::slice::from_raw_parts(self.pointIndices as *const u32, self.numVertices as usize)
+        }
+    }
+
+    pub fn point_indices_offset(&self) -> usize {
+        self.pointIndicesOffset as usize
+    }
+}
+
+#[derive(Debug)]
+pub enum AttributeType {
+    Float,
+    Int
+}
+
+impl From<cxx::AttribType> for AttributeType {
+    fn from(t: cxx::AttribType) -> Self {
+        match t {
+            cxx::AttribType::Float => AttributeType::Float,
+            cxx::AttribType::Int => AttributeType::Int,
+        }
+    }
+}
+
+impl From<AttributeType> for cxx::AttribType {
+    fn from(t: AttributeType) -> Self {
+        match t {
+            AttributeType::Float => cxx::AttribType::Float,
+            AttributeType::Int => cxx::AttribType::Int,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct CustomAttributeInfo {
+    pub name: String,
+    pub num_components: usize,
+    pub attr_type: AttributeType,
 }
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct CustomAttributeData(cxx::SOP_CustomAttribData);
+
+impl CustomAttributeData {
+    pub fn attr_type(&self) -> AttributeType {
+        match self.0._base.attribType {
+            cxx::AttribType::Float => AttributeType::Float,
+            cxx::AttribType::Int => AttributeType::Int,
+        }
+    }
+
+    pub fn new_float(name: &str, data: &[f32], size: usize) -> Self {
+        let name = std::ffi::CString::new(name).unwrap();
+        let name = name.into_raw();
+        let attr =  cxx::SOP_CustomAttribData {
+            _base: SOP_CustomAttribInfo {
+                name,
+                numComponents: size as i32,
+                attribType: cxx::AttribType::Float,
+            },
+            floatData: data.as_ptr(),
+            intData: std::ptr::null_mut(),
+        };
+        Self(attr)
+    }
+
+    pub fn new_int(name: &str, data: &[i32], size: usize) -> Self {
+        let name = std::ffi::CString::new(name).unwrap();
+        let name = name.into_raw();
+        let attr =  cxx::SOP_CustomAttribData {
+            _base: SOP_CustomAttribInfo {
+                name,
+                numComponents: size as i32,
+                attribType: cxx::AttribType::Int,
+            },
+            floatData: std::ptr::null_mut(),
+            intData: data.as_ptr(),
+        };
+        Self(attr)
+    }
+}
 
 impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInput> {
     fn num_inputs(&self) -> usize {
@@ -133,6 +224,91 @@ impl Vec3 {
         })
     }
 }
+impl From<&Vec3> for Vec3 {
+    fn from(v: &Vec3) -> Self {
+        Self(cxx::Vector {
+            x: v.x,
+            y: v.y,
+            z: v.z,
+        })
+    }
+}
+
+impl From<(f32, f32, f32)> for Vec3 {
+    fn from((x, y, z): (f32, f32, f32)) -> Self {
+        Self(cxx::Vector { x, y, z })
+    }
+}
+
+impl From<(f64, f64, f64)> for Vec3 {
+    fn from((x, y, z): (f64, f64, f64)) -> Self {
+        Self(cxx::Vector {
+            x: x as f32,
+            y: y as f32,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f32, f64)> for Vec3 {
+    fn from((x, y, z): (f32, f32, f64)) -> Self {
+        Self(cxx::Vector {
+            x,
+            y,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f64, f32)> for Vec3 {
+    fn from((x, y, z): (f32, f64, f32)) -> Self {
+        Self(cxx::Vector {
+            x,
+            y: y as f32,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f32, f32)> for Vec3 {
+    fn from((x, y, z): (f64, f32, f32)) -> Self {
+        Self(cxx::Vector {
+            x: x as f32,
+            y,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f64, f32)> for Vec3 {
+    fn from((x, y, z): (f64, f64, f32)) -> Self {
+        Self(cxx::Vector {
+            x: x as f32,
+            y: y as f32,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f32, f64)> for Vec3 {
+    fn from((x, y, z): (f64, f32, f64)) -> Self {
+        Self(cxx::Vector {
+            x: x as f32,
+            y,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f64, f64)> for Vec3 {
+    fn from((x, y, z): (f32, f64, f64)) -> Self {
+        Self(cxx::Vector {
+            x,
+            y: y as f32,
+            z: z as f32,
+        })
+    }
+}
 
 impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
     Vec3(cxx::Vector {
@@ -146,6 +322,92 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
 #[repr(transparent)]
 pub struct Position(cxx::Position);
 
+impl From<&Position> for Position {
+    fn from(p: &Position) -> Self {
+        Self(cxx::Position {
+            x: p.x,
+            y: p.y,
+            z: p.z,
+        })
+    }
+}
+
+impl From<(f32, f32, f32)> for Position {
+    fn from((x, y, z): (f32, f32, f32)) -> Self {
+        Self(cxx::Position { x, y, z })
+    }
+}
+
+impl From<(f64, f64, f64)> for Position {
+    fn from((x, y, z): (f64, f64, f64)) -> Self {
+        Self(cxx::Position {
+            x: x as f32,
+            y: y as f32,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f32, f64)> for Position {
+    fn from((x, y, z): (f32, f32, f64)) -> Self {
+        Self(cxx::Position {
+            x,
+            y,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f64, f32)> for Position {
+    fn from((x, y, z): (f32, f64, f32)) -> Self {
+        Self(cxx::Position {
+            x,
+            y: y as f32,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f32, f32)> for Position {
+    fn from((x, y, z): (f64, f32, f32)) -> Self {
+        Self(cxx::Position {
+            x: x as f32,
+            y,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f64, f32)> for Position {
+    fn from((x, y, z): (f64, f64, f32)) -> Self {
+        Self(cxx::Position {
+            x: x as f32,
+            y: y as f32,
+            z,
+        })
+    }
+}
+
+impl From<(f64, f32, f64)> for Position {
+    fn from((x, y, z): (f64, f32, f64)) -> Self {
+        Self(cxx::Position {
+            x: x as f32,
+            y,
+            z: z as f32,
+        })
+    }
+}
+
+impl From<(f32, f64, f64)> for Position {
+    fn from((x, y, z): (f32, f64, f64)) -> Self {
+        Self(cxx::Position {
+            x,
+            y: y as f32,
+            z: z as f32,
+        })
+    }
+}
+
 impl_op_ex!(+ |a: &Position, b: &Vec3| -> Position {
     Position(cxx::Position {
         x: a.x + b.x,
@@ -158,10 +420,103 @@ impl_op_ex!(+ |a: &Position, b: &Vec3| -> Position {
 #[repr(transparent)]
 pub struct Color(cxx::Color);
 
+impl From<&Color> for Color {
+    fn from(c: &Color) -> Self {
+        Self(cxx::Color {
+            r: c.r,
+            g: c.g,
+            b: c.b,
+            a: c.a,
+        })
+    }
+}
+
+impl From<(f32, f32, f32, f32)> for Color {
+    fn from((r, g, b, a): (f32, f32, f32, f32)) -> Self {
+        Self(cxx::Color { r, g, b, a })
+    }
+}
+
+impl From<(f64, f64, f64, f64)> for Color {
+    fn from((r, g, b, a): (f64, f64, f64, f64)) -> Self {
+        Self(cxx::Color {
+            r: r as f32,
+            g: g as f32,
+            b: b as f32,
+            a: a as f32,
+        })
+    }
+}
+
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct TexCoord(cxx::TexCoord);
 
+impl From<&TexCoord> for TexCoord {
+    fn from(t: &TexCoord) -> Self {
+        Self(cxx::TexCoord {
+            u: t.u,
+            v: t.v,
+            w: t.w,
+        })
+    }
+}
+
+impl From<(f32, f32, f32)> for TexCoord {
+    fn from((u, v, w): (f32, f32, f32)) -> Self {
+        Self(cxx::TexCoord { u, v, w })
+    }
+}
+
+impl From<(f64, f64, f64)> for TexCoord {
+    fn from((u, v, w): (f64, f64, f64)) -> Self {
+        Self(cxx::TexCoord {
+            u: u as f32,
+            v: v as f32,
+            w: w as f32,
+        })
+    }
+}
+
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct BoundingBox(cxx::BoundingBox);
+
+impl From<&BoundingBox> for BoundingBox {
+    fn from(b: &BoundingBox) -> Self {
+        Self(cxx::BoundingBox {
+            minX: b.minX,
+            minY: b.minY,
+            minZ: b.minZ,
+            maxX: b.maxX,
+            maxY: b.maxY,
+            maxZ: b.maxZ,
+        })
+    }
+}
+
+impl From<(f32, f32, f32, f32, f32, f32)> for BoundingBox {
+    fn from((minX, minY, minZ, maxX, maxY, maxZ): (f32, f32, f32, f32, f32, f32)) -> Self {
+        Self(cxx::BoundingBox {
+            minX,
+            minY,
+            minZ,
+            maxX,
+            maxY,
+            maxZ,
+        })
+    }
+}
+
+impl From<(f64, f64, f64, f64, f64, f64)> for BoundingBox {
+    fn from((minX, minY, minZ, maxX, maxY, maxZ): (f64, f64, f64, f64, f64, f64)) -> Self {
+        Self(cxx::BoundingBox {
+            minX: minX as f32,
+            minY: minY as f32,
+            minZ: minZ as f32,
+            maxX: maxX as f32,
+            maxY: maxY as f32,
+            maxZ: maxZ as f32,
+        })
+    }
+}
