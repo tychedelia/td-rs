@@ -110,136 +110,6 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                         let setter_name = format_ident!("set_{}", field_name);
                         let auto_cook = args.force_cook;
 
-                        // Match on the type of the field
-                        let (return_converter, arg_checker, arg_reader) = match field_type {
-                            syn::Type::Path(type_path) if type_path.path.is_ident("u32") => {
-                                (
-                                    if cfg!(windows) {
-                                        quote! {
-                                            unsafe fn convert(val: u32) -> *mut pyo3_ffi::PyObject {
-                                                    pyo3_ffi::PyLong_FromUnsignedLong(val)
-                                            }
-                                            convert
-                                        }
-                                    } else {
-                                        quote! {
-                                            unsafe fn convert(val: u32) -> *mut pyo3_ffi::PyObject {
-                                                    pyo3_ffi::PyLong_FromUnsignedLong(val as u64)
-                                            }
-                                            convert
-                                        }
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_Check
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_AsUnsignedLong
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("i32") => {
-                                (
-                                    quote! {
-                                        pyo3_ffi::PyLong_FromLong
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_Check
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_AsLong
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("f32") => {
-                                (
-                                    quote! {
-                                        unsafe fn convert(val: f32) -> *mut pyo3_ffi::PyObject {
-                                            pyo3_ffi::PyFloat_FromDouble(val as f64)
-                                        }
-                                        convert
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyFloat_Check
-                                    },
-                                    quote! {
-                                        unsafe fn read(val: *mut pyo3_ffi::PyObject) -> f32 {
-                                            pyo3_ffi::PyFloat_AsDouble(val) as f32
-                                        }
-                                        read
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("u64") => {
-                                (
-                                    quote! {
-                                        pyo3_ffi::PyLong_FromUnsignedLongLong
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_Check
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_AsUnsignedLongLong
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("i64") => {
-                                (
-                                    quote! {
-                                        pyo3_ffi::PyLong_FromLongLong
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_Check
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_AsLongLong
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("u64") => {
-                                (
-                                    quote! {
-                                        pyo3_ffi::PyLong_FromLongLong
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_Check
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyLong_AsLongLong
-                                    }
-                                )
-                            }
-                            syn::Type::Path(type_path) if type_path.path.is_ident("bool") => {
-                                (
-                                    quote! {
-                                        unsafe fn bool_to_long(value: bool) -> *mut pyo3_ffi::PyObject {
-                                            if value {
-                                                pyo3_ffi::Py_False()
-                                            } else {
-                                                pyo3_ffi::Py_True()
-                                            }
-                                        }
-                                        bool_to_long
-                                    },
-                                    quote! {
-                                        pyo3_ffi::PyBool_Check
-                                    },
-                                    quote! {
-                                        unsafe fn bool_to_long(value: bool) -> *mut pyo3_ffi::PyObject {
-                                            if value {
-                                                pyo3_ffi::Py_False()
-                                            } else {
-                                                pyo3_ffi::Py_True()
-                                            }
-                                        }
-                                        bool_to_long
-                                    }
-                                )
-                            }
-                            _ => {
-                                panic!("Unsupported type {} for field {}", field_type.to_token_stream(), field_name);
-                            }
-                        };
-
                         let get_fn = if args.get {
                             Some(quote! {
                                 pub unsafe extern "C" fn #getter_name(
@@ -262,7 +132,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         let me = me.As_RustChopPlugin().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
-                                    #return_converter(py_chop.#field_name)
+                                    py::ToPyObj::to_py_obj(py_chop.#field_name)
                                 }
                             })
                         } else {
@@ -276,7 +146,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     value: *mut pyo3_ffi::PyObject,
                                     closure: *mut std::ffi::c_void
                                 ) -> i32 {
-                                    if #arg_checker(value) == 0 {
+                                    if !<#field_type as CheckPyObj>::check_py_obj(value) {
                                         pyo3_ffi::PyErr_SetString(
                                             pyo3_ffi::PyExc_TypeError,
                                             "could not check argument\0"
@@ -285,16 +155,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         );
                                     }
 
-                                    let value = { #arg_reader(value) };
-                                    if !pyo3_ffi::PyErr_Occurred().is_null() {
-                                        pyo3_ffi::PyErr_SetString(
-                                            pyo3_ffi::PyExc_TypeError,
-                                            "could not read argument\0"
-                                                .as_ptr()
-                                                .cast::<std::os::raw::c_char>(),
-                                        );
-                                        return -1;
-                                    }
+                                    let value = FromPyObj::from_py_obj(value);
 
                                     let py_struct = _self as *mut cxx::PY_Struct;
                                     let info = cxx::PY_GetInfo {
