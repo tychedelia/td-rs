@@ -95,10 +95,10 @@ impl Sop for GeneratorSop {
 
 
         let colors = output.get_colors();
-        // let num_vertices = self.shape_gen.last_vbo_alloc_vertices;
-        // for i in 0..num_vertices {
-        //     colors[i] = self.params.color.clone();
-        // }
+        let num_vertices = self.shape_gen.last_vbo_alloc_vertices;
+        for i in 0..num_vertices {
+            colors[i] = self.params.color.clone();
+        }
         output.set_bounding_box((-1, -1, -1, 1, 1, 1));
         output.update_complete();
     }

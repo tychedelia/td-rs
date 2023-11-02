@@ -57,9 +57,17 @@ impl FromPyObj for usize {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl ToPyObj for usize {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
         pyo3_ffi::PyLong_FromUnsignedLong(self as u64)
+    }
+}
+
+#[cfg(target_os = "windows")]
+impl ToPyObj for usize {
+    unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
+        pyo3_ffi::PyLong_FromUnsignedLong(self as u32)
     }
 }
 
@@ -75,9 +83,17 @@ impl FromPyObj for isize {
     }
 }
 
+#[cfg(target_os = "macos")]
 impl ToPyObj for isize {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
         pyo3_ffi::PyLong_FromLong(self as i64)
+    }
+}
+
+#[cfg(target_os = "macos")]
+impl ToPyObj for isize {
+    unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
+        pyo3_ffi::PyLong_FromLong(self as i32)
     }
 }
 
@@ -87,13 +103,28 @@ impl CheckPyObj for isize {
     }
 }
 
-#[cfg(unix)]
+#[cfg(target_os = "windows")]
+impl FromPyObj for u32 {
+    unsafe fn from_py_obj(obj: *mut pyo3_ffi::PyObject) -> Self {
+        pyo3_ffi::PyLong_AsUnsignedLong(obj)
+    }
+}
+
+#[cfg(target_os = "macos")]
 impl FromPyObj for u32 {
     unsafe fn from_py_obj(obj: *mut pyo3_ffi::PyObject) -> Self {
         pyo3_ffi::PyLong_AsUnsignedLong(obj) as u32
     }
 }
 
+#[cfg(target_os = "windows")]
+impl ToPyObj for u32 {
+    unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
+        pyo3_ffi::PyLong_FromUnsignedLong(self)
+    }
+}
+
+#[cfg(target_os = "macos")]
 impl ToPyObj for u32 {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
         pyo3_ffi::PyLong_FromUnsignedLong(self as u64)
@@ -112,6 +143,14 @@ impl FromPyObj for i32 {
     }
 }
 
+#[cfg(target_os = "windows")]
+impl ToPyObj for i32 {
+    unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
+            pyo3_ffi::PyLong_FromLong(self)
+    }
+}
+
+#[cfg(target_os = "macos")]
 impl ToPyObj for i32 {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
         pyo3_ffi::PyLong_FromLong(self as i64)

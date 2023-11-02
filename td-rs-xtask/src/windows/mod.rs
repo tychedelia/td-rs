@@ -15,8 +15,11 @@ pub(crate) fn install_plugin(
     let plugin_target_path = plugin_target_path(plugin);
     let td_plugin_folder = &config.windows.plugin_folder;
     println!("Installing plugin {:?} to {}", plugin_target_path, td_plugin_folder);
-    std::fs::copy(&plugin_target_path, td_plugin_folder)
-        .context("Could not move plugin to TouchDesigner plugin directory")?;
+    fs_extra::copy_items(
+        &[&plugin_target_path],
+        td_plugin_folder,
+        &CopyOptions::new().overwrite(true),
+    )?;
     Ok(())
 }
 
@@ -42,7 +45,7 @@ pub(crate) fn build_plugin(config: &Config, plugin: &str, plugin_type: PluginTyp
 
     println!("Run msbuild");
     fs_extra::copy_items(&to_copy, ".", &CopyOptions::new().overwrite(true))?;
-    run_msbuild(&target, &plugin)?;
+    run_msbuild(config, &target, &plugin)?;
     fs_extra::remove_items(&files)?;
 
     println!("Move plugin to target");
@@ -75,13 +78,21 @@ fn plugin_target_path(plugin: &str) -> PathBuf {
     plugin_target_path
 }
 
-fn run_msbuild(target: &str, plugin: &str) -> anyhow::Result<()> {
+fn run_msbuild(config: &Config, target: &str, plugin: &str) -> anyhow::Result<()> {
     let msbuild = find_msbuild()?;
     let msbuild = msbuild.to_str().expect("Could not find msbuild");
     let lib = format!("{}.lib", plugin.replace("-", "_"));
-    let cmd = format!("&'{msbuild}' /p:Configuration=Release /t:Rebuild /p:Platform=x64 /p:Plugin=.\\target\\{target}\\release\\{lib}");
-    println!("Running {cmd}");
-    let mut cmd = Command::new("powershell.exe").arg(cmd).spawn()?;
+    let py_include = &config.windows.python_include_dir;
+    let py_lib = &config.windows.python_lib_dir;
+    let mut cmd = Command::new(msbuild)
+        .arg(format!("/p:AdditionalIncludeDirectories={py_include}"))
+        .arg(format!("/p:AdditionalLibraryDirectories={py_lib}"))
+        .arg("/p:Configuration=Release")
+        .arg("/t:Rebuild")
+        .arg("/p:Platform=x64")
+        .arg(format!("/p:Plugin=.\\target\\{target}\\release\\{lib}"))
+        .spawn()?;
+
     let status = cmd.wait()?;
     if !status.success() {
         anyhow::bail!("Couldn't run msbuild");
@@ -110,13 +121,4 @@ fn find_msbuild() -> anyhow::Result<PathBuf> {
 
         Ok(path)
     }
-}
-
-fn write_solution(
-    target: &str,
-    plugin: &str,
-    plugin_type: &PluginType,
-    path: &PathBuf,
-) -> anyhow::Result<()> {
-    Ok(())
 }

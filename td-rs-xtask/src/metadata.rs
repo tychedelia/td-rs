@@ -72,13 +72,31 @@ fn fetch_cargo_metadata_for_package(package: &str) -> Metadata {
         .expect("Failed to fetch cargo metadata")
 }
 
+#[cfg(not(target_os = "windows"))]
+fn adjust_canonicalization<P: AsRef<Path>>(p: P) -> String {
+    p.as_ref().display().to_string()
+}
+
+#[cfg(target_os = "windows")]
+fn adjust_canonicalization<P: AsRef<Path>>(p: P) -> String {
+    const VERBATIM_PREFIX: &str = r#"\\?\"#;
+    let p = p.as_ref().display().to_string();
+    if p.starts_with(VERBATIM_PREFIX) {
+        p[VERBATIM_PREFIX.len()..].to_string()
+    } else {
+        p
+    }
+}
+
 pub(crate) fn list_plugins() -> anyhow::Result<Vec<String>> {
     let meta = fetch_cargo_metadata();
-    let plugin_dir = Path::new("./plugins").canonicalize().expect("Could not canonicalize plugin dir");
+    let plugin_dir = adjust_canonicalization(Path::new("./plugins").canonicalize().expect("Could not canonicalize plugin dir"));
     println!("Plugin dir: {:?}\n", plugin_dir);
     let ws_members = meta.workspace_packages()
         .iter()
-        .filter(|package| package.manifest_path.starts_with(&plugin_dir))
+        .filter(|package| {
+            package.manifest_path.starts_with(&plugin_dir)
+        })
         .map(|package| package.name.clone())
         .collect::<Vec<String>>();
     Ok(ws_members)
