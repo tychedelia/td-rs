@@ -26,18 +26,13 @@ into a C++ plugin that can be loaded in TouchDesigner.
 
 ## Build
 
+`cargo-xtask` is used for the build framework. A [`justfile`](./justfile) is also provided.
+
 ### `cargo-xtask`
 
-Run `cargo xtask build` to build the project. This will build the Rust library and
-generate the C++ glue code, and then build the C++ plugin. The resulting plugin
-will be placed in `./target/` and can be loaded in TouchDesigner.
-
-
-Currently, one command `build` is supported which takes the plugin (cargo package) name as its
-first argument. For example, to build the [`filter-chop`](./plugins/chop/filter) plugin:
-```shell
-cargo xtask build filter-chop
-```
+- `cargo xtask build $PLUGIN` - Build the plugin for the current platform.
+- `cargo xtask install $PLUGIN` - Install a built plugin to the TouchDesigner plugins directory.
+- `cargo xtask list-plugins` - List all available plugins.
 
 ### Windows
 
@@ -49,6 +44,8 @@ cargo xtask build filter-chop
 - Rust `x86_64-pc-windows-msvc` target.
 
 ### macOS
+
+Currently only supports aarch64 (Apple Silicon) builds. Submit a PR if you'd like to add support for x86_64.
 
 #### Dependencies
 - TouchDesigner, installed in the default location (`/Applications/TouchDesigner.app`).

@@ -1,3 +1,4 @@
+use std::path::Path;
 use cargo_metadata::{Metadata, MetadataCommand};
 
 pub enum PluginType {
@@ -69,4 +70,16 @@ fn fetch_cargo_metadata_for_package(package: &str) -> Metadata {
         .no_deps()
         .exec()
         .expect("Failed to fetch cargo metadata")
+}
+
+pub(crate) fn list_plugins() -> anyhow::Result<Vec<String>> {
+    let meta = fetch_cargo_metadata();
+    let plugin_dir = Path::new("./plugins").canonicalize().expect("Could not canonicalize plugin dir");
+    println!("Plugin dir: {:?}\n", plugin_dir);
+    let ws_members = meta.workspace_packages()
+        .iter()
+        .filter(|package| package.manifest_path.starts_with(&plugin_dir))
+        .map(|package| package.name.clone())
+        .collect::<Vec<String>>();
+    Ok(ws_members)
 }
