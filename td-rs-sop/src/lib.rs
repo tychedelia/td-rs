@@ -102,14 +102,40 @@ impl<'execute> SopOutput<'execute> {
         }
     }
 
-    pub fn set_tex_coords(&mut self, textures: &[TexCoord], num_layers: usize, start_idx: usize) {
+    pub fn set_tex_coord2(
+        &mut self,
+        texture: &TexCoord,
+        num_layers: usize,
+        start_idx: usize,
+    ) {
         unsafe {
-            self.output.as_mut().setTexCoords(
-                textures.as_ptr() as *const cxx::TexCoord,
-                textures.len() as i32,
+            self.output.as_mut().setTexCoord(
+                texture.as_ref() as *const cxx::TexCoord,
                 num_layers as i32,
                 start_idx as i32,
             );
+        }
+    }
+
+    pub fn set_tex_coords(&mut self, textures: &[TexCoord], num_layers: usize, start_idx: usize) {
+        unsafe {
+            let textures = textures.iter().map(|t| {
+                cxx::TexCoord {
+                    u: t.u,
+                    v: t.v,
+                    w: t.w,
+                }
+            }).collect::<Vec<_>>()
+                .into_boxed_slice();
+            println!("textures: {:?},{:?},{:?}", textures[0].u, textures[0].v, textures[0].w);
+            let num_points = self.num_points() as i32;
+            self.output.as_mut().setTexCoords(
+                textures.as_ptr() as *const cxx::TexCoord,
+                num_points,
+                num_layers as i32,
+                start_idx as i32,
+            );
+            Box::leak(textures);
         }
     }
 
@@ -146,7 +172,7 @@ impl<'execute> SopOutput<'execute> {
         unsafe {
             self.output
                 .as_mut()
-                .addTriangles(indices.as_ptr() as *const i32, indices.len() as i32);
+                .addTriangles(indices.as_ptr() as *const i32, (indices.len() / 3) as i32);
         }
     }
 
@@ -357,33 +383,45 @@ impl<'execute> SopVboOutput<'execute> {
     pub fn get_pos(&mut self) -> &'execute mut [Position] {
         if let Some(num_vertices) = self.num_vertices {
             let pos = unsafe { self.output.as_mut().getPos() };
+            if pos.is_null() {
+                println!("pos is null");
+            }
             unsafe { std::slice::from_raw_parts_mut(pos as *mut Position, num_vertices) }
         } else {
-            panic!("Must call alloc_vbo first!!")
+            panic!("Must call alloc_vbo first!")
         }
     }
 
     pub fn get_normals(&mut self) -> &'execute mut [Vec3] {
         if let Some(num_vertices) = self.num_vertices {
             let normals = unsafe { self.output.as_mut().getNormals() };
+            if normals.is_null() {
+                println!("normals is null");
+            }
             unsafe { std::slice::from_raw_parts_mut(normals as *mut Vec3, num_vertices) }
         } else {
-            panic!("Must call alloc_vbo first!!")
+            panic!("Must call alloc_vbo first!")
         }
     }
 
     pub fn get_colors(&mut self) -> &'execute mut [Color] {
         if let Some(num_vertices) = self.num_vertices {
             let colors = unsafe { self.output.as_mut().getColors() };
+            if colors.is_null() {
+                println!("colors is null");
+            }
             unsafe { std::slice::from_raw_parts_mut(colors as *mut Color, num_vertices) }
         } else {
-            panic!("Must call alloc_vbo first!!")
+            panic!("Must call alloc_vbo first!")
         }
     }
 
     pub fn get_tex_coords(&mut self) -> &'execute mut [TexCoord] {
         if let Some(num_vertices) = self.num_vertices {
             let tex_coords = unsafe { self.output.as_mut().getTexCoords() };
+            if tex_coords.is_null() {
+                println!("tex_coords is null");
+            }
             unsafe { std::slice::from_raw_parts_mut(tex_coords as *mut TexCoord, num_vertices) }
         } else {
             panic!("Must call alloc_vbo first!!")

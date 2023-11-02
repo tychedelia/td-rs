@@ -980,6 +980,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "generator-sop"
+version = "0.1.0"
+dependencies = [
+ "td-rs-derive",
+ "td-rs-sop",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"

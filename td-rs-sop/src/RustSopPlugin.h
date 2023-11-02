@@ -12,20 +12,20 @@ class SopPlugin : public SOP_CPlusPlusBase {
 public:
     virtual ~SopPlugin() {};
 
-    void getGeneralInfo(SOP_GeneralInfo *info, const OP_Inputs *inputs, void *reserved1) {
+    void getGeneralInfo(SOP_GeneralInfo *info, const OP_Inputs *inputs, void *reserved1) override {
         this->getGeneralInfo(*info, *inputs);
     }
 
     virtual void getGeneralInfo(SOP_GeneralInfo &info, const OP_Inputs &inputs) {}
 
 
-    void execute(SOP_Output *outputs, const OP_Inputs *inputs, void *reserved1) {
+    void execute(SOP_Output *outputs, const OP_Inputs *inputs, void *reserved1) override {
         this->execute(*outputs, *inputs);
     }
 
     virtual void execute(SOP_Output &outputs, const OP_Inputs &inputs) {}
 
-    void executeVBO(SOP_VBOOutput *output, const OP_Inputs *inputs, void *reserved1) {
+    void executeVBO(SOP_VBOOutput *output, const OP_Inputs *inputs, void *reserved1) override {
         if (output == nullptr) {
             return;
         }
@@ -35,7 +35,7 @@ public:
     virtual void executeVBO(SOP_VBOOutput &output, const OP_Inputs &inputs) {}
 
 
-    int32_t getNumInfoCHOPChans(void *reserved1) {
+    int32_t getNumInfoCHOPChans(void *reserved1) override {
         return this->getNumInfoCHOPChans();
     }
 
@@ -54,7 +54,7 @@ public:
 
     virtual void getInfoCHOPChan(int32_t index, OP_String &name, float &value) {}
 
-    bool getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) {
+    bool getInfoDATSize(OP_InfoDATSize *infoSize, void *reserved1) override {
         return this->getInfoDATSize(*infoSize);
     }
 

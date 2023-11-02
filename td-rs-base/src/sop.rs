@@ -216,6 +216,10 @@ impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInpu
 pub struct Vec3(cxx::Vector);
 
 impl Vec3 {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
+        Self(cxx::Vector { x, y, z })
+    }
+
     pub fn zero() -> Self {
         Self(cxx::Vector {
             x: 0.0,
@@ -316,11 +320,23 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
         z: a.z + b.z,
     })
 });
-
+impl_op_ex!(* |a: &Vec3, b: f32| -> Vec3 {
+    Vec3(cxx::Vector {
+        x: a.x * b,
+        y: a.y * b,
+        z: a.z * b,
+    })
+});
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
 pub struct Position(cxx::Position);
+
+impl Position {
+    pub const fn new(x: f32, y: f32, z:f32) -> Self {
+        Self(cxx::Position { x, y, z })
+    }
+}
 
 impl Clone for Position {
     fn clone(&self) -> Self {
@@ -490,6 +506,12 @@ impl From<(i32, i32, i32, i32)> for Color {
 #[repr(transparent)]
 pub struct TexCoord(cxx::TexCoord);
 
+impl TexCoord {
+    pub const fn new(u: f32, v: f32, w: f32) -> Self {
+        Self(cxx::TexCoord { u, v, w })
+    }
+}
+
 impl Clone for TexCoord {
     fn clone(&self) -> Self {
         Self(cxx::TexCoord {
@@ -558,6 +580,19 @@ impl From<(f32, f32, f32, f32, f32, f32)> for BoundingBox {
 
 impl From<(f64, f64, f64, f64, f64, f64)> for BoundingBox {
     fn from((minX, minY, minZ, maxX, maxY, maxZ): (f64, f64, f64, f64, f64, f64)) -> Self {
+        Self(cxx::BoundingBox {
+            minX: minX as f32,
+            minY: minY as f32,
+            minZ: minZ as f32,
+            maxX: maxX as f32,
+            maxY: maxY as f32,
+            maxZ: maxZ as f32,
+        })
+    }
+}
+
+impl From<(i32, i32, i32, i32, i32, i32)> for BoundingBox {
+    fn from((minX, minY, minZ, maxX, maxY, maxZ): (i32, i32, i32, i32, i32, i32)) -> Self {
         Self(cxx::BoundingBox {
             minX: minX as f32,
             minY: minY as f32,

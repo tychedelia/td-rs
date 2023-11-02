@@ -5,6 +5,7 @@ use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
+use std::pin::Pin;
 
 pub use param::*;
 #[cfg(feature = "python")]
@@ -347,6 +348,109 @@ impl<'execute> ParamInputs<'execute> {
             } else {
                 python as *mut pyo3_ffi::PyObject
             }
+        }
+    }
+
+    fn get_double_arr<const N: usize>(&self, name: &str) -> [f64; N] {
+        assert!(N > 1 && N <= 4);
+        unsafe {
+            let mut arr = [0.0; N];
+            let name = ffi::CString::new(name).unwrap().into_raw();
+            match N {
+                2 => {
+                    let mut a = 0.0;
+                    let mut b = 0.0;
+                    self.inputs
+                        .getParDouble2(name, Pin::new(&mut a), Pin::new(&mut b));
+                    arr[0] = a;
+                    arr[1] = b;
+                },
+                3 => {
+                    let mut a = 0.0;
+                    let mut b = 0.0;
+                    let mut c = 0.0;
+                    self.inputs.getParDouble3(
+                        name,
+                        Pin::new(&mut a),
+                        Pin::new(&mut b),
+                        Pin::new(&mut c),
+                    );
+                    arr[0] = a;
+                    arr[1] = b;
+                    arr[2] = c;
+                },
+                4 => {
+                    let mut a = 0.0;
+                    let mut b = 0.0;
+                    let mut c = 0.0;
+                    let mut d = 0.0;
+                    self.inputs.getParDouble4(
+                        name,
+                        Pin::new(&mut a),
+                        Pin::new(&mut b),
+                        Pin::new(&mut c),
+                        Pin::new(&mut d),
+                    );
+                    arr[0] = a;
+                    arr[1] = b;
+                    arr[2] = c;
+                    arr[3] = d;
+                },
+                _ => {},
+            };
+
+            arr
+        }
+    }
+
+    fn get_int_arr<const N: usize>(&self, name: &str) -> [i32; N] {
+        assert!(N > 1 && N <= 4);
+        unsafe {
+            let mut arr = [0; N];
+            let name = ffi::CString::new(name).unwrap().into_raw();
+            match N {
+                2 => {
+                    let mut a = 0;
+                    let mut b = 0;
+                    self.inputs
+                        .getParInt2(name, Pin::new(&mut a), Pin::new(&mut b));
+                    arr[0] = a;
+                    arr[1] = b;
+                }
+                3 => {
+                    let mut a = 0;
+                    let mut b = 0;
+                    let mut c = 0;
+                    self.inputs.getParInt3(
+                        name,
+                        Pin::new(&mut a),
+                        Pin::new(&mut b),
+                        Pin::new(&mut c),
+                    );
+                    arr[0] = a;
+                    arr[1] = b;
+                    arr[2] = c;
+                }
+                4 => {
+                    let mut a = 0;
+                    let mut b = 0;
+                    let mut c = 0;
+                    let mut d = 0;
+                    self.inputs.getParInt4(
+                        name,
+                        Pin::new(&mut a),
+                        Pin::new(&mut b),
+                        Pin::new(&mut c),
+                        Pin::new(&mut d),
+                    );
+                    arr[0] = a;
+                    arr[1] = b;
+                    arr[2] = c;
+                    arr[3] = d;
+                }
+                _ => {}
+            };
+            arr
         }
     }
 }
