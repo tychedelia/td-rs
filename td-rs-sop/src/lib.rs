@@ -171,7 +171,7 @@ impl<'execute> SopOutput<'execute> {
             self.output.as_mut().addLines(
                 indices.as_ptr() as *const i32,
                 sizes.as_ptr() as *const i32 as *mut i32,
-                indices.len() as i32,
+                 sizes.len() as i32,
             );
         }
     }
