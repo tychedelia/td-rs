@@ -1,5 +1,5 @@
 use crate::chop::ChopInput;
-use crate::sop::SopInput;
+use crate::sop::{Color, SopInput};
 use crate::{cxx, ParamInputs};
 use ref_cast::RefCast;
 use std::ffi;
@@ -695,4 +695,16 @@ impl Param for *mut pyo3_ffi::PyObject {
 pub trait MenuParam {
     fn names() -> Vec<String>;
     fn labels() -> Vec<String>;
+}
+
+impl Param for Color {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param = options.into();
+        parameter_manager.append_rgba(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        let [r, g, b, a] = inputs.get_double_arr::<4>(name);
+        *self = (r, g, b, a).into();
+    }
 }
