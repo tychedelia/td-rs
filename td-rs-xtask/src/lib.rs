@@ -1,5 +1,6 @@
 #![feature(fs_try_exists)]
 
+mod config;
 #[cfg(target_os = "macos")]
 mod macos;
 mod metadata;
@@ -7,9 +8,9 @@ mod metadata;
 mod windows;
 
 #[cfg(target_os = "macos")]
-use crate::macos::build_plugin;
+use crate::macos::{build_plugin, install_plugin};
 #[cfg(target_os = "windows")]
-use crate::windows::build_plugin;
+use crate::windows::{build_plugin, install_plugin};
 use anyhow::Context;
 use std::env;
 
@@ -42,11 +43,17 @@ pub fn main() -> anyhow::Result<()> {
     let plugin = env::args()
         .nth(2)
         .with_context(|| "must provide plugin as second argument")?;
-    if cmd != "build" {
-        return Err(anyhow::anyhow!("command must be 'build'"));
+
+    let config = config::read_config();
+    let plugin_type = metadata::plugin_type(&plugin);
+
+    match cmd.as_str() {
+        "build" => build_plugin(&config, &plugin, plugin_type)?,
+        "install" => install_plugin(&config, &plugin, plugin_type)?,
+        _ => {
+            return Err(anyhow::anyhow!("command must be 'build'"));
+        }
     }
 
-    let plugin_type = metadata::plugin_type(&plugin);
-    build_plugin(&plugin, plugin_type)?;
     Ok(())
 }

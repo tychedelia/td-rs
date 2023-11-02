@@ -5,8 +5,22 @@ use fs_extra::dir::CopyOptions;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use crate::config::Config;
 
-pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
+pub(crate) fn install_plugin(
+    config: &Config,
+    plugin: &str,
+    plugin_type: PluginType,
+) -> anyhow::Result<()> {
+    let plugin_target_path = plugin_target_path(plugin);
+    let td_plugin_folder = &config.windows.plugin_folder;
+    println!("Installing plugin {:?} to {}", plugin_target_path, td_plugin_folder);
+    std::fs::copy(&plugin_target_path, td_plugin_folder)
+        .context("Could not move plugin to TouchDesigner plugin directory")?;
+    Ok(())
+}
+
+pub(crate) fn build_plugin(config: &Config, plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
     let target = "x86_64-pc-windows-msvc";
     build(
         &[plugin, plugin_type.to_plugin_name()],
@@ -46,14 +60,19 @@ fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
     };
 
     let plugin_build_path = format!("./Release/{dll_name}.dll");
-    let plugin_target_path = Path::new(PLUGIN_HOME)
-        .join(plugin)
-        .join(format!("{plugin}.dll"));
+    let plugin_target_path = plugin_target_path(plugin);
     std::fs::create_dir_all(&plugin_target_path.parent().unwrap())
         .context("Could not create plugin directory")?;
     std::fs::copy(&plugin_build_path, &plugin_target_path)
         .context("Could not move plugin to target directory")?;
     Ok(())
+}
+
+fn plugin_target_path(plugin: &str) -> PathBuf {
+    let plugin_target_path = Path::new(PLUGIN_HOME)
+        .join(plugin)
+        .join(format!("{plugin}.dll"));
+    plugin_target_path
 }
 
 fn run_msbuild(target: &str, plugin: &str) -> anyhow::Result<()> {

@@ -556,11 +556,13 @@
 					<string>$(PROJECT_DIR)</string>
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge/**</string>
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/release</string>
+					<string>$(PYTHON_INCLUDE_DIR)</string>
 				</array>
 				<key>OTHER_CFLAGS</key>
 				<array>
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
+					<string>-I$(PYTHON_INCLUDE_DIR)</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustSOP</string>
@@ -598,11 +600,13 @@
 					<string>$(PROJECT_DIR)</string>
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge/**</string>
 					<string>$(PROJECT_DIR)/target/aarch64-apple-darwin/release</string>
+					<string>$(PYTHON_INCLUDE_DIR)</string>
 				</array>
 				<key>OTHER_CFLAGS</key>
 				<array>
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
+					<string>-I$(PYTHON_INCLUDE_DIR)</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustSOP</string>
