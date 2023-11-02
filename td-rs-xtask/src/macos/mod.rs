@@ -5,8 +5,23 @@ use fs_extra::dir::CopyOptions;
 use plist::Value;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use crate::config::Config;
 
-pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
+pub(crate) fn install_plugin(
+    config: &Config,
+    plugin: &str,
+    plugin_type: PluginType,
+) -> anyhow::Result<()> {
+    let plugin = &plugin.replace("-", "_");
+    let plugin_target_path = plugin_target_path(plugin).join(format!("{plugin}.plugin"));
+    let td_plugin_folder = &config.macos.plugin_folder;
+    println!("Installing plugin {:?} to {}", plugin_target_path, td_plugin_folder);
+    fs_extra::dir::move_dir(&plugin_target_path, td_plugin_folder, &CopyOptions::new())
+        .context("Could not move plugin to TouchDesigner plugin directory")?;
+    Ok(())
+}
+
+pub(crate) fn build_plugin(config: &Config, plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
     let target = if cfg!(target_arch = "x86_64") {
         "x86_64-apple-darwin"
     } else {
@@ -23,7 +38,7 @@ pub(crate) fn build_plugin(plugin: &str, plugin_type: PluginType) -> anyhow::Res
     println!("Writing xcode project to {:?}", path);
     write_xcodeproj(&target, &plugin, &plugin_type, &path)?;
     println!("Building xcode project");
-    build_xcode(&plugin)?;
+    build_xcode(config, &plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
     move_plugin(plugin, &path)?;
     Ok(())
@@ -33,7 +48,7 @@ fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
     fs_extra::dir::remove(&path.parent().unwrap())
         .context("Could not remove xcode project directory")?;
     let plugin_build_path = format!("build/Release/{plugin}.plugin");
-    let plugin_target_path = Path::new(PLUGIN_HOME).join(plugin);
+    let plugin_target_path = plugin_target_path(plugin);
     std::fs::create_dir_all(&plugin_target_path).context("Could not create plugin directory")?;
     fs_extra::dir::remove(&plugin_target_path.join(format!("{plugin}.plugin")))
         .context("Could not remove plugin directory")?;
@@ -42,18 +57,24 @@ fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
     Ok(())
 }
 
+fn plugin_target_path(plugin: &str) -> PathBuf {
+    let plugin_target_path = Path::new(PLUGIN_HOME).join(plugin);
+    plugin_target_path
+}
+
 fn pbxproj_path(plugin: &str) -> PathBuf {
     let mut path = PathBuf::from(format!("{plugin}.xcodeproj"));
     path.push("project.pbxproj");
     path
 }
 
-fn build_xcode(plugin: &str) -> anyhow::Result<()> {
+fn build_xcode(config: &Config, plugin: &str) -> anyhow::Result<()> {
     let mut cmd = Command::new("xcodebuild")
         .arg("-project")
         .arg(format!("./{plugin}.xcodeproj"))
         .arg("clean")
         .arg("build")
+        .arg(format!("PYTHON_INCLUDE_DIR={}", config.macos.python_include_dir))
         .spawn()
         .expect("ls command failed to start");
     cmd.wait().unwrap();
