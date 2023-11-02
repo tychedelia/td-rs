@@ -90,7 +90,7 @@ impl ToPyObj for isize {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(target_os = "windows")]
 impl ToPyObj for isize {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
         pyo3_ffi::PyLong_FromLong(self as i32)
