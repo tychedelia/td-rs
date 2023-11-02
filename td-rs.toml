@@ -1,5 +1,7 @@
 [windows]
-plugin_folder = "$HOME/Documents/Derivative/Plugins"
+plugin_folder = "$HOME\\OneDrive\\Documents\\Derivative\\Plugins\\"
+python_include_dir = "\"C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include\";\"C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include\\PC\""
+python_lib_dir = "C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\lib\\x64"
 
 [macos]
 plugin_folder = "$HOME/Library/Application Support/Derivative/TouchDesigner099/Plugins"
