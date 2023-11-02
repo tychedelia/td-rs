@@ -40,16 +40,29 @@ pub fn main() -> anyhow::Result<()> {
     let cmd = env::args()
         .nth(1)
         .with_context(|| "must provide command as first argument")?;
-    let plugin = env::args()
-        .nth(2)
-        .with_context(|| "must provide plugin as second argument")?;
 
     let config = config::read_config();
-    let plugin_type = metadata::plugin_type(&plugin);
 
     match cmd.as_str() {
-        "build" => build_plugin(&config, &plugin, plugin_type)?,
-        "install" => install_plugin(&config, &plugin, plugin_type)?,
+        "build" | "install" => {
+            let plugin = env::args()
+                .nth(2)
+                .with_context(|| "must provide plugin as second argument")?;
+            let plugin_type = metadata::plugin_type(&plugin);
+
+            match cmd.as_str() {
+                "build" => build_plugin(&config, &plugin, plugin_type)?,
+                "install" => install_plugin(&config, &plugin, plugin_type)?,
+                _ => {}
+            }
+        },
+        "list-plugins" => {
+            let plugins = metadata::list_plugins()?;
+            println!("Available Plugins:");
+            for plugin in plugins {
+                println!(" - {}", plugin);
+            }
+        }
         _ => {
             return Err(anyhow::anyhow!("command must be 'build'"));
         }
