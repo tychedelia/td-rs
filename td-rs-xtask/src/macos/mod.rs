@@ -16,7 +16,7 @@ pub(crate) fn install_plugin(
     let plugin_target_path = plugin_target_path(plugin).join(format!("{plugin}.plugin"));
     let td_plugin_folder = &config.macos.plugin_folder;
     println!("Installing plugin {:?} to {}", plugin_target_path, td_plugin_folder);
-    fs_extra::dir::move_dir(&plugin_target_path, td_plugin_folder, &CopyOptions::new())
+    fs_extra::dir::move_dir(&plugin_target_path, td_plugin_folder, &CopyOptions::new().overwrite(true))
         .context("Could not move plugin to TouchDesigner plugin directory")?;
     Ok(())
 }
