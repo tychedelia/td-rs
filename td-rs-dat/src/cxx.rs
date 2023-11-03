@@ -75,6 +75,14 @@ extern "C" fn dat_new(info: &'static OP_NodeInfo) -> *mut RustDatPluginImplCpp {
 }
 
 impl RustDatPlugin_methods for RustDatPluginImpl {
+    fn inner(&self) -> *mut c_void {
+        self.inner.as_ref() as *const dyn Dat as *mut c_void
+    }
+
+    fn innerMut(&mut self) -> *mut c_void {
+        self.inner.as_mut() as *mut dyn Dat as *mut c_void
+    }
+
     fn getGeneralInfo(&mut self, mut info: Pin<&mut DAT_GeneralInfo>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         if let Some(params) = self.inner.params_mut() {
