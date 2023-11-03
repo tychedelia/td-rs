@@ -17,23 +17,6 @@ pub struct ChopOutputInfo {
 }
 
 #[derive(Debug, Default)]
-pub struct ChopInfoChan {
-    name: String,
-    value: f32,
-}
-
-#[derive(Debug, Default)]
-pub struct ChopInfoDatSize {
-    rows: i32,
-    columns: i32,
-}
-
-#[derive(Debug, Default)]
-pub struct ChopInfoDatEntries {
-    values: Vec<String>,
-}
-
-#[derive(Debug, Default)]
 pub struct ChopGeneralInfo {
     pub cook_every_frame: bool,
     pub cook_every_frame_if_asked: bool,

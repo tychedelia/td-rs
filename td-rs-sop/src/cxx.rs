@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+#![allow(ambiguous_glob_reexports)]
+
 use crate::{Sop, SopOutput, SopVboOutput, Unalloc};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
@@ -40,6 +42,10 @@ pub use ffi::*;
 pub use td_rs_base::cxx::*;
 
 extern "C" {
+    // SAFETY: `sop_new_impl` is only ever called from Rust compiled
+    // at the same time as the plugin, so the types are guaranteed to
+    // match
+    #[allow(improper_ctypes)]
     fn sop_new_impl(info: NodeInfo) -> Box<dyn Sop>;
 }
 

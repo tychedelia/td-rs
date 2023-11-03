@@ -1,9 +1,11 @@
 #![allow(non_snake_case)]
+#![allow(ambiguous_glob_reexports)]
+
 use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, NodeInfo, OperatorInputs};
+use td_rs_base::{param::ParameterManager, NodeInfo, OperatorInputs};
 
 use crate::{TopContext, TopOutput};
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -47,6 +49,10 @@ pub use ffi::*;
 pub use td_rs_base::cxx::*;
 
 extern "C" {
+    // SAFETY: `top` is only ever called from Rust compiled
+    // at the same time as the plugin, so the types are guaranteed to
+    // match
+    #[allow(improper_ctypes)]
     fn top_new_impl(info: NodeInfo, context: TopContext) -> Box<dyn Top>;
 }
 

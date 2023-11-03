@@ -134,7 +134,7 @@ impl Drop for TopBuffer {
         if self.buffer.is_null() {
             return;
         }
-        unsafe { crate::cxx::releaseBuffer(self.buffer.pin_mut()) }
+        cxx::releaseBuffer(self.buffer.pin_mut())
     }
 }
 

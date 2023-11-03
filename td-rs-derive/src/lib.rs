@@ -211,11 +211,6 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
     gen.into()
 }
 
-fn array_to_tokens(array: &[f64; 4]) -> TokenStream2 {
-    let elems = array.iter().map(|elem| quote! { #elem });
-    quote! { [#(#elems),*] }
-}
-
 fn format_name(name: &str) -> String {
     let name = remove_underscores(name);
     capitalize_first(&name)

@@ -41,7 +41,7 @@ impl DatInput {
         if row >= self.num_rows() || col >= self.num_cols() {
             None
         } else {
-            let cell = unsafe { self.input.getCell(row as i32, col as i32) };
+            let cell = self.input.getCell(row as i32, col as i32);
             if cell.is_null() {
                 None
             } else {

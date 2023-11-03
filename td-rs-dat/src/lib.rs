@@ -1,14 +1,10 @@
-use autocxx::prelude::*;
-
 use std::ffi::CString;
-
 use std::ops::{Index, IndexMut};
 use std::pin::Pin;
 
-
+pub use td_rs_base::*;
 pub use td_rs_base::dat::*;
 pub use td_rs_base::param::OperatorParams;
-pub use td_rs_base::*;
 
 pub mod cxx;
 
@@ -79,10 +75,8 @@ where
     }
 
     pub fn set_table_size(&mut self, rows: usize, cols: usize) {
-        unsafe {
-            self.output.as_mut().setTableSize(rows as i32, cols as i32);
-            self.table.resize(rows * cols, T::default());
-        }
+        self.output.as_mut().setTableSize(rows as i32, cols as i32);
+        self.table.resize(rows * cols, T::default());
     }
 }
 
@@ -123,12 +117,10 @@ impl<'execute> CellType<'execute> for f64 {
         let [rows, _] = table.table_size();
         let offset = row * rows + col;
         table.table[offset] = value.clone();
-        unsafe {
-            table
-                .output
-                .as_mut()
-                .setCellDouble(row as i32, col as i32, value);
-        }
+        table
+            .output
+            .as_mut()
+            .setCellDouble(row as i32, col as i32, value);
     }
 }
 
@@ -157,12 +149,10 @@ impl<'execute> CellType<'execute> for i32 {
         let rows = table.table_size()[0].clone();
         let offset = row.clone() * rows + col.clone();
         table.table[offset] = value.clone();
-        unsafe {
-            table
-                .output
-                .as_mut()
-                .setCellInt(row as i32, col as i32, value);
-        }
+        table
+            .output
+            .as_mut()
+            .setCellInt(row as i32, col as i32, value);
     }
 }
 

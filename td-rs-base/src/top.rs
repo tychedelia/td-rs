@@ -218,7 +218,7 @@ impl Drop for TopDownloadResult {
         if self.result.is_null() {
             return;
         }
-        unsafe { crate::cxx::releaseDownloadResult(self.result.pin_mut()) }
+        crate::cxx::releaseDownloadResult(self.result.pin_mut())
     }
 }
 

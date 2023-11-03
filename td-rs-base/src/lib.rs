@@ -137,12 +137,13 @@ impl NodeInfo {
 
     pub fn context(&self) -> Context {
         Context {
-            context: unsafe { self.info.context },
+            context: self.info.context,
         }
     }
 }
 
 pub struct Context {
+    #[allow(dead_code)]
     context: *mut cxx::OP_Context,
 }
 

@@ -83,7 +83,6 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
     let struct_name = &input.ident;
 
     struct PyGetSet {
-        name: syn::Ident,
         py_get_set_def: proc_macro2::TokenStream,
         get_body: Option<proc_macro2::TokenStream>,
         set_body: Option<proc_macro2::TokenStream>,
@@ -231,7 +230,6 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                         };
 
                         Some(PyGetSet {
-                            name: field_name,
                             py_get_set_def: get_set_def,
                             get_body: get_fn,
                             set_body: set_fn,
@@ -288,7 +286,6 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let input = parse_macro_input!(item as syn::ItemImpl);
     let struct_name = &input.self_ty;
     struct PyMeth {
-        name: syn::Ident,
         py_meth: proc_macro2::TokenStream,
         fn_body: proc_macro2::TokenStream,
     }
@@ -299,7 +296,6 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
             if has_py_meth {
                 let fn_name = &method.sig.ident;
                 Some(PyMeth {
-                    name: fn_name.clone(),
                     py_meth: quote! {
                       pyo3_ffi::PyMethodDef {
                             ml_name: concat!(stringify!(#fn_name), '\0').as_ptr().cast::<std::os::raw::c_char>(),

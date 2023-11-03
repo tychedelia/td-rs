@@ -1,12 +1,19 @@
 #![allow(non_snake_case)]
-use crate::{Chop, ChopOutput};
+#![allow(ambiguous_glob_reexports)]
+
+use std::ffi::CString;
+use std::pin::Pin;
+
+pub use autocxx::c_void;
 use autocxx::prelude::*;
 use autocxx::subclass::*;
 
-use std::ffi::CString;
+pub use ffi::*;
+pub use ffi::TD::*;
+use td_rs_base::{NodeInfo, OperatorInputs, ParameterManager};
+pub use td_rs_base::cxx::*;
 
-use std::pin::Pin;
-use td_rs_base::{InfoChop, InfoDat, NodeInfo, OperatorInputs, ParameterManager};
+use crate::{Chop, ChopOutput};
 
 include_cpp! {
     #include "CHOP_CPlusPlusBase.h"
@@ -27,12 +34,11 @@ include_cpp! {
     extern_cpp_type!("TD::PY_GetInfo", td_rs_base::cxx::PY_GetInfo)
 }
 
-pub use autocxx::c_void;
-pub use ffi::TD::*;
-pub use ffi::*;
-pub use td_rs_base::cxx::*;
-
 extern "C" {
+    // SAFETY: `chop_new_impl` is only ever called from Rust compiled
+    // at the same time as the plugin, so the types are guaranteed to
+    // match
+    #[allow(improper_ctypes)]
     fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop>;
 }
 
