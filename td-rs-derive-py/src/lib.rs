@@ -154,6 +154,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                                 .as_ptr()
                                                 .cast::<std::os::raw::c_char>(),
                                         );
+                                        return -1;
                                     }
 
                                     let value = FromPyObj::from_py_obj(value);
