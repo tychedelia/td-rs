@@ -43,11 +43,9 @@ impl<'execute> SopOutput<'execute> {
     }
 
     pub fn set_normal(&mut self, normal: impl Into<Vec3>, start_idx: usize) {
-        unsafe {
-            self.output
-                .as_mut()
-                .setNormal(normal.into().as_ref(), start_idx as i32);
-        }
+        self.output
+            .as_mut()
+            .setNormal(normal.into().as_ref(), start_idx as i32);
     }
 
     pub fn set_normals(&mut self, normals: &[Vec3], start_idx: usize) {
@@ -156,11 +154,9 @@ impl<'execute> SopOutput<'execute> {
     }
 
     pub fn add_triangle(&mut self, x: u32, y: u32, z: u32) {
-        unsafe {
-            self.output
-                .as_mut()
-                .addTriangle(x as i32, y as i32, z as i32);
-        }
+        self.output
+            .as_mut()
+            .addTriangle(x as i32, y as i32, z as i32);
     }
 
     pub fn add_triangles(&mut self, indices: &[u32]) {
@@ -172,11 +168,9 @@ impl<'execute> SopOutput<'execute> {
     }
 
     pub fn add_particle_system(&mut self, num_pts: usize, start_idx: usize) {
-        unsafe {
-            self.output
-                .as_mut()
-                .addParticleSystem(num_pts as i32, start_idx as i32);
-        }
+        self.output
+            .as_mut()
+            .addParticleSystem(num_pts as i32, start_idx as i32);
     }
 
     pub fn add_line(&mut self, indices: &[u32]) {
@@ -202,9 +196,7 @@ impl<'execute> SopOutput<'execute> {
     }
 
     pub fn set_bounding_box(&mut self, b: impl Into<BoundingBox>) {
-        unsafe {
-            self.output.as_mut().setBoundingBox(&b.into());
-        }
+        self.output.as_mut().setBoundingBox(&b.into());
     }
 
     pub fn add_group(&mut self, type_: GroupType, name: &str) {
@@ -547,7 +539,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
 
 impl<'execute, C, T> SopVboOutput<'execute, Alloc<NormalEnabled, C, T>> {
     pub fn normals(&mut self) -> &'execute mut [Vec3] {
-        let normals = unsafe { self.output.as_mut().getNormals() };
+        let normals = self.output.as_mut().getNormals();
         if normals.is_null() {
             panic!("normals is null")
         }
@@ -557,7 +549,7 @@ impl<'execute, C, T> SopVboOutput<'execute, Alloc<NormalEnabled, C, T>> {
 
 impl<'execute, N, T> SopVboOutput<'execute, Alloc<N, ColorEnabled, T>> {
     pub fn colors(&mut self) -> &'execute mut [Color] {
-        let colors = unsafe { self.output.as_mut().getColors() };
+        let colors = self.output.as_mut().getColors();
         if colors.is_null() {
             panic!("colors is null")
         }
@@ -567,20 +559,20 @@ impl<'execute, N, T> SopVboOutput<'execute, Alloc<N, ColorEnabled, T>> {
 
 impl<'execute, N, C> SopVboOutput<'execute, Alloc<N, C, TexCoordEnabled>> {
     pub fn tex_coords(&mut self) -> &'execute mut [TexCoord] {
-        let tex_coords = unsafe { self.output.as_mut().getTexCoords() };
+        let tex_coords = self.output.as_mut().getTexCoords();
         if tex_coords.is_null() {
             println!("tex_coords is null")
         }
         unsafe { std::slice::from_raw_parts_mut(tex_coords as *mut TexCoord, self.state.vertices) }
     }
     pub fn get_num_text_coord_layers(&mut self) -> usize {
-        unsafe { self.output.as_mut().getNumTexCoordLayers() as usize }
+        self.output.as_mut().getNumTexCoordLayers() as usize
     }
 }
 
 impl<'execute, N, C, T> SopVboOutput<'execute, Alloc<N, C, T>> {
     pub fn positions(&mut self) -> &'execute mut [Position] {
-        let positions = unsafe { self.output.as_mut().getPos() };
+        let positions = self.output.as_mut().getPos();
         if positions.is_null() {
             panic!("positions is null")
         }

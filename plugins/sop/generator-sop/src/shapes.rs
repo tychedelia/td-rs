@@ -231,10 +231,4 @@ impl ShapeGenerator {
             .add_triangles(THE_CUBE_NUM_PRIM)
             .clone_from_slice(&THE_CUBE_VERTICES);
     }
-
-    fn set_point_tex_coords(&self, output: &mut SopOutput, tex_coords: &[TexCoord]) {
-        for (i, tex_coord) in tex_coords.iter().enumerate() {
-            output.set_tex_coord2(tex_coord, 1, i);
-        }
-    }
 }

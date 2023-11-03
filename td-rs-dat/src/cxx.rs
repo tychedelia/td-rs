@@ -1,4 +1,6 @@
 #![allow(non_snake_case)]
+#![allow(ambiguous_glob_reexports)]
+
 use crate::{Dat, DatOutput};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
@@ -6,7 +8,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, InfoChop, InfoDat, NodeInfo, OperatorInputs};
+use td_rs_base::{param::ParameterManager, NodeInfo, OperatorInputs};
 
 include_cpp! {
     #include "DAT_CPlusPlusBase.h"
@@ -29,6 +31,10 @@ pub use ffi::*;
 pub use td_rs_base::cxx::*;
 
 extern "C" {
+    // SAFETY: `dat_new_impl` is only ever called from Rust compiled
+    // at the same time as the plugin, so the types are guaranteed to
+    // match
+    #[allow(improper_ctypes)]
     fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat>;
 }
 
