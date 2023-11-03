@@ -1,5 +1,5 @@
 #![allow(non_snake_case)]
-use crate::{Sop, SopOutput, SopVboOutput};
+use crate::{Sop, SopOutput, SopVboOutput, Unalloc};
 use autocxx::prelude::*;
 use autocxx::subclass::*;
 
@@ -84,8 +84,8 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
 
     fn executeVBO(&mut self, output: Pin<&mut SOP_VBOOutput>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
-        let mut output = SopVboOutput::new(output);
-        self.inner.execute_vbo(&mut output, &input);
+        let mut output = SopVboOutput::<Unalloc>::new(output);
+        self.inner.execute_vbo(output, &input);
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {

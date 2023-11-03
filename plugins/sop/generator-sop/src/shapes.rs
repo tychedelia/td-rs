@@ -2,11 +2,11 @@ use crate::Shape;
 use std::convert::Into;
 use td_rs_sop::*;
 
-const THE_CUBE_NUM_PTS: usize = 24;
-const THE_CUBE_NUM_PRIM: usize = 12;
-const THE_SQUARE_NUM_PTS: usize = 4;
-const THE_SQUARE_NUM_PRIM: usize = 2;
-const THE_LINE_NUM_PTS: usize = 2;
+pub(crate) const THE_CUBE_NUM_PTS: usize = 24;
+pub(crate) const THE_CUBE_NUM_PRIM: usize = 12;
+pub(crate) const THE_SQUARE_NUM_PTS: usize = 4;
+pub(crate) const THE_SQUARE_NUM_PRIM: usize = 2;
+pub(crate) const THE_LINE_NUM_PTS: usize = 2;
 
 pub const THE_CUBE_POS: [Position; THE_CUBE_NUM_PTS] = [
     // front
@@ -161,7 +161,6 @@ pub const THE_POINT_NORMAL: Vec3 = Vec3::new(0.0, 0.0, 1.0);
 pub const THE_POINT_TEXTURE: TexCoord = TexCoord::new(0.0, 0.0, 0.0);
 
 pub(crate) struct ShapeGenerator {
-    pub(crate) last_vbo_alloc_vertices: usize,
 }
 
 impl ShapeGenerator {
@@ -193,53 +192,41 @@ impl ShapeGenerator {
         output.set_tex_coords(&THE_CUBE_TEXTURE, 1, 0);
     }
 
-    pub fn output_dot_vbo(&mut self, output: &mut SopVboOutput) {
-        output.alloc_vbo(1, 1, BufferMode::Static);
-        self.last_vbo_alloc_vertices = 1;
-        output.get_pos()[0] = THE_POINT_POS;
-        output.get_normals()[0] = THE_POINT_NORMAL;
-        output.get_tex_coords()[0] = THE_POINT_TEXTURE;
+    pub fn output_dot_vbo(&mut self, output: &mut SopVboOutput<AllocAll>) {
+        output.positions()[0] = THE_POINT_POS;
+        output.normals()[0] = THE_POINT_NORMAL;
+        output.tex_coords()[0] = THE_POINT_TEXTURE;
     }
 
-    pub fn output_line_vbo(&mut self, output: &mut SopVboOutput) {
-        output.alloc_vbo(THE_LINE_NUM_PTS, THE_LINE_NUM_PTS, BufferMode::Static);
-        self.last_vbo_alloc_vertices = THE_LINE_NUM_PTS;
-        output.get_pos().clone_from_slice(&THE_LINE_POS);
-        output.get_normals().clone_from_slice(&THE_LINE_NORMALS);
-        output.get_tex_coords().clone_from_slice(&THE_LINE_TEXTURE);
+    pub fn output_line_vbo(&mut self, output: &mut SopVboOutput<AllocAll>) {
+        output.positions().clone_from_slice(&THE_LINE_POS);
+        output.normals().clone_from_slice(&THE_LINE_NORMALS);
+        output.tex_coords().clone_from_slice(&THE_LINE_TEXTURE);
         output
             .add_lines(THE_LINE_NUM_PTS)
             .clone_from_slice(&THE_LINE_VERTICES);
     }
 
-    pub fn output_square_vbo(&mut self, output: &mut SopVboOutput) {
-        output.alloc_vbo(
-            THE_SQUARE_NUM_PTS,
-            THE_SQUARE_NUM_PRIM * 3,
-            BufferMode::Static,
-        );
-        self.last_vbo_alloc_vertices = THE_SQUARE_NUM_PTS;
-        output.get_pos().clone_from_slice(&THE_SQUARE_POS);
+    pub fn output_square_vbo(&mut self, output: &mut SopVboOutput<AllocAll>) {
+        output.positions().clone_from_slice(&THE_SQUARE_POS);
         // Here we manually invert the normals as per original C++ logic
-        for (i, normal) in output.get_normals().iter_mut().enumerate() {
+        for (i, normal) in output.normals().iter_mut().enumerate() {
             *normal = &THE_SQUARE_NORMALS[i] * -1.0;
         }
         output
-            .get_tex_coords()
+            .tex_coords()
             .clone_from_slice(&THE_SQUARE_TEXTURE);
         output
             .add_triangles(THE_SQUARE_NUM_PRIM)
             .clone_from_slice(&THE_SQUARE_VERTICES);
     }
 
-    pub fn output_cube_vbo(&mut self, output: &mut SopVboOutput) {
-        output.alloc_vbo(THE_CUBE_NUM_PTS, THE_CUBE_NUM_PRIM * 3, BufferMode::Static);
-        self.last_vbo_alloc_vertices = THE_CUBE_NUM_PTS;
-        output.get_pos().clone_from_slice(&THE_CUBE_POS);
-        for (i, normal) in output.get_normals().iter_mut().enumerate() {
+    pub fn output_cube_vbo(&mut self, output: &mut SopVboOutput<AllocAll>) {
+        output.positions().clone_from_slice(&THE_CUBE_POS);
+        for (i, normal) in output.normals().iter_mut().enumerate() {
             *normal = &THE_CUBE_NORMALS[i] * -1.0;
         }
-        output.get_tex_coords().clone_from_slice(&THE_CUBE_TEXTURE);
+        output.tex_coords().clone_from_slice(&THE_CUBE_TEXTURE);
         output
             .add_triangles(THE_CUBE_NUM_PRIM)
             .clone_from_slice(&THE_CUBE_VERTICES);

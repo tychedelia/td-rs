@@ -3,7 +3,6 @@ mod shapes;
 use td_rs_derive::{Param, Params};
 use td_rs_sop::*;
 
-
 #[derive(Param, Default)]
 enum Shape {
     #[default]
@@ -33,12 +32,10 @@ impl OpNew for GeneratorSop {
         Self {
             params: GeneratorSopParams {
                 shape: Shape::default(),
-                color: (0,0,0,0).into(),
+                color: (0, 0, 0, 0).into(),
                 gpu_direct: false,
             },
-            shape_gen: shapes::ShapeGenerator {
-                last_vbo_alloc_vertices: 0,
-            },
+            shape_gen: shapes::ShapeGenerator {},
         }
     }
 }
@@ -70,7 +67,7 @@ impl Sop for GeneratorSop {
             Shape::Point => self.shape_gen.output_dot(output),
             Shape::Line => self.shape_gen.output_line(output),
             Shape::Square => self.shape_gen.output_square(output),
-            Shape::Cube => self.shape_gen.output_cube(output)
+            Shape::Cube => self.shape_gen.output_cube(output),
         }
 
         for i in 0..output.num_points() {
@@ -80,22 +77,47 @@ impl Sop for GeneratorSop {
         output.set_bounding_box((-1, -1, -1, 1, 1, 1));
     }
 
-    fn execute_vbo(&mut self, output: &mut SopVboOutput, _inputs: &OperatorInputs<SopInput>) {
-        output.enable_color();
-        output.enable_color();
-        output.enable_normal();
-        output.enable_tex_coord(1);
+    fn execute_vbo(&mut self, output: SopVboOutput<Unalloc>, _inputs: &OperatorInputs<SopInput>) {
+        let mut output = match self.params.shape {
+            Shape::Point => {
+                let mut output = output.alloc_all(1, 1, 1, BufferMode::Static);
+                self.shape_gen.output_dot_vbo(&mut output);
+                output
+            }
+            Shape::Line => {
+                let mut output = output.alloc_all(
+                    shapes::THE_LINE_NUM_PTS,
+                    shapes::THE_LINE_NUM_PTS,
+                    1,
+                    BufferMode::Static,
+                );
+                self.shape_gen.output_line_vbo(&mut output);
+                output
+            }
+            Shape::Square => {
+                let mut output = output.alloc_all(
+                    shapes::THE_SQUARE_NUM_PTS,
+                    shapes::THE_SQUARE_NUM_PRIM * 3,
+                    1,
+                    BufferMode::Static,
+                );
+                self.shape_gen.output_square_vbo(&mut output);
+                output
+            }
+            Shape::Cube => {
+                let mut output = output.alloc_all(
+                    shapes::THE_CUBE_NUM_PTS,
+                    shapes::THE_CUBE_NUM_PRIM * 3,
+                    1,
+                    BufferMode::Static,
+                );
+                self.shape_gen.output_cube_vbo(&mut output);
+                output
+            }
+        };
 
-        match self.params.shape {
-            Shape::Point => self.shape_gen.output_dot_vbo(output),
-            Shape::Line => self.shape_gen.output_line_vbo(output),
-            Shape::Square => self.shape_gen.output_square_vbo(output),
-            Shape::Cube => self.shape_gen.output_cube_vbo(output)
-        }
-
-
-        let colors = output.get_colors();
-        let num_vertices = self.shape_gen.last_vbo_alloc_vertices;
+        let colors = output.colors();
+        let num_vertices = output.state.vertices;
         for i in 0..num_vertices {
             colors[i] = self.params.color.clone();
         }
