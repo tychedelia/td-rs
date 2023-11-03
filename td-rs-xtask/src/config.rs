@@ -1,3 +1,4 @@
+#[cfg(target_os = "windows")]
 #[derive(serde::Deserialize, Debug)]
 pub struct WindowsConfig {
     pub(crate) plugin_folder: String,
@@ -5,6 +6,7 @@ pub struct WindowsConfig {
     pub(crate) python_lib_dir: String,
 }
 
+#[cfg(target_os = "macos")]
 #[derive(serde::Deserialize, Debug)]
 pub struct MacOsConfig {
     pub(crate) python_include_dir: String,
@@ -13,7 +15,9 @@ pub struct MacOsConfig {
 
 #[derive(serde::Deserialize, Debug)]
 pub struct Config {
+    #[cfg(target_os = "windows")]
     pub(crate) windows: WindowsConfig,
+    #[cfg(target_os = "macos")]
     pub(crate) macos: MacOsConfig,
 }
 

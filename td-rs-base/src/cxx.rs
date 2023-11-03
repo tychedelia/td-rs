@@ -67,6 +67,12 @@ mod python {
     pub use python_ffi::setPyInfo;
 }
 
+pub trait AsPlugin {
+    type Plugin;
+    fn as_plugin(&self) -> &Self::Plugin;
+    fn as_plugin_mut(&mut self) -> std::pin::Pin<&mut Self::Plugin>;
+}
+
 pub use ffi::TD::*;
 pub use ffi::*;
 #[cfg(feature = "python")]

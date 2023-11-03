@@ -116,6 +116,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     _self: *mut pyo3_ffi::PyObject,
                                     closure: *mut std::ffi::c_void
                                 ) -> *mut pyo3_ffi::PyObject {
+                                    use cxx::AsPlugin;
                                     let py_struct = _self as *mut cxx::PY_Struct;
                                     let info = cxx::PY_GetInfo {
                                         autoCook: #auto_cook,
@@ -128,8 +129,8 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                             return std::ptr::null_mut();
                                     }
                                     let py_chop = {
-                                        let me = &mut *(me as *mut cxx::RustChopPluginImplCpp);
-                                        let me = me.As_RustChopPlugin().inner();
+                                        // let me = cxx::plugin_cast(me);
+                                        // let me = me.as_plugin_mut().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
                                     py::ToPyObj::to_py_obj(py_chop.#field_name)
@@ -146,6 +147,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     value: *mut pyo3_ffi::PyObject,
                                     closure: *mut std::ffi::c_void
                                 ) -> i32 {
+                                    use cxx::AsPlugin;
                                     if !<#field_type as CheckPyObj>::check_py_obj(value) {
                                         pyo3_ffi::PyErr_SetString(
                                             pyo3_ffi::PyExc_TypeError,
@@ -174,8 +176,8 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         return -1;
                                     }
                                     let py_chop = {
-                                        let me = &mut *(me as *mut cxx::RustChopPluginImplCpp);
-                                        let me = me.As_RustChopPlugin().inner();
+                                        let me = cxx::plugin_cast(me);
+                                        let me = me.as_plugin_mut().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
 
@@ -209,14 +211,21 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                             }
                         };
 
+                        let doc = if let Some(doc) = &args.doc {
+                            quote! {
+                                concat!(stringify!(#doc), '\0').as_ptr().cast::<std::os::raw::c_char>()
+                            }
+                        } else {
+                            quote! {
+                                std::ptr::null_mut()
+                            }
+                        };
                         let get_set_def = quote! {
                             pyo3_ffi::PyGetSetDef {
                                 name: concat!(stringify!(#field_name), '\0').as_ptr().cast::<std::os::raw::c_char>(),
                                 get: #get,
                                 set: #set,
-                                doc: "returns the sum of two integers as a string\0"
-                                .as_ptr()
-                                .cast::<std::os::raw::c_char>(),
+                                doc: #doc,
                                 closure: std::ptr::null_mut(),
                             },
                         };
@@ -298,9 +307,7 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 _PyCFunctionFast: #fn_name,
                             },
                             ml_flags: pyo3_ffi::METH_FASTCALL,
-                            ml_doc: "returns the sum of two integers as a string\0"
-                            .as_ptr()
-                            .cast::<std::os::raw::c_char>(),
+                            ml_doc: std::ptr::null_mut(),
                       },
                     },
                     fn_body: quote! {
@@ -309,6 +316,7 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             args: *mut *mut pyo3_ffi::PyObject,
                             nargs: pyo3_ffi::Py_ssize_t,
                         ) -> *mut pyo3_ffi::PyObject {
+                            use cxx::AsPlugin;
                             let py_struct = _self as *mut cxx::PY_Struct;
                             let info = cxx::PY_GetInfo {
                                 autoCook: true,
@@ -326,6 +334,8 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 return std::ptr::null_mut();
                             }
                             let py_chop = {
+                                let me = cxx::plugin_cast(me);
+                                let me = me.as_plugin_mut().inner();
                                 &mut *(me as *mut #struct_name)
                             };
                             let res = py_chop.#fn_name(args, nargs as usize);
