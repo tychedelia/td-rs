@@ -38,7 +38,6 @@ void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *
     PyGetSetDef *arr2 = getsets->data();
     opInfo.pythonGetSets = arr2;
 }
-
 #else
 
 std::unique_ptr<TD::PY_Context> getPyContext(TD::PY_Struct *pyStruct) {
@@ -46,6 +45,7 @@ std::unique_ptr<TD::PY_Context> getPyContext(TD::PY_Struct *pyStruct) {
 }
 
 void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *pygetsets, size_t getsetsize) {
+    std::cout << "Python is not enabled" << std::endl;
 }
 
 #endif

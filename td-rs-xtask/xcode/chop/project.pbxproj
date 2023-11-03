@@ -587,6 +587,7 @@
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 					<string>-I$(PYTHON_INCLUDE_DIR)</string>
+					<string>$(EXTRA_CFLAGS)</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>
@@ -633,6 +634,7 @@
 					<string>-I$(PROJECT_DIR)/target/aarch64-apple-darwin/cxxbridge</string>
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 					<string>-I$(PYTHON_INCLUDE_DIR)</string>
+					<string>$(EXTRA_CFLAGS)</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia.RustCHOP</string>

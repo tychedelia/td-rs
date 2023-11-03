@@ -1,4 +1,4 @@
-use cargo_metadata::{Metadata, MetadataCommand};
+use cargo_metadata::{Metadata, MetadataCommand, Package};
 use std::path::Path;
 
 pub enum PluginType {
@@ -63,13 +63,14 @@ fn fetch_cargo_metadata() -> Metadata {
         .expect("Failed to fetch cargo metadata")
 }
 
-#[allow(dead_code)]
-fn fetch_cargo_metadata_for_package(package: &str) -> Metadata {
-    MetadataCommand::new()
-        .manifest_path(package)
-        .no_deps()
-        .exec()
-        .expect("Failed to fetch cargo metadata")
+pub(crate) fn fetch_cargo_workspace_package(package: &str) -> anyhow::Result<Package> {
+    let package_name = package;
+    let metadata = fetch_cargo_metadata();
+    let package = metadata
+        .packages
+        .into_iter()
+        .find(|package| package.name == package_name);
+    package.ok_or(anyhow::anyhow!("Package not found: {}", package_name))
 }
 
 #[cfg(not(target_os = "windows"))]

@@ -43,16 +43,25 @@ pub(crate) fn build_plugin(
         &["--release", &format!("--target={target}")],
     )?;
 
+    let is_python_enabled = is_python_enabled(plugin, &plugin_type);
     let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
     write_xcodeproj(target, plugin, &plugin_type, &path)?;
     println!("Building xcode project");
-    build_xcode(config, plugin)?;
+    build_xcode(config, plugin, is_python_enabled)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
     move_plugin(plugin, &path)?;
     Ok(())
+}
+
+fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
+    let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
+    let parent_dep = pkg.dependencies.iter()
+        .find(|dep| dep.name == plugin_type.to_plugin_name())
+        .expect("Could not find plugin dependency");
+    parent_dep.features.iter().find(|feature| feature == &"python").is_some()
 }
 
 fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
@@ -79,7 +88,7 @@ fn pbxproj_path(plugin: &str) -> PathBuf {
     path
 }
 
-fn build_xcode(config: &Config, plugin: &str) -> anyhow::Result<()> {
+fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow::Result<()> {
     let mut cmd = Command::new("xcodebuild")
         .arg("-project")
         .arg(format!("./{plugin}.xcodeproj"))
@@ -89,6 +98,7 @@ fn build_xcode(config: &Config, plugin: &str) -> anyhow::Result<()> {
             "PYTHON_INCLUDE_DIR={}",
             config.macos.python_include_dir
         ))
+        .arg(if is_python_enabled {"EXTRA_CFLAGS=-DPYTHON_ENABLED"} else {""})
         .spawn()
         .expect("ls command failed to start");
     cmd.wait().unwrap();
