@@ -10,6 +10,8 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
         incs.push(base_path);
     }
 
+    println!("python_enabled: {}", python_enabled);
+
     if python_enabled {
         if cfg!(windows) {
             incs.push(std::path::PathBuf::from(
@@ -36,6 +38,10 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
         .auto_allowlist(true);
 
     let mut b = b.build()?;
+    if python_enabled {
+        b.define("PYTHON_ENABLED", None);
+    }
+
     b.flag_if_supported("-std=c++17");
 
     if !cfg!(windows) {
