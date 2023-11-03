@@ -9,14 +9,18 @@ pub struct DatInput {
     input: OP_DATInput,
 }
 
-pub enum DatOutputType {
+pub enum DatType {
     Table,
     Text,
 }
 
 impl DatInput {
-    pub fn is_table(&self) -> bool {
-        self.input.isTable
+    pub fn dat_type(&self) -> DatType {
+        if self.input.isTable {
+            DatType::Table
+        } else {
+            DatType::Text
+        }
     }
 
     pub fn num_rows(&self) -> usize {

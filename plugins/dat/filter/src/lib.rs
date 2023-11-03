@@ -45,62 +45,71 @@ impl Op for FilterDat {
 }
 
 impl Dat for FilterDat {
+    fn general_info(&self, _inputs: &OperatorInputs<DatInput>) -> DatGeneralInfo {
+        DatGeneralInfo {
+            cook_every_frame: false,
+            cook_every_frame_if_asked: false,
+        }
+    }
+
     fn execute(&mut self, output: DatOutput, inputs: &OperatorInputs<DatInput>) {
         if let Some(input) = inputs.input(0) {
-            if input.is_table() {
-                let mut output = output.table::<String>();
-                let [rows, cols] = input.table_size();
-                output.set_table_size(rows, cols);
-                for row in 0..rows {
-                    for col in 0..cols {
-                        if let Some(cell) = input.cell(row.clone(), col) {
-                            match self.params.case {
-                                FilterType::UpperCamelCase => {
-                                    let formatted =
-                                        to_camel_case(cell, self.params.keep_spaces.clone());
-                                    output[[row, col]] = formatted;
-                                }
-                                FilterType::LowerCase => {
-                                    let formatted =
-                                        to_lower_case(cell, self.params.keep_spaces.clone());
-                                    output[[row, col]] = formatted;
-                                }
-                                FilterType::UpperCase => {
-                                    let formatted =
-                                        to_upper_case(cell, self.params.keep_spaces.clone());
-                                    output[[row, col]] = formatted;
-                                }
-                            }
+            match input.dat_type() {
+                DatType::Table => self.execute_table(output, input),
+                DatType::Text => self.execute_text(output, input),
+            }
+        }
+    }
+}
+
+impl FilterDat {
+    fn execute_table(&mut self, output: DatOutput, input: &DatInput) {
+        let mut output = output.table::<String>();
+        let [rows, cols] = input.table_size();
+        output.set_table_size(rows, cols);
+        for row in 0..rows {
+            for col in 0..cols {
+                if let Some(cell) = input.cell(row.clone(), col) {
+                    match self.params.case {
+                        FilterType::UpperCamelCase => {
+                            let formatted =
+                                to_camel_case(cell, self.params.keep_spaces.clone());
+                            output[[row, col]] = formatted;
                         }
-                    }
-                }
-            } else {
-                let mut output = output.text();
-                match self.params.case {
-                    FilterType::UpperCamelCase => {
-                        let formatted =
-                            to_camel_case(input.text(), self.params.keep_spaces.clone());
-                        output.set_text(&formatted);
-                    }
-                    FilterType::LowerCase => {
-                        let formatted =
-                            to_lower_case(input.text(), self.params.keep_spaces.clone());
-                        output.set_text(&formatted);
-                    }
-                    FilterType::UpperCase => {
-                        let formatted =
-                            to_upper_case(input.text(), self.params.keep_spaces.clone());
-                        output.set_text(&formatted);
+                        FilterType::LowerCase => {
+                            let formatted =
+                                to_lower_case(cell, self.params.keep_spaces.clone());
+                            output[[row, col]] = formatted;
+                        }
+                        FilterType::UpperCase => {
+                            let formatted =
+                                to_upper_case(cell, self.params.keep_spaces.clone());
+                            output[[row, col]] = formatted;
+                        }
                     }
                 }
             }
         }
     }
 
-    fn general_info(&self, _inputs: &OperatorInputs<DatInput>) -> DatGeneralInfo {
-        DatGeneralInfo {
-            cook_every_frame: false,
-            cook_every_frame_if_asked: false,
+    fn execute_text(&mut self, output: DatOutput, input: &DatInput) {
+        let mut output = output.text();
+        match self.params.case {
+            FilterType::UpperCamelCase => {
+                let formatted =
+                    to_camel_case(input.text(), self.params.keep_spaces.clone());
+                output.set_text(&formatted);
+            }
+            FilterType::LowerCase => {
+                let formatted =
+                    to_lower_case(input.text(), self.params.keep_spaces.clone());
+                output.set_text(&formatted);
+            }
+            FilterType::UpperCase => {
+                let formatted =
+                    to_upper_case(input.text(), self.params.keep_spaces.clone());
+                output.set_text(&formatted);
+            }
         }
     }
 }
