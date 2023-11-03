@@ -1,3 +1,4 @@
+use std::fs::metadata;
 use crate::config::Config;
 use crate::metadata::PluginType;
 use crate::{build, PLUGIN_HOME};
@@ -43,7 +44,7 @@ pub(crate) fn build_plugin(
         &["--release", &format!("--target={target}")],
     )?;
 
-    let is_python_enabled = is_python_enabled(plugin, &plugin_type);
+    let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
     let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 
@@ -54,14 +55,6 @@ pub(crate) fn build_plugin(
     println!("Moving plugin to {:?}", PLUGIN_HOME);
     move_plugin(plugin, &path)?;
     Ok(())
-}
-
-fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
-    let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
-    let parent_dep = pkg.dependencies.iter()
-        .find(|dep| dep.name == plugin_type.to_plugin_name())
-        .expect("Could not find plugin dependency");
-    parent_dep.features.iter().find(|feature| feature == &"python").is_some()
 }
 
 fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {

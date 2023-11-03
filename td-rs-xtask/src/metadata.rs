@@ -105,3 +105,11 @@ pub(crate) fn list_plugins() -> anyhow::Result<Vec<String>> {
         .collect::<Vec<String>>();
     Ok(ws_members)
 }
+
+pub fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
+    let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
+    let parent_dep = pkg.dependencies.iter()
+        .find(|dep| dep.name == plugin_type.to_plugin_name())
+        .expect("Could not find plugin dependency");
+    parent_dep.features.iter().find(|feature| feature == &"python").is_some()
+}
