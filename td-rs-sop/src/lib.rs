@@ -322,6 +322,8 @@ pub struct Alloc<ColorEnabled, NormalEnabled, TexCoordEnabled> {
     _tex_coords: std::marker::PhantomData<TexCoordEnabled>,
 }
 
+pub struct Complete;
+
 pub type AllocAll = Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>;
 
 pub struct SopVboOutput<'execute, State> {
@@ -354,7 +356,9 @@ impl<'execute, State> SopVboOutput<'execute, State> {
     pub fn has_tex_coord(&mut self) -> bool {
         self.output.as_mut().hasTexCoord()
     }
+}
 
+impl<'execute> SopVboOutput<'execute, Unalloc> {
     pub fn add_custom_attribute(&mut self, attr: CustomAttributeInfo) {
         let name = std::ffi::CString::new(attr.name).unwrap();
         let attr = cxx::SOP_CustomAttribInfo {
@@ -364,9 +368,7 @@ impl<'execute, State> SopVboOutput<'execute, State> {
         };
         self.output.as_mut().addCustomAttribute(&attr);
     }
-}
 
-impl<'execute> SopVboOutput<'execute, Unalloc> {
     fn alloc_inner(
         &mut self,
         vertices: usize,
@@ -590,8 +592,12 @@ impl<'execute, N, C, T> SopVboOutput<'execute, Alloc<N, C, T>> {
         let lines = self.output.as_mut().addLines(num_lines as i32);
         unsafe { std::slice::from_raw_parts_mut(lines as *mut u32, num_lines) }
     }
-    pub fn update_complete(&mut self) {
+    pub fn update_complete(mut self) -> SopVboOutput<'execute, Complete> {
         self.output.as_mut().updateComplete();
+        SopVboOutput {
+            state: Complete,
+            output: self.output,
+        }
     }
     pub fn set_bounding_box(&mut self, bounds: impl Into<BoundingBox>) {
         self.output.as_mut().setBoundingBox(&bounds.into());
