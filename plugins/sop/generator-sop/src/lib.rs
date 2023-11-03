@@ -78,6 +78,7 @@ impl Sop for GeneratorSop {
     }
 
     fn execute_vbo(&mut self, output: SopVboOutput<Unalloc>, _inputs: &OperatorInputs<SopInput>) {
+
         let mut output = match self.params.shape {
             Shape::Point => {
                 let mut output = output.alloc_all(1, 1, 1, BufferMode::Static);
@@ -122,7 +123,7 @@ impl Sop for GeneratorSop {
             colors[i] = self.params.color.clone();
         }
         output.set_bounding_box((-1, -1, -1, 1, 1, 1));
-        output.update_complete();
+        let output = output.update_complete();
     }
 }
 
