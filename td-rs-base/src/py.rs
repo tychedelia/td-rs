@@ -213,7 +213,7 @@ impl ToPyObj for f32 {
 
 impl CheckPyObj for f32 {
     unsafe fn check_py_obj(obj: *mut pyo3_ffi::PyObject) -> bool {
-        pyo3_ffi::PyFloat_Check(obj) != 0
+        pyo3_ffi::PyFloat_Check(obj) != 0 || pyo3_ffi::PyLong_Check(obj) != 0
     }
 }
 
@@ -231,7 +231,7 @@ impl ToPyObj for f64 {
 
 impl CheckPyObj for f64 {
     unsafe fn check_py_obj(obj: *mut pyo3_ffi::PyObject) -> bool {
-        pyo3_ffi::PyFloat_Check(obj) != 0
+        pyo3_ffi::PyFloat_Check(obj) != 0 || pyo3_ffi::PyLong_Check(obj) != 0
     }
 }
 
