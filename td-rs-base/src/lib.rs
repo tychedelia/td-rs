@@ -365,7 +365,7 @@ impl<'execute> ParamInputs<'execute> {
                         .getParDouble2(name, Pin::new(&mut a), Pin::new(&mut b));
                     arr[0] = a;
                     arr[1] = b;
-                },
+                }
                 3 => {
                     let mut a = 0.0;
                     let mut b = 0.0;
@@ -379,7 +379,7 @@ impl<'execute> ParamInputs<'execute> {
                     arr[0] = a;
                     arr[1] = b;
                     arr[2] = c;
-                },
+                }
                 4 => {
                     let mut a = 0.0;
                     let mut b = 0.0;
@@ -396,8 +396,8 @@ impl<'execute> ParamInputs<'execute> {
                     arr[1] = b;
                     arr[2] = c;
                     arr[3] = d;
-                },
-                _ => {},
+                }
+                _ => {}
             };
 
             arr

@@ -146,7 +146,7 @@ impl FromPyObj for i32 {
 #[cfg(target_os = "windows")]
 impl ToPyObj for i32 {
     unsafe fn to_py_obj(self) -> *mut pyo3_ffi::PyObject {
-            pyo3_ffi::PyLong_FromLong(self)
+        pyo3_ffi::PyLong_FromLong(self)
     }
 }
 

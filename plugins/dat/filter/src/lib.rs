@@ -72,18 +72,15 @@ impl FilterDat {
                 if let Some(cell) = input.cell(row.clone(), col) {
                     match self.params.case {
                         FilterType::UpperCamelCase => {
-                            let formatted =
-                                to_camel_case(cell, self.params.keep_spaces.clone());
+                            let formatted = to_camel_case(cell, self.params.keep_spaces.clone());
                             output[[row, col]] = formatted;
                         }
                         FilterType::LowerCase => {
-                            let formatted =
-                                to_lower_case(cell, self.params.keep_spaces.clone());
+                            let formatted = to_lower_case(cell, self.params.keep_spaces.clone());
                             output[[row, col]] = formatted;
                         }
                         FilterType::UpperCase => {
-                            let formatted =
-                                to_upper_case(cell, self.params.keep_spaces.clone());
+                            let formatted = to_upper_case(cell, self.params.keep_spaces.clone());
                             output[[row, col]] = formatted;
                         }
                     }
@@ -96,18 +93,15 @@ impl FilterDat {
         let mut output = output.text();
         match self.params.case {
             FilterType::UpperCamelCase => {
-                let formatted =
-                    to_camel_case(input.text(), self.params.keep_spaces.clone());
+                let formatted = to_camel_case(input.text(), self.params.keep_spaces.clone());
                 output.set_text(&formatted);
             }
             FilterType::LowerCase => {
-                let formatted =
-                    to_lower_case(input.text(), self.params.keep_spaces.clone());
+                let formatted = to_lower_case(input.text(), self.params.keep_spaces.clone());
                 output.set_text(&formatted);
             }
             FilterType::UpperCase => {
-                let formatted =
-                    to_upper_case(input.text(), self.params.keep_spaces.clone());
+                let formatted = to_upper_case(input.text(), self.params.keep_spaces.clone());
                 output.set_text(&formatted);
             }
         }

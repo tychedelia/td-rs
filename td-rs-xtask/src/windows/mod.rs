@@ -1,3 +1,4 @@
+use crate::config::Config;
 use crate::metadata::PluginType;
 use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
@@ -5,7 +6,6 @@ use fs_extra::dir::CopyOptions;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use crate::config::Config;
 
 pub(crate) fn install_plugin(
     config: &Config,
@@ -14,7 +14,10 @@ pub(crate) fn install_plugin(
 ) -> anyhow::Result<()> {
     let plugin_target_path = plugin_target_path(plugin);
     let td_plugin_folder = &config.windows.plugin_folder;
-    println!("Installing plugin {:?} to {}", plugin_target_path, td_plugin_folder);
+    println!(
+        "Installing plugin {:?} to {}",
+        plugin_target_path, td_plugin_folder
+    );
     fs_extra::copy_items(
         &[&plugin_target_path],
         td_plugin_folder,
@@ -23,7 +26,11 @@ pub(crate) fn install_plugin(
     Ok(())
 }
 
-pub(crate) fn build_plugin(config: &Config, plugin: &str, plugin_type: PluginType) -> anyhow::Result<()> {
+pub(crate) fn build_plugin(
+    config: &Config,
+    plugin: &str,
+    plugin_type: PluginType,
+) -> anyhow::Result<()> {
     let target = "x86_64-pc-windows-msvc";
     build(
         &[plugin, plugin_type.to_plugin_name()],

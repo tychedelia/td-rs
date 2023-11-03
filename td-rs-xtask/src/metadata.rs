@@ -1,5 +1,5 @@
-use std::path::Path;
 use cargo_metadata::{Metadata, MetadataCommand};
+use std::path::Path;
 
 pub enum PluginType {
     Chop,
@@ -90,13 +90,16 @@ fn adjust_canonicalization<P: AsRef<Path>>(p: P) -> String {
 
 pub(crate) fn list_plugins() -> anyhow::Result<Vec<String>> {
     let meta = fetch_cargo_metadata();
-    let plugin_dir = adjust_canonicalization(Path::new("./plugins").canonicalize().expect("Could not canonicalize plugin dir"));
+    let plugin_dir = adjust_canonicalization(
+        Path::new("./plugins")
+            .canonicalize()
+            .expect("Could not canonicalize plugin dir"),
+    );
     println!("Plugin dir: {:?}\n", plugin_dir);
-    let ws_members = meta.workspace_packages()
+    let ws_members = meta
+        .workspace_packages()
         .iter()
-        .filter(|package| {
-            package.manifest_path.starts_with(&plugin_dir)
-        })
+        .filter(|package| package.manifest_path.starts_with(&plugin_dir))
         .map(|package| package.name.clone())
         .collect::<Vec<String>>();
     Ok(ws_members)

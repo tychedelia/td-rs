@@ -1,5 +1,3 @@
-
-
 use td_rs_sop::*;
 
 pub(crate) const THE_CUBE_NUM_PTS: usize = 24;
@@ -160,8 +158,7 @@ pub const THE_POINT_POS: Position = Position::new(0.0, 0.0, 0.0);
 pub const THE_POINT_NORMAL: Vec3 = Vec3::new(0.0, 0.0, 1.0);
 pub const THE_POINT_TEXTURE: TexCoord = TexCoord::new(0.0, 0.0, 0.0);
 
-pub(crate) struct ShapeGenerator {
-}
+pub(crate) struct ShapeGenerator {}
 
 impl ShapeGenerator {
     pub fn output_dot(&self, output: &mut SopOutput) {
@@ -213,9 +210,7 @@ impl ShapeGenerator {
         for (i, normal) in output.normals().iter_mut().enumerate() {
             *normal = &THE_SQUARE_NORMALS[i] * -1.0;
         }
-        output
-            .tex_coords()
-            .clone_from_slice(&THE_SQUARE_TEXTURE);
+        output.tex_coords().clone_from_slice(&THE_SQUARE_TEXTURE);
         output
             .add_triangles(THE_SQUARE_NUM_PRIM)
             .clone_from_slice(&THE_SQUARE_VERTICES);
