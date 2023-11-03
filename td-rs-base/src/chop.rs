@@ -29,7 +29,7 @@ impl ChopInput {
 
         unsafe {
             std::slice::from_raw_parts(
-                *self.input.channelData.offset(index as isize),
+                *self.input.channelData.add(index),
                 self.input.numSamples as usize,
             )
         }

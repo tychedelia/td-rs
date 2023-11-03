@@ -36,13 +36,13 @@ impl FrameQueue {
             if let Some(b) = &old_buf {
                 if b.size() < byte_size || b.size() > byte_size * 2 || b.flags() != flags {
                     let mut ctx = self.context.lock().unwrap();
-                    return Some(ctx.create_output_buffer(byte_size as usize, flags));
+                    return Some(ctx.create_output_buffer(byte_size, flags));
                 }
                 return old_buf;
             }
         }
         let mut ctx = self.context.lock().unwrap();
-        Some(ctx.create_output_buffer(byte_size as usize, flags))
+        Some(ctx.create_output_buffer(byte_size, flags))
     }
 
     pub fn update_complete(&self, buf_info: BufferInfo) {

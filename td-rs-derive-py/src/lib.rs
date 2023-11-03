@@ -292,7 +292,7 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     let generated_functions: Vec<_> = input.items.iter().filter_map(|item| {
         if let syn::ImplItem::Method(method) = item {
-            let has_py_meth = method.attrs.iter().any(|attr| is_py_meth_attr(&attr));
+            let has_py_meth = method.attrs.iter().any(is_py_meth_attr);
             if has_py_meth {
                 let fn_name = &method.sig.ident;
                 Some(PyMeth {

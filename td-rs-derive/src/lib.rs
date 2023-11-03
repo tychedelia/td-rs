@@ -1,7 +1,7 @@
 extern crate proc_macro;
 
 use proc_macro::TokenStream;
-use proc_macro2::TokenStream as TokenStream2;
+
 
 use quote::quote;
 
@@ -165,9 +165,9 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
 
                 let field_name_upper = format_name(&field_name.to_string());
                 let default_label = format!("{}", field_name);
-                let label = label.unwrap_or_else(|| default_label);
+                let label = label.unwrap_or(default_label);
                 let default_page = "Custom".to_string();
-                let page = page.unwrap_or_else(|| default_page);
+                let page = page.unwrap_or(default_page);
                 let min = min.unwrap_or(0.0);
                 let max = max.unwrap_or(1.0);
 
@@ -225,5 +225,5 @@ fn capitalize_first(s: &str) -> String {
 }
 
 fn remove_underscores(s: &str) -> String {
-    s.replace("_", "")
+    s.replace('_', "")
 }

@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use crate::cxx::SOP_CustomAttribInfo;
 use crate::{cxx, GetInput, OperatorInputs};
 use auto_ops::impl_op_ex;
