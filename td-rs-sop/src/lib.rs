@@ -102,12 +102,7 @@ impl<'execute> SopOutput<'execute> {
         }
     }
 
-    pub fn set_tex_coord2(
-        &mut self,
-        texture: &TexCoord,
-        num_layers: usize,
-        start_idx: usize,
-    ) {
+    pub fn set_tex_coord2(&mut self, texture: &TexCoord, num_layers: usize, start_idx: usize) {
         unsafe {
             self.output.as_mut().setTexCoord(
                 texture.as_ref() as *const cxx::TexCoord,
@@ -119,15 +114,15 @@ impl<'execute> SopOutput<'execute> {
 
     pub fn set_tex_coords(&mut self, textures: &[TexCoord], num_layers: usize, start_idx: usize) {
         unsafe {
-            let textures = textures.iter().map(|t| {
-                cxx::TexCoord {
+            let textures = textures
+                .iter()
+                .map(|t| cxx::TexCoord {
                     u: t.u,
                     v: t.v,
                     w: t.w,
-                }
-            }).collect::<Vec<_>>()
+                })
+                .collect::<Vec<_>>()
                 .into_boxed_slice();
-            println!("textures: {:?},{:?},{:?}", textures[0].u, textures[0].v, textures[0].w);
             let num_points = self.num_points() as i32;
             self.output.as_mut().setTexCoords(
                 textures.as_ptr() as *const cxx::TexCoord,
@@ -197,7 +192,7 @@ impl<'execute> SopOutput<'execute> {
             self.output.as_mut().addLines(
                 indices.as_ptr() as *const i32,
                 sizes.as_ptr() as *const i32 as *mut i32,
-                 sizes.len() as i32,
+                sizes.len() as i32,
             );
         }
     }
@@ -320,31 +315,40 @@ impl From<cxx::SOP_GroupType> for GroupType {
     }
 }
 
-pub struct SopVboOutput<'execute> {
-    num_vertices: Option<usize>,
+pub struct Unalloc;
+
+pub struct ColorEnabled;
+pub struct NormalEnabled;
+pub struct TexCoordEnabled;
+
+pub struct Alloc<ColorEnabled, NormalEnabled, TexCoordEnabled> {
+    pub vertices: usize,
+    pub indices: usize,
+    pub buffer_mode: BufferMode,
+    _color: std::marker::PhantomData<ColorEnabled>,
+    _normal: std::marker::PhantomData<NormalEnabled>,
+    _tex_coords: std::marker::PhantomData<TexCoordEnabled>,
+}
+
+pub type AllocAll = Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>;
+
+pub struct SopVboOutput<'execute, State> {
+    pub state: State,
     output: Pin<&'execute mut cxx::SOP_VBOOutput>,
 }
 
-impl<'execute> SopVboOutput<'execute> {
+impl<'execute, State> SopVboOutput<'execute, State> {
     /// Create a new `SopOutput` from a pinning reference to a
     /// `SopOutput`.
-    pub fn new(output: Pin<&'execute mut cxx::SOP_VBOOutput>) -> SopVboOutput<'execute> {
-        Self {
-            num_vertices: None,
+    pub fn new(output: Pin<&'execute mut cxx::SOP_VBOOutput>) -> SopVboOutput<'execute, Unalloc> {
+        SopVboOutput {
+            state: Unalloc,
             output,
         }
     }
 
-    pub fn enable_normal(&mut self) {
-        self.output.as_mut().enableNormal();
-    }
-
-    pub fn enable_color(&mut self) {
-        self.output.as_mut().enableColor();
-    }
-
-    pub fn enable_tex_coord(&mut self, num_layers: usize) {
-        self.output.as_mut().enableTexCoord(num_layers as i32);
+    pub fn has_custom_attributes(&mut self) -> bool {
+        self.output.as_mut().hasCustomAttibutes()
     }
 
     pub fn has_normal(&mut self) -> bool {
@@ -359,10 +363,6 @@ impl<'execute> SopVboOutput<'execute> {
         self.output.as_mut().hasTexCoord()
     }
 
-    pub fn has_custom_attributes(&mut self) -> bool {
-        self.output.as_mut().hasCustomAttibutes()
-    }
-
     pub fn add_custom_attribute(&mut self, attr: CustomAttributeInfo) {
         let name = std::ffi::CString::new(attr.name).unwrap();
         let attr = cxx::SOP_CustomAttribInfo {
@@ -372,90 +372,241 @@ impl<'execute> SopVboOutput<'execute> {
         };
         self.output.as_mut().addCustomAttribute(&attr);
     }
+}
 
-    pub fn alloc_vbo(&mut self, num_vertices: usize, num_indices: usize, buffer_mode: BufferMode) {
-        self.num_vertices = Some(num_vertices);
+impl<'execute> SopVboOutput<'execute, Unalloc> {
+    fn alloc_inner(
+        &mut self,
+        vertices: usize,
+        indices: usize,
+        enable_normal: bool,
+        enable_color: bool,
+        tex_coords: usize,
+        buffer_mode: BufferMode,
+    ) {
+        if enable_color {
+            self.output.as_mut().enableColor();
+        }
+        if enable_normal {
+            self.output.as_mut().enableNormal();
+        }
+        if tex_coords > 0 {
+            assert!(tex_coords <= 8);
+            self.output.as_mut().enableTexCoord(tex_coords as i32);
+        }
+
         self.output
             .as_mut()
-            .allocVBO(num_vertices as i32, num_indices as i32, buffer_mode.into());
+            .allocVBO(vertices as i32, indices as i32, buffer_mode.into());
     }
 
-    pub fn get_pos(&mut self) -> &'execute mut [Position] {
-        if let Some(num_vertices) = self.num_vertices {
-            let pos = unsafe { self.output.as_mut().getPos() };
-            if pos.is_null() {
-                println!("pos is null");
-            }
-            unsafe { std::slice::from_raw_parts_mut(pos as *mut Position, num_vertices) }
-        } else {
-            panic!("Must call alloc_vbo first!")
+    pub fn alloc_all(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        tex_coords: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>> {
+        self.alloc_inner(vertices, indices, true, true, tex_coords, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
         }
     }
 
-    pub fn get_normals(&mut self) -> &'execute mut [Vec3] {
-        if let Some(num_vertices) = self.num_vertices {
-            let normals = unsafe { self.output.as_mut().getNormals() };
-            if normals.is_null() {
-                println!("normals is null");
-            }
-            unsafe { std::slice::from_raw_parts_mut(normals as *mut Vec3, num_vertices) }
-        } else {
-            panic!("Must call alloc_vbo first!")
+    pub fn alloc_normals(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, (), ()>> {
+        self.alloc_inner(vertices, indices, true, false, 0, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
         }
     }
 
-    pub fn get_colors(&mut self) -> &'execute mut [Color] {
-        if let Some(num_vertices) = self.num_vertices {
-            let colors = unsafe { self.output.as_mut().getColors() };
-            if colors.is_null() {
-                println!("colors is null");
-            }
-            unsafe { std::slice::from_raw_parts_mut(colors as *mut Color, num_vertices) }
-        } else {
-            panic!("Must call alloc_vbo first!")
+    pub fn alloc_colors(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<(), ColorEnabled, ()>> {
+        self.alloc_inner(vertices, indices, false, true, 0, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
         }
     }
 
-    pub fn get_tex_coords(&mut self) -> &'execute mut [TexCoord] {
-        if let Some(num_vertices) = self.num_vertices {
-            let tex_coords = unsafe { self.output.as_mut().getTexCoords() };
-            if tex_coords.is_null() {
-                println!("tex_coords is null");
-            }
-            unsafe { std::slice::from_raw_parts_mut(tex_coords as *mut TexCoord, num_vertices) }
-        } else {
-            panic!("Must call alloc_vbo first!!")
+    pub fn alloc_tex_coords(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        tex_coords: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<(), (), TexCoordEnabled>> {
+        self.alloc_inner(vertices, indices, false, false, tex_coords, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
         }
     }
 
+    pub fn alloc_normal_and_colors(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, ColorEnabled, ()>> {
+        self.alloc_inner(vertices, indices, true, true, 0, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
+        }
+    }
+
+    pub fn alloc_normal_and_tex_coords(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        tex_coords: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, (), TexCoordEnabled>> {
+        self.alloc_inner(vertices, indices, true, false, tex_coords, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
+        }
+    }
+
+    pub fn alloc_colors_and_tex_coords(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        tex_coords: usize,
+        buffer_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<(), ColorEnabled, TexCoordEnabled>> {
+        self.alloc_inner(vertices, indices, false, true, tex_coords, buffer_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
+        }
+    }
+}
+
+impl<'execute, C, T> SopVboOutput<'execute, Alloc<NormalEnabled, C, T>> {
+    pub fn normals(&mut self) -> &'execute mut [Vec3] {
+        let normals = unsafe { self.output.as_mut().getNormals() };
+        if normals.is_null() {
+            panic!("normals is null")
+        }
+        unsafe { std::slice::from_raw_parts_mut(normals as *mut Vec3, self.state.vertices) }
+    }
+}
+
+impl<'execute, N, T> SopVboOutput<'execute, Alloc<N, ColorEnabled, T>> {
+    pub fn colors(&mut self) -> &'execute mut [Color] {
+        let colors = unsafe { self.output.as_mut().getColors() };
+        if colors.is_null() {
+            panic!("colors is null")
+        }
+        unsafe { std::slice::from_raw_parts_mut(colors as *mut Color, self.state.vertices) }
+    }
+}
+
+impl<'execute, N, C> SopVboOutput<'execute, Alloc<N, C, TexCoordEnabled>> {
+    pub fn tex_coords(&mut self) -> &'execute mut [TexCoord] {
+        let tex_coords = unsafe { self.output.as_mut().getTexCoords() };
+        if tex_coords.is_null() {
+            println!("tex_coords is null")
+        }
+        unsafe { std::slice::from_raw_parts_mut(tex_coords as *mut TexCoord, self.state.vertices) }
+    }
     pub fn get_num_text_coord_layers(&mut self) -> usize {
         unsafe { self.output.as_mut().getNumTexCoordLayers() as usize }
     }
+}
 
+impl<'execute, N, C, T> SopVboOutput<'execute, Alloc<N, C, T>> {
+    pub fn positions(&mut self) -> &'execute mut [Position] {
+        let positions = unsafe { self.output.as_mut().getPos() };
+        if positions.is_null() {
+            panic!("positions is null")
+        }
+        unsafe { std::slice::from_raw_parts_mut(positions as *mut Position, self.state.vertices) }
+    }
     pub fn add_triangles(&mut self, num_triangles: usize) -> &'execute mut [u32] {
         let triangles = self.output.as_mut().addTriangles(num_triangles as i32);
         unsafe { std::slice::from_raw_parts_mut(triangles as *mut u32, num_triangles * 3) }
     }
-
     pub fn add_particle_system(&mut self, num_particles: usize) -> &'execute mut [u32] {
         let particles = self.output.as_mut().addParticleSystem(num_particles as i32);
         unsafe { std::slice::from_raw_parts_mut(particles as *mut u32, num_particles) }
     }
-
     pub fn add_lines(&mut self, num_lines: usize) -> &'execute mut [u32] {
         let lines = self.output.as_mut().addLines(num_lines as i32);
         unsafe { std::slice::from_raw_parts_mut(lines as *mut u32, num_lines) }
     }
-
     pub fn update_complete(&mut self) {
         self.output.as_mut().updateComplete();
     }
-
     pub fn set_bounding_box(&mut self, bounds: impl Into<BoundingBox>) {
         self.output.as_mut().setBoundingBox(&bounds.into());
     }
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum BufferMode {
     Static,
     Dynamic,
@@ -489,7 +640,7 @@ pub trait Sop: Op {
         // Do nothing by default.
     }
 
-    fn execute_vbo(&mut self, _output: &mut SopVboOutput, _inputs: &OperatorInputs<SopInput>) {
+    fn execute_vbo(&mut self, _output: SopVboOutput<Unalloc>, _inputs: &OperatorInputs<SopInput>) {
         // Do nothing by default.
     }
 }

@@ -68,10 +68,6 @@ impl CpuMemoryTop {
         mut num_layers: usize,
         color_buffer_index: usize,
     ) {
-        println!(
-            "fill_and_upload: {:?} {:?} {:?} {:?} {:?} {:?}",
-            speed, width, height, tex_dim, num_layers, color_buffer_index
-        );
         let depth = match tex_dim {
             TexDim::E2DArray | TexDim::E3D => num_layers,
             _ => 1,
