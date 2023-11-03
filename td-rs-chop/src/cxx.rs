@@ -8,10 +8,10 @@ pub use autocxx::c_void;
 use autocxx::prelude::*;
 use autocxx::subclass::*;
 
-pub use ffi::*;
 pub use ffi::TD::*;
-use td_rs_base::{NodeInfo, OperatorInputs, ParameterManager};
+pub use ffi::*;
 pub use td_rs_base::cxx::*;
+use td_rs_base::{NodeInfo, OperatorInputs, ParameterManager};
 
 use crate::{Chop, ChopOutput};
 

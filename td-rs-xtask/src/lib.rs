@@ -55,7 +55,7 @@ pub fn main() -> anyhow::Result<()> {
                 "install" => install_plugin(&config, &plugin, plugin_type)?,
                 _ => {}
             }
-        },
+        }
         "list-plugins" => {
             let plugins = metadata::list_plugins()?;
             println!("Available Plugins:");

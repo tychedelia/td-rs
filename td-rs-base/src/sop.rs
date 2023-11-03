@@ -320,7 +320,7 @@ impl_op_ex!(+ |a: &Vec3, b: &Vec3| -> Vec3 {
         z: a.z + b.z,
     })
 });
-impl_op_ex!(* |a: &Vec3, b: f32| -> Vec3 {
+impl_op_ex!(*|a: &Vec3, b: f32| -> Vec3 {
     Vec3(cxx::Vector {
         x: a.x * b,
         y: a.y * b,
@@ -333,7 +333,7 @@ impl_op_ex!(* |a: &Vec3, b: f32| -> Vec3 {
 pub struct Position(cxx::Position);
 
 impl Position {
-    pub const fn new(x: f32, y: f32, z:f32) -> Self {
+    pub const fn new(x: f32, y: f32, z: f32) -> Self {
         Self(cxx::Position { x, y, z })
     }
 }
@@ -429,7 +429,7 @@ impl_op_ex!(+ |a: &Position, b: &Vec3| -> Position {
         z: a.z + b.z,
     })
 });
-impl_op_ex!(* |a: &Position, b: f32| -> Position {
+impl_op_ex!(*|a: &Position, b: f32| -> Position {
     Position(cxx::Position {
         x: a.x * b,
         y: a.y * b,
