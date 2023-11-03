@@ -12,7 +12,7 @@ pub(crate) fn install_plugin(
     plugin: &str,
     _plugin_type: PluginType,
 ) -> anyhow::Result<()> {
-    let plugin = &plugin.replace("-", "_");
+    let plugin = &plugin.replace('-', "_");
     let plugin_target_path = plugin_target_path(plugin).join(format!("{plugin}.plugin"));
     let td_plugin_folder = &config.macos.plugin_folder;
     println!(
@@ -43,27 +43,27 @@ pub(crate) fn build_plugin(
         &["--release", &format!("--target={target}")],
     )?;
 
-    let plugin = &plugin.replace("-", "_");
+    let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
-    write_xcodeproj(&target, &plugin, &plugin_type, &path)?;
+    write_xcodeproj(target, plugin, &plugin_type, &path)?;
     println!("Building xcode project");
-    build_xcode(config, &plugin)?;
+    build_xcode(config, plugin)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
     move_plugin(plugin, &path)?;
     Ok(())
 }
 
 fn move_plugin(plugin: &str, path: &PathBuf) -> anyhow::Result<()> {
-    fs_extra::dir::remove(&path.parent().unwrap())
+    fs_extra::dir::remove(path.parent().unwrap())
         .context("Could not remove xcode project directory")?;
     let plugin_build_path = format!("build/Release/{plugin}.plugin");
     let plugin_target_path = plugin_target_path(plugin);
     std::fs::create_dir_all(&plugin_target_path).context("Could not create plugin directory")?;
-    fs_extra::dir::remove(&plugin_target_path.join(format!("{plugin}.plugin")))
+    fs_extra::dir::remove(plugin_target_path.join(format!("{plugin}.plugin")))
         .context("Could not remove plugin directory")?;
-    fs_extra::dir::move_dir(&plugin_build_path, &plugin_target_path, &CopyOptions::new())
+    fs_extra::dir::move_dir(plugin_build_path, &plugin_target_path, &CopyOptions::new())
         .context("Could not move plugin to target directory")?;
     Ok(())
 }
@@ -101,13 +101,13 @@ fn write_xcodeproj(
     plugin_type: &PluginType,
     path: &PathBuf,
 ) -> anyhow::Result<()> {
-    const LIB_KEY: &'static str = "9E4ACB8B299AC54200A2B1CE";
-    const BUNDLE_KEY: &'static str = "E23329D61DF092AD0002B4FE";
-    const BUNDLE_CONFIGURATION_KEY: &'static str = "E23329D51DF092AD0002B4FE";
+    const LIB_KEY: &str = "9E4ACB8B299AC54200A2B1CE";
+    const BUNDLE_KEY: &str = "E23329D61DF092AD0002B4FE";
+    const BUNDLE_CONFIGURATION_KEY: &str = "E23329D51DF092AD0002B4FE";
 
     let plugin_type_name = plugin_type.to_short_name();
 
-    std::fs::create_dir_all(&path.parent().unwrap())
+    std::fs::create_dir_all(path.parent().unwrap())
         .context("Could not create xcode project directory")?;
     let mut project = Value::from_file(format!(
         "td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"
@@ -135,10 +135,10 @@ fn write_xcodeproj(
         .unwrap()
         .as_dictionary_mut()
         .unwrap();
-    bundle_config.insert("name".to_string(), Value::String(format!("{plugin}")));
+    bundle_config.insert("name".to_string(), Value::String(plugin.to_string()));
     bundle_config.insert(
         "productName".to_string(),
-        Value::String(format!("{plugin}")),
+        Value::String(plugin.to_string()),
     );
     project.to_file_xml(path)?;
     Ok(())

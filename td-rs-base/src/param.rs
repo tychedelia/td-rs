@@ -587,11 +587,7 @@ impl Param for ChopParam {
 impl ChopParam {
     /// Get the chop input for this parameter, if it exists.
     pub fn input(&self) -> Option<&ChopInput> {
-        if let Some(input) = self.input {
-            Some(unsafe { ChopInput::ref_cast(&*input) })
-        } else {
-            None
-        }
+        self.input.map(|input| unsafe { ChopInput::ref_cast(&*input) })
     }
 }
 
@@ -614,11 +610,7 @@ impl Param for SopParam {
 impl SopParam {
     /// Get the sop input for this parameter, if it exists.
     pub fn input(&self) -> Option<&SopInput> {
-        if let Some(input) = self.input {
-            Some(unsafe { SopInput::ref_cast(&*input) })
-        } else {
-            None
-        }
+        self.input.map(|input| unsafe { SopInput::ref_cast(&*input) })
     }
 }
 
@@ -641,11 +633,7 @@ impl Param for TopParam {
 impl TopParam {
     /// Get the top input for this parameter, if it exists.
     pub fn input(&self) -> Option<&crate::top::TopInput> {
-        if let Some(input) = self.input {
-            Some(unsafe { crate::top::TopInput::ref_cast(&*input) })
-        } else {
-            None
-        }
+        self.input.map(|input| unsafe { crate::top::TopInput::ref_cast(&*input) })
     }
 }
 
@@ -668,11 +656,7 @@ impl Param for DatParam {
 impl DatParam {
     /// Get the dat input for this parameter, if it exists.
     pub fn input(&self) -> Option<&crate::dat::DatInput> {
-        if let Some(input) = self.input {
-            Some(unsafe { crate::dat::DatInput::ref_cast(&*input) })
-        } else {
-            None
-        }
+        self.input.map(|input| unsafe { crate::dat::DatInput::ref_cast(&*input) })
     }
 }
 

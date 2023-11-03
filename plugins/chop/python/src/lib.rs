@@ -212,7 +212,7 @@ impl InfoChop for PythonChop {
     fn channel(&self, index: usize) -> (String, f32) {
         match index {
             0 => ("execute_count".to_string(), self.execute_count as f32),
-            1 => ("offset".to_string(), self.offset as f32),
+            1 => ("offset".to_string(), self.offset),
             _ => panic!("Invalid channel index"),
         }
     }

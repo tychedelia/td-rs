@@ -106,7 +106,7 @@ impl<'execute> CellType<'execute> for f64 {
         let ptr = table.table.as_ptr();
 
         unsafe {
-            let y = ptr.offset(offset as isize) as *mut f64;
+            let y = ptr.add(offset) as *mut f64;
             *y = out;
         }
 
@@ -116,7 +116,7 @@ impl<'execute> CellType<'execute> for f64 {
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self) {
         let [rows, _] = table.table_size();
         let offset = row * rows + col;
-        table.table[offset] = value.clone();
+        table.table[offset] = value;
         table
             .output
             .as_mut()
@@ -138,7 +138,7 @@ impl<'execute> CellType<'execute> for i32 {
         let ptr = table.table.as_ptr();
 
         unsafe {
-            let y = ptr.offset(offset.clone() as isize) as *mut i32;
+            let y = ptr.add(offset) as *mut i32;
             *y = out;
         }
 
@@ -146,9 +146,9 @@ impl<'execute> CellType<'execute> for i32 {
     }
 
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self) {
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
-        table.table[offset] = value.clone();
+        let rows = table.table_size()[0];
+        let offset = row * rows + col;
+        table.table[offset] = value;
         table
             .output
             .as_mut()
@@ -158,8 +158,8 @@ impl<'execute> CellType<'execute> for i32 {
 
 impl<'execute> CellType<'execute> for String {
     fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
-        let rows = table.table_size()[0].clone();
-        let offset = row.clone() * rows + col.clone();
+        let rows = table.table_size()[0];
+        let offset = row * rows + col;
         let out = unsafe {
             let out = table.output.as_ref().getCellString(row as i32, col as i32);
             std::ffi::CStr::from_ptr(out).to_str().unwrap()
@@ -168,7 +168,7 @@ impl<'execute> CellType<'execute> for String {
         let ptr = table.table.as_ptr();
 
         unsafe {
-            let y = ptr.offset(offset.clone() as isize) as *mut &str;
+            let y = ptr.add(offset) as *mut &str;
             *y = out;
         }
 

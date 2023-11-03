@@ -73,7 +73,7 @@ impl Chop for GeneratorChop {
                     1.0
                 };
                 let cur_value = cur_value * scale;
-                output[i][j] = cur_value as f32;
+                output[i][j] = cur_value;
             }
         }
     }

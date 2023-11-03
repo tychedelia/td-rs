@@ -63,8 +63,8 @@ impl<'execute> ChopOutput<'execute> {
         }
 
         unsafe {
-            let channel_ptr = *self.output.channels.offset(index as isize);
-            std::slice::from_raw_parts(channel_ptr, self.num_samples() as usize)
+            let channel_ptr = *self.output.channels.add(index);
+            std::slice::from_raw_parts(channel_ptr, self.num_samples())
         }
     }
 
@@ -74,8 +74,8 @@ impl<'execute> ChopOutput<'execute> {
         }
 
         unsafe {
-            let channel_ptr = *self.output.channels.offset(index as isize);
-            std::slice::from_raw_parts_mut(channel_ptr, self.num_samples() as usize)
+            let channel_ptr = *self.output.channels.add(index);
+            std::slice::from_raw_parts_mut(channel_ptr, self.num_samples())
         }
     }
 }
