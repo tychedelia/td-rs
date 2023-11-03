@@ -28,7 +28,7 @@ struct GeneratorSop {
 }
 
 impl OpNew for GeneratorSop {
-    fn new(info: NodeInfo) -> Self {
+    fn new(_info: NodeInfo) -> Self {
         Self {
             params: GeneratorSopParams {
                 shape: Shape::default(),
@@ -62,7 +62,7 @@ impl Sop for GeneratorSop {
         }
     }
 
-    fn execute(&mut self, output: &mut SopOutput, inputs: &OperatorInputs<SopInput>) {
+    fn execute(&mut self, output: &mut SopOutput, _inputs: &OperatorInputs<SopInput>) {
         match self.params.shape {
             Shape::Point => self.shape_gen.output_dot(output),
             Shape::Line => self.shape_gen.output_line(output),

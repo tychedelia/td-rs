@@ -10,7 +10,7 @@ use crate::config::Config;
 pub(crate) fn install_plugin(
     config: &Config,
     plugin: &str,
-    plugin_type: PluginType,
+    _plugin_type: PluginType,
 ) -> anyhow::Result<()> {
     let plugin = &plugin.replace("-", "_");
     let plugin_target_path = plugin_target_path(plugin).join(format!("{plugin}.plugin"));
