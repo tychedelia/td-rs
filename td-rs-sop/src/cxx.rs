@@ -84,7 +84,7 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
 
     fn executeVBO(&mut self, output: Pin<&mut SOP_VBOOutput>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
-        let mut output = SopVboOutput::<Unalloc>::new(output);
+        let output = SopVboOutput::<Unalloc>::new(output);
         self.inner.execute_vbo(output, &input);
     }
 
