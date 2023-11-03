@@ -95,6 +95,10 @@ class RustDatPlugin : public DatPlugin {
 public:
   virtual ~RustDatPlugin(){};
 
+  virtual void* inner() const = 0;
+
+  virtual void* innerMut() = 0;
+
   virtual void getGeneralInfo(DAT_GeneralInfo &info,
                               const OP_Inputs &inputs) = 0;
 

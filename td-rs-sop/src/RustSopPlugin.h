@@ -106,6 +106,10 @@ class RustSopPlugin : public SopPlugin {
 public:
     virtual ~RustSopPlugin() {};
 
+    virtual void* inner() const = 0;
+
+    virtual void* innerMut() = 0;
+
     virtual void getGeneralInfo(SOP_GeneralInfo &info, const OP_Inputs &inputs) = 0;
 
     virtual void execute(SOP_Output &outputs, const OP_Inputs &inputs) = 0;

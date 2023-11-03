@@ -128,8 +128,8 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                             return std::ptr::null_mut();
                                     }
                                     let py_chop = {
-                                        // let me = cxx::plugin_cast(me);
-                                        // let me = me.as_plugin_mut().inner();
+                                        let me = cxx::plugin_cast(me);
+                                        let me = me.as_plugin().inner();
                                         &mut *(me as *mut #struct_name)
                                     };
                                     py::ToPyObj::to_py_obj(py_chop.#field_name)
@@ -176,7 +176,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     }
                                     let py_chop = {
                                         let me = cxx::plugin_cast(me);
-                                        let me = me.as_plugin_mut().inner();
+                                        let me = me.as_plugin_mut().innerMut();
                                         &mut *(me as *mut #struct_name)
                                     };
 
@@ -331,7 +331,7 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             }
                             let py_chop = {
                                 let me = cxx::plugin_cast(me);
-                                let me = me.as_plugin_mut().inner();
+                                let me = me.as_plugin_mut().innerMut();
                                 &mut *(me as *mut #struct_name)
                             };
                             let res = py_chop.#fn_name(args, nargs as usize);

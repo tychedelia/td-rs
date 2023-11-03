@@ -97,6 +97,14 @@ extern "C" fn top_new(
 }
 
 impl RustTopPlugin_methods for RustTopPluginImpl {
+    fn inner(&self) -> *mut c_void {
+        self.inner.as_ref() as *const dyn Top as *mut c_void
+    }
+
+    fn innerMut(&mut self) -> *mut c_void {
+        self.inner.as_mut() as *mut dyn Top as *mut c_void
+    }
+
     fn getGeneralInfo(&mut self, mut info: Pin<&mut TOP_GeneralInfo>, inputs: &OP_Inputs) {
         let input = OperatorInputs::new(inputs);
         if let Some(params) = self.inner.params_mut() {

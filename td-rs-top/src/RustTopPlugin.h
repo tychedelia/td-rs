@@ -115,6 +115,10 @@ class RustTopPlugin : public TopPlugin {
 public:
     virtual ~RustTopPlugin() {};
 
+    virtual void* inner() const = 0;
+
+    virtual void* innerMut() = 0;
+
     virtual void getGeneralInfo(TOP_GeneralInfo &info,
                                 const OP_Inputs &inputs) = 0;
 
