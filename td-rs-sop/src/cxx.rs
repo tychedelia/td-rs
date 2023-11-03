@@ -48,6 +48,25 @@ pub struct RustSopPluginImpl {
     inner: Box<dyn Sop>,
 }
 
+// SAFETY: This can only be used with pointers returned from getNodeInstance() and
+// should not be used in plugin code.
+pub unsafe fn plugin_cast(plugin: *mut c_void) -> &'static mut RustSopPluginImplCpp {
+    &mut *(plugin as *mut RustSopPluginImplCpp)
+}
+
+impl AsPlugin for RustSopPluginImplCpp {
+    type Plugin = RustSopPlugin;
+
+    fn as_plugin(&self) -> &Self::Plugin {
+        self.As_RustSopPlugin()
+    }
+
+    fn as_plugin_mut(&mut self) -> Pin<&mut Self::Plugin> {
+        // Safety: self can't be moved during the lifetime of 'execute.
+        unsafe { Pin::new_unchecked(self).As_RustSopPlugin_mut() }
+    }
+}
+
 #[no_mangle]
 extern "C" fn sop_new(info: &'static OP_NodeInfo) -> *mut RustSopPluginImplCpp {
     unsafe {

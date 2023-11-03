@@ -32,6 +32,25 @@ extern "C" {
     fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat>;
 }
 
+// SAFETY: This can only be used with pointers returned from getNodeInstance() and
+// should not be used in plugin code.
+pub unsafe fn plugin_cast(plugin: *mut c_void) -> &'static mut RustDatPluginImplCpp {
+    &mut *(plugin as *mut RustDatPluginImplCpp)
+}
+
+impl AsPlugin for RustDatPluginImplCpp {
+    type Plugin = RustDatPlugin;
+
+    fn as_plugin(&self) -> &Self::Plugin {
+        self.As_RustDatPlugin()
+    }
+
+    fn as_plugin_mut(&mut self) -> Pin<&mut Self::Plugin> {
+        // Safety: self can't be moved during the lifetime of 'execute.
+        unsafe { Pin::new_unchecked(self).As_RustDatPlugin_mut() }
+    }
+}
+
 #[subclass(superclass("RustDatPlugin"))]
 pub struct RustDatPluginImpl {
     inner: Box<dyn Dat>,

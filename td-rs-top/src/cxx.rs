@@ -55,6 +55,25 @@ pub struct RustTopPluginImpl {
     inner: Box<dyn Top>,
 }
 
+// SAFETY: This can only be used with pointers returned from getNodeInstance() and
+// should not be used in plugin code.
+pub unsafe fn plugin_cast(plugin: *mut c_void) -> &'static mut RustTopPluginImplCpp {
+    &mut *(plugin as *mut RustTopPluginImplCpp)
+}
+
+impl AsPlugin for RustTopPluginImplCpp {
+    type Plugin = RustTopPlugin;
+
+    fn as_plugin(&self) -> &Self::Plugin {
+        self.As_RustTopPlugin()
+    }
+
+    fn as_plugin_mut(&mut self) -> Pin<&mut Self::Plugin> {
+        // Safety: self can't be moved during the lifetime of 'execute.
+        unsafe { Pin::new_unchecked(self).As_RustTopPlugin_mut() }
+    }
+}
+
 #[no_mangle]
 extern "C" fn top_new(
     info: &'static OP_NodeInfo,
