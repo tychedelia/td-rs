@@ -52,7 +52,8 @@ pub(crate) fn build_plugin(
 
     println!("Run msbuild");
     fs_extra::copy_items(&to_copy, ".", &CopyOptions::new().overwrite(true))?;
-    run_msbuild(config, &target, &plugin)?;
+    let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
+    run_msbuild(config, &target, &plugin, is_python_enabled)?;
     fs_extra::remove_items(&files)?;
 
     println!("Move plugin to target");
@@ -85,7 +86,7 @@ fn plugin_target_path(plugin: &str) -> PathBuf {
     plugin_target_path
 }
 
-fn run_msbuild(config: &Config, target: &str, plugin: &str) -> anyhow::Result<()> {
+fn run_msbuild(config: &Config, target: &str, plugin: &str, is_python_enabled: bool) -> anyhow::Result<()> {
     let msbuild = find_msbuild()?;
     let msbuild = msbuild.to_str().expect("Could not find msbuild");
     let lib = format!("{}.lib", plugin.replace("-", "_"));
@@ -94,6 +95,7 @@ fn run_msbuild(config: &Config, target: &str, plugin: &str) -> anyhow::Result<()
     let mut cmd = Command::new(msbuild)
         .arg(format!("/p:AdditionalIncludeDirectories={py_include}"))
         .arg(format!("/p:AdditionalLibraryDirectories={py_lib}"))
+        .arg(if is_python_enabled {"/p:PreprocessorDefinitions=PYTHON_ENABLED"} else {""})
         .arg("/p:Configuration=Release")
         .arg("/t:Rebuild")
         .arg("/p:Platform=x64")
