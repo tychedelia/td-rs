@@ -313,12 +313,12 @@ pub struct ColorEnabled;
 pub struct NormalEnabled;
 pub struct TexCoordEnabled;
 
-pub struct Alloc<ColorEnabled, NormalEnabled, TexCoordEnabled> {
+pub struct Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled> {
     pub vertices: usize,
     pub indices: usize,
     pub buffer_mode: BufferMode,
-    _color: std::marker::PhantomData<ColorEnabled>,
     _normal: std::marker::PhantomData<NormalEnabled>,
+    _color: std::marker::PhantomData<ColorEnabled>,
     _tex_coords: std::marker::PhantomData<TexCoordEnabled>,
 }
 
@@ -392,6 +392,27 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         self.output
             .as_mut()
             .allocVBO(vertices as i32, indices as i32, buffer_mode.into());
+    }
+
+    pub fn alloc_none(
+        mut self,
+        vertices: usize,
+        indices: usize,
+        tex_coords: usize,
+        buffor_mode: BufferMode,
+    ) -> SopVboOutput<'execute, Alloc<(), (), ()>> {
+        self.alloc_inner(vertices, indices, false, false, 0, buffor_mode);
+        SopVboOutput {
+            state: Alloc {
+                vertices,
+                indices,
+                buffer_mode,
+                _color: Default::default(),
+                _normal: Default::default(),
+                _tex_coords: Default::default(),
+            },
+            output: self.output,
+        }
     }
 
     pub fn alloc_all(
