@@ -171,7 +171,7 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                 let min = min.unwrap_or(0.0);
                 let max = max.unwrap_or(1.0);
 
-                let code = quote! {
+                let register_field_code = quote! {
                     {
                         let options = ParamOptions {
                             name: #field_name_upper.to_string(),
@@ -183,7 +183,7 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                         Param::register(&self.#field_name, options, parameter_manager);
                     }
                 };
-                register_code.push(code);
+                register_code.push(register_field_code);
 
                 let update_field_code = quote! {
                     // TODO: Field name should be null terminated
