@@ -14,7 +14,7 @@ pub fn params_derive(input: TokenStream) -> TokenStream {
 struct PyOpArgs {
     get: bool,
     set: bool,
-    force_cook: bool,
+    auto_cook: bool,
     doc: Option<syn::LitStr>,
 }
 
@@ -23,7 +23,7 @@ impl Default for PyOpArgs {
         Self {
             get: true,
             set: true,
-            force_cook: false,
+            auto_cook: false,
             doc: None,
         }
     }
@@ -74,7 +74,7 @@ fn parse_attribute_args(args: syn::AttributeArgs) -> Result<PyOpArgs, syn::Error
     Ok(PyOpArgs {
         get,
         set,
-        force_cook: auto_cook,
+        auto_cook,
         doc,
     })
 }
@@ -107,7 +107,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                         let field_type = &field.ty;
                         let getter_name = format_ident!("get_{}", field_name);
                         let setter_name = format_ident!("set_{}", field_name);
-                        let auto_cook = args.force_cook;
+                        let auto_cook = args.auto_cook;
 
                         let get_fn = if args.get {
                             Some(quote! {
