@@ -399,9 +399,9 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         vertices: usize,
         indices: usize,
         tex_coords: usize,
-        buffor_mode: BufferMode,
+        buffer_mode: BufferMode,
     ) -> SopVboOutput<'execute, Alloc<(), (), ()>> {
-        self.alloc_inner(vertices, indices, false, false, 0, buffor_mode);
+        self.alloc_inner(vertices, indices, false, false, 0, buffer_mode);
         SopVboOutput {
             state: Alloc {
                 vertices,
