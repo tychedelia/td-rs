@@ -1,10 +1,10 @@
-use std::fs::metadata;
 use crate::config::Config;
 use crate::metadata::PluginType;
 use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use plist::Value;
+use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -91,7 +91,11 @@ fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow
             "PYTHON_INCLUDE_DIR={}",
             config.macos.python_include_dir
         ))
-        .arg(if is_python_enabled {"EXTRA_CFLAGS=-DPYTHON_ENABLED"} else {""})
+        .arg(if is_python_enabled {
+            "EXTRA_CFLAGS=-DPYTHON_ENABLED"
+        } else {
+            ""
+        })
         .spawn()
         .expect("ls command failed to start");
     cmd.wait().unwrap();
@@ -139,10 +143,7 @@ fn write_xcodeproj(
         .as_dictionary_mut()
         .unwrap();
     bundle_config.insert("name".to_string(), Value::String(plugin.to_string()));
-    bundle_config.insert(
-        "productName".to_string(),
-        Value::String(plugin.to_string()),
-    );
+    bundle_config.insert("productName".to_string(), Value::String(plugin.to_string()));
     project.to_file_xml(path)?;
     Ok(())
 }
