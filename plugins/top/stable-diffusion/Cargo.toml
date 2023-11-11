@@ -14,9 +14,9 @@ crate-type = ["staticlib"]
 [dependencies]
 td-rs-top = { path = "../../../td-rs-top" }
 td-rs-derive = { path = "../../../td-rs-derive" }
-stablediffusion = { git = "https://github.com/tychedelia/stable-diffusion-burn.git"}
-burn = "0.9"
-burn-ndarray = "0.9"
-burn-tch = "0.9"
-burn-autodiff = "0.9"
-tch = "0.13.0"
+stablediffusion = { git = "https://github.com/tychedelia/stable-diffusion-burn.git", version = "0.2.0" }
+burn = "0.10"
+burn-ndarray = "0.10"
+burn-tch = "0.10"
+burn-autodiff = "0.10"
+tch = "0.14.0"
