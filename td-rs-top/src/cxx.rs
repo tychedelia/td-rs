@@ -28,6 +28,7 @@ include_cpp! {
     extern_cpp_type!("TD::OP_TextureDesc", td_rs_base::cxx::OP_TextureDesc)
     pod!("TD::OP_TextureDesc")
     extern_cpp_type!("TD::OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
+    extern_cpp_type!("TD::OP_CUDAArrayInfo", td_rs_base::cxx::OP_CUDAArrayInfo)
     generate_pod!("TD::TOP_UploadInfo")
     generate_pod!("TD::TOP_GeneralInfo")
     generate_pod!("TD::TOP_PluginInfo")
