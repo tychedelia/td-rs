@@ -87,7 +87,10 @@ pub trait Op {
         // are only ever called from the body of the plugin
         // and not exposed to C++.
         unsafe {
-            INFO_STR.get_mut().unwrap().replace_range(.., info);
+            let i = INFO_STR.get_mut();
+            if let Some(i) = i {
+                i.replace_range(.., info);
+            }
         }
     }
 
@@ -101,7 +104,10 @@ pub trait Op {
         // are only ever called from the body of the plugin
         // and not exposed to C++.
         unsafe {
-            ERROR_STR.get_mut().unwrap().replace_range(.., error);
+            let e = ERROR_STR.get_mut();
+            if let Some(e) = e {
+                e.replace_range(.., error);
+            }
         }
     }
 
@@ -115,7 +121,10 @@ pub trait Op {
         // are only ever called from the body of the plugin
         // and not exposed to C++.
         unsafe {
-            WARNING_STR.get_mut().unwrap().replace_range(.., warning);
+            let w = WARNING_STR.get_mut();
+            if let Some(w) = w {
+                w.replace_range(.., warning);
+            }
         }
     }
 
