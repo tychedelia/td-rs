@@ -25,6 +25,7 @@ members = [
     "plugins/dat/filter",
     "plugins/sop/generator-sop",
     "plugins/top/cpu-memory-top",
+    "plugins/top/stable-diffusion",
     "td-rs-autocxx-build",
     "td-rs-base",
     "td-rs-chop",

@@ -94,7 +94,7 @@ fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow
         .arg(if is_python_enabled {
             "EXTRA_CFLAGS=-DPYTHON_ENABLED"
         } else {
-            ""
+            "FOO=BAR"
         })
         .spawn()
         .expect("ls command failed to start");
