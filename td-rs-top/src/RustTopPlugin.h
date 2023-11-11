@@ -4,27 +4,13 @@
 #ifndef TD_RS_RUSTTOPPLUGIN_H
 #define TD_RS_RUSTTOPPLUGIN_H
 
-void* getBufferData(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
-    void* data = buffer->data;
-    return data;
-}
+void* getBufferData(TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
-uint64_t getBufferSize(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
-    uint64_t size = buffer->size;
-    return size;
-}
+uint64_t getBufferSize(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
-TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
-    TD::TOP_BufferFlags flags = buffer->flags;
-    return flags;
-}
+TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
-void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
-    // buffer may have been moved, so we need to check if it's valid
-    if (buffer) {
-        buffer.release();
-    }
-}
+void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
 using namespace TD;
 
