@@ -7,9 +7,9 @@ use stablediffusion::model::stablediffusion::{StableDiffusion, StableDiffusionCo
 use stablediffusion::tokenizer::SimpleTokenizer;
 use std::fmt::format;
 use std::path::PathBuf;
-use std::sync::{Arc, Mutex, MutexGuard, RwLock};
 use std::sync::atomic::AtomicBool;
 use std::sync::mpsc::{Receiver, SyncSender, TryRecvError, TrySendError};
+use std::sync::{Arc, Mutex, MutexGuard, RwLock};
 use std::thread::JoinHandle;
 use td_rs_derive::Params;
 use td_rs_top::*;
@@ -134,11 +134,17 @@ impl StableDiffusionProducer {
         let (tx, rx) = std::sync::mpsc::sync_channel(3);
         let (trigger_tx, trigger_rx) = std::sync::mpsc::sync_channel(1);
         let tokenizer = SimpleTokenizer::new().unwrap();
-        let sd =  Arc::new(RwLock::new(None::<StableDiffusion<TchBackend<f32>>>));
+        let sd = Arc::new(RwLock::new(None::<StableDiffusion<TchBackend<f32>>>));
         let prompt = Arc::new(RwLock::new(String::new()));
         let produce_loop_sd = sd.clone();
         let produce_loop_prompt = prompt.clone();
-        let produce_loop = Self::produce_loop(tx, trigger_rx, tokenizer, produce_loop_sd, produce_loop_prompt);
+        let produce_loop = Self::produce_loop(
+            tx,
+            trigger_rx,
+            tokenizer,
+            produce_loop_sd,
+            produce_loop_prompt,
+        );
 
         StableDiffusionProducer {
             sd,
@@ -149,7 +155,13 @@ impl StableDiffusionProducer {
         }
     }
 
-    fn produce_loop(tx: SyncSender<Vec<u8>>, trigger_rx: Receiver<()>, tokenizer: SimpleTokenizer, produce_loop_sd: Arc<RwLock<Option<StableDiffusion<TchBackend<f32>>>>>, produce_loop_prompt: Arc<RwLock<String>>) -> JoinHandle<()> {
+    fn produce_loop(
+        tx: SyncSender<Vec<u8>>,
+        trigger_rx: Receiver<()>,
+        tokenizer: SimpleTokenizer,
+        produce_loop_sd: Arc<RwLock<Option<StableDiffusion<TchBackend<f32>>>>>,
+        produce_loop_prompt: Arc<RwLock<String>>,
+    ) -> JoinHandle<()> {
         let produce_loop = std::thread::spawn(move || {
             loop {
                 // Wait for a frame to be requested
@@ -176,16 +188,14 @@ impl StableDiffusionProducer {
                         );
 
                         let image = &images[0];
-                        let layer_bytes =
-                            (WIDTH * HEIGHT * 4 * std::mem::size_of::<u8>())
-                                as u64;
+                        let layer_bytes = (WIDTH * HEIGHT * 4 * std::mem::size_of::<u8>()) as u64;
                         let mut pixels = Vec::with_capacity(layer_bytes as usize);
 
                         for chunk in image.chunks(3) {
                             pixels.push(chunk[2]); // Blue
                             pixels.push(chunk[1]); // Green
                             pixels.push(chunk[0]); // Red
-                            pixels.push(255);      // Alpha (full opacity)
+                            pixels.push(255); // Alpha (full opacity)
                         }
 
                         tx.send(pixels).unwrap();
@@ -197,15 +207,14 @@ impl StableDiffusionProducer {
     }
 
     fn init_model(&mut self, model_file: &PathBuf) {
-            let self_sd = self.sd.clone();
-            let model_file = model_file.clone();
-            // Load the model in a separate thread
-            std::thread::spawn(move || {
-                let sd = Self::load_stable_diffusion_model_file(&model_file)
-                    .unwrap();
-                *self_sd.write().unwrap() = Some(sd);
-            });
-            return;
+        let self_sd = self.sd.clone();
+        let model_file = model_file.clone();
+        // Load the model in a separate thread
+        std::thread::spawn(move || {
+            let sd = Self::load_stable_diffusion_model_file(&model_file).unwrap();
+            *self_sd.write().unwrap() = Some(sd);
+        });
+        return;
     }
 
     fn set_prompt(&mut self, p: &str) {
@@ -232,14 +241,12 @@ impl StableDiffusionProducer {
             Ok(img) => {
                 return Some(img);
             }
-            Err(err) => {
-                match err {
-                    TryRecvError::Empty => {}
-                    TryRecvError::Disconnected => {
-                        panic!("Stable Diffusion Producer thread disconnected!")
-                    }
+            Err(err) => match err {
+                TryRecvError::Empty => {}
+                TryRecvError::Disconnected => {
+                    panic!("Stable Diffusion Producer thread disconnected!")
                 }
-            }
+            },
         };
 
         None

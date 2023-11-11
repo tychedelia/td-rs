@@ -184,6 +184,7 @@ macro_rules! top_plugin {
 
         #[no_mangle]
         pub extern "C" fn top_new_impl(info: NodeInfo, context: TopContext) -> Box<dyn Top> {
+            op_init();
             Box::new(<$plugin_ty>::new(info, context))
         }
     };

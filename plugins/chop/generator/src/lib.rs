@@ -25,6 +25,7 @@ struct GeneratorChopParams {
 }
 
 /// Struct representing our CHOP's state
+#[derive(Debug)]
 pub struct GeneratorChop {
     params: GeneratorChopParams,
 }
@@ -56,10 +57,12 @@ impl Op for GeneratorChop {
 }
 
 impl Chop for GeneratorChop {
+    #[tracing::instrument]
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         let params = inputs.params();
         params.enable_param("Scale", self.params.apply_scale);
 
+        tracing::info!("Executing chop with params: {:?}", self.params);
         for i in 0..output.num_channels() {
             for j in 0..output.num_samples() {
                 let cur_value = match self.params.operation {

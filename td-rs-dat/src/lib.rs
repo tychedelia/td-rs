@@ -256,6 +256,7 @@ macro_rules! dat_plugin {
 
         #[no_mangle]
         pub extern "C" fn dat_new_impl(info: NodeInfo) -> Box<dyn Dat> {
+            op_init();
             Box::new(<$plugin_ty>::new(info))
         }
     };

@@ -84,6 +84,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getGeneralInfo(&mut self, mut info: Pin<&mut DAT_GeneralInfo>, inputs: &OP_Inputs) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("getGeneralInfo").entered() };
         let input = OperatorInputs::new(inputs);
         if let Some(params) = self.inner.params_mut() {
             params.update(&input.params());
@@ -94,6 +96,10 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn execute(&mut self, outputs: Pin<&mut DAT_Output>, inputs: &OP_Inputs) {
+        #[cfg(feature = "tracing")]
+        let span = {
+            tracing_base::trace_span!("execute").entered();
+        };
         let input = OperatorInputs::new(inputs);
         let output = DatOutput::new(outputs);
         if let Some(params) = self.inner.params_mut() {
@@ -103,6 +109,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getNumInfoCHOPChans(&mut self) -> i32 {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("getNumInfoCHOPChans").entered() };
         if let Some(info_chop) = self.inner.info_chop() {
             info_chop.size() as i32
         } else {
@@ -111,6 +119,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getInfoCHOPChan(&mut self, index: i32, name: Pin<&mut OP_String>, mut value: Pin<&mut f32>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("getInfoCHOPChan").entered() };
         if let Some(info_chop) = self.inner.info_chop() {
             let (info_name, info_value) = info_chop.channel(index as usize);
             unsafe {
@@ -123,6 +133,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getInfoDATSize(&mut self, mut info: Pin<&mut OP_InfoDATSize>) -> bool {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("getInfoDATSize").entered() };
         if let Some(info_dat) = self.inner.info_dat() {
             let (rows, cols) = info_dat.size();
             info.rows = rows as i32;
@@ -134,6 +146,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn getInfoDATEntry(&mut self, index: i32, entryIndex: i32, entry: Pin<&mut OP_String>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("getInfoDATEntry").entered() };
         if let Some(info_dat) = self.inner.info_dat() {
             let entry_str = info_dat.entry(index as usize, entryIndex as usize);
             if entry_str.is_empty() {
@@ -172,6 +186,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("setupParameters").entered() };
         let params = self.inner.params_mut();
         if let Some(params) = params {
             let mut manager = ParameterManager::new(manager);
@@ -180,6 +196,8 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
     }
 
     unsafe fn pulsePressed(&mut self, name: *const std::ffi::c_char) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("pulsePressed").entered() };
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
     }

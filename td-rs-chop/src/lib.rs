@@ -1,5 +1,6 @@
 #![feature(min_specialization)]
 
+use std::fmt::Formatter;
 use std::ops::{Index, IndexMut};
 use std::pin::Pin;
 
@@ -28,6 +29,17 @@ pub struct ChopGeneralInfo {
 /// underlying C++ object and writing to the output buffer.
 pub struct ChopOutput<'execute> {
     output: Pin<&'execute mut cxx::CHOP_Output>,
+}
+
+impl std::fmt::Debug for ChopOutput<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ChopOutput")
+            .field("num_channels", &self.num_channels())
+            .field("num_samples", &self.num_samples())
+            .field("sample_rate", &self.sample_rate())
+            .field("start_index", &self.start_index())
+            .finish()
+    }
 }
 
 impl<'execute> ChopOutput<'execute> {
@@ -127,6 +139,7 @@ macro_rules! chop_plugin {
 
         #[no_mangle]
         pub extern "C" fn chop_new_impl(info: NodeInfo) -> Box<dyn Chop> {
+            op_init();
             Box::new(<$plugin_ty>::new(info))
         }
     };
