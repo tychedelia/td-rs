@@ -681,6 +681,7 @@ macro_rules! sop_plugin {
 
         #[no_mangle]
         pub extern "C" fn sop_new_impl(info: NodeInfo) -> Box<dyn Sop> {
+            op_init();
             Box::new(<$plugin_ty>::new(info))
         }
     };

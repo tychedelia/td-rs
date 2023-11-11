@@ -15,6 +15,8 @@ ref-cast = "1.0"
 auto_ops = "0.3.0"
 derive_more = "0.99"
 pyo3-ffi = { version = "0.20", optional = true}
+tracing-base = { package = "tracing", version = "0.1", optional = true}
+tracing-subscriber = { version = "0.3", optional = true }
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }
@@ -24,3 +26,4 @@ miette = { version="5", features = [ "fancy" ] }
 [features]
 default = []
 python = ["pyo3-ffi"]
+tracing = ["tracing-base", "tracing-subscriber", "tracing-subscriber/env-filter"]

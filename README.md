@@ -2,6 +2,34 @@
 
 Experiments integrating Rust into TouchDesigner's plugin framework.
 
+## Getting started
+
+Fork and clone this repository. Plugins are built using the build system described below. New plugins
+can be added by creating a new directory in `plugins/` and adding it to root `Cargo.toml` as a workspace
+member.
+
+A plugin's `Cargo.toml` should have the following properties:
+- `name` - The name of the plugin. This should be unique across all plugins.
+- `lib` - The type of crate. This should be set to `staticlib`. The name of the lib should be the same as the
+  `package.name` property, but with underscores instead of hyphens.
+- `package.metadata.td-rs` - The `type` should be set to the operator type, e.g. `top`, `chop`, `sop`, `dat`.
+  This is used by the build system to generate the correct C++ code.
+- A dependency on the parent chop crate, e.g. `td-rs-chop = { path = "../../../td-rs-chop" }`. 
+
+All plugins must call their plugin constructor macro in their `lib.rs` file. For example, a `chop` plugin
+would call `chop_plugin!(PluginName)`. This macro will generate the necessary FFI code to register the plugin
+with TouchDesigner.
+
+See example plugins for reference. A good starting point can be just to copy an existing plugin.
+
+### Features
+
+The following features are available for all parent operator dependencies:
+- `python` - Enable Python support. This can be used in combination with `td-rs-derive-py` to generate 
+  Python bindings for the plugin.
+- `tracing` - Enable tracing support using the [`tracing`](https://crates.io/crates/tracing) crate. This
+  can be used to log messages to the TouchDesigner console.
+
 ## ⚠️ Status ⚠️
 
 This project should be considered in **alpha** status. It is not yet ready for production use, however

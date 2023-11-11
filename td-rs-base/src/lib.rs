@@ -206,6 +206,12 @@ pub struct OperatorInputs<'execute, Op> {
     _marker: std::marker::PhantomData<Op>,
 }
 
+impl<T> std::fmt::Debug for OperatorInputs<'_, T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "OperatorInputs")
+    }
+}
+
 impl<'execute, Op> OperatorInputs<'execute, Op>
 where
     Self: GetInput<'execute, Op>,
@@ -541,4 +547,26 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
     op_info.pythonCallbacksDAT = callbacks.as_ptr();
     std::mem::forget(callbacks); // Callbacks are static
     py::py_op_info::<T>(op_info);
+}
+
+/// Base functionality for all operator types.
+pub fn op_init() {
+    unsafe {
+        INFO_STR.get_or_init(|| "".to_string());
+        ERROR_STR.get_or_init(|| "".to_string());
+        WARNING_STR.get_or_init(|| "".to_string());
+    }
+
+    #[cfg(feature = "tracing")]
+    {
+        use tracing_subscriber::fmt;
+        use tracing_subscriber::layer::SubscriberExt;
+        use tracing_subscriber::util::SubscriberInitExt;
+        use tracing_subscriber::EnvFilter;
+
+        tracing_subscriber::registry()
+            .with(fmt::layer())
+            .with(EnvFilter::from_default_env())
+            .init();
+    }
 }

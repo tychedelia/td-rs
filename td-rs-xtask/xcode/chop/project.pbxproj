@@ -69,10 +69,30 @@
 			<key>sourceTree</key>
 			<string>&lt;absolute&gt;</string>
 		</dict>
+		<key>6AD906B42AE10A9400997BA2</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>wrapper.framework</string>
+			<key>name</key>
+			<string>Python.framework</string>
+			<key>path</key>
+			<string>/System/Library/Frameworks/CoreFoundation.framework</string>
+			<key>sourceTree</key>
+			<string>&lt;absolute&gt;</string>
+		</dict>
 		<key>6AD906B52AE10A9400997BA1</key>
 		<dict>
 			<key>fileRef</key>
 			<string>6AD906B42AE10A9400997BA1</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
+		<key>6AD906B52AE10A9400997BA2</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6AD906B42AE10A9400997BA2</string>
 			<key>isa</key>
 			<string>PBXBuildFile</string>
 		</dict>
@@ -121,6 +141,7 @@
 			<key>children</key>
 			<array>
 				<string>6AD906B42AE10A9400997BA1</string>
+				<string>6AD906B42AE10A9400997BA2</string>
 				<string>9E4ACB8B299AC54200A2B1CE</string>
 				<string>9ED7E4DF2999F4C9001F2445</string>
 			</array>
@@ -238,6 +259,7 @@
 			<key>files</key>
 			<array>
 				<string>6AD906B52AE10A9400997BA1</string>
+				<string>6AD906B52AE10A9400997BA2</string>
 				<string>9E4ACB8C299AC54200A2B1CE</string>
 				<string>9ED7E4E02999F4C9001F2445</string>
 			</array>
