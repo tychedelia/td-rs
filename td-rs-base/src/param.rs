@@ -502,7 +502,7 @@ impl Param for FolderParam {
 }
 
 /// A parameter wrapping a `PathBuf` that will be registered as a file parameter.
-#[derive(Default, Clone)]
+#[derive(Default, Clone, Debug)]
 pub struct FileParam(PathBuf);
 
 impl Deref for FileParam {
