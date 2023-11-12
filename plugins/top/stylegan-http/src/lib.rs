@@ -7,7 +7,6 @@ use std::sync::Arc;
 use std::task::Poll;
 use td_rs_derive::Params;
 use td_rs_top::*;
-use tokio::runtime::Runtime;
 use tokio::task::JoinHandle;
 
 const URL: &str = "http://localhost:5000";
@@ -42,7 +41,6 @@ pub struct StyleganHttpTop {
     params: StyleganHttpTopParams,
     execute_count: u32,
     context: TopContext,
-    runtime: Arc<Runtime>,
     tasks: VecDeque<Task>,
     last_req: Option<ImageReq>,
 }
@@ -95,8 +93,7 @@ struct ImageReq {
 
 impl StyleganHttpTop {
     fn get_image(&mut self) -> Option<Vec<u8>> {
-        let rt = self.runtime.clone();
-        rt.block_on(self)
+        RUNTIME.block_on(self)
     }
 
     fn params_as_req(&self) -> ImageReq {
@@ -146,12 +143,7 @@ impl StyleganHttpTop {
 
 impl TopNew for StyleganHttpTop {
     fn new(_info: NodeInfo, context: TopContext) -> Self {
-        let runtime = tokio::runtime::Builder::new_multi_thread()
-            .enable_all()
-            .build()
-            .unwrap();
         Self {
-            runtime: Arc::new(runtime),
             params: Default::default(),
             execute_count: 0,
             context,

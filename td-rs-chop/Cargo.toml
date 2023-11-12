@@ -23,3 +23,4 @@ miette = { version="5", features = [ "fancy" ] }
 default = []
 python = ["td-rs-base/python"]
 tracing = ["td-rs-base/tracing", "tracing-base", "tracing-subscriber"]
+tokio = ["td-rs-base/tokio"]
