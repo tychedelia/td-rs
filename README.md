@@ -29,6 +29,8 @@ The following features are available for all parent operator dependencies:
   Python bindings for the plugin.
 - `tracing` - Enable tracing support using the [`tracing`](https://crates.io/crates/tracing) crate. This
   can be used to log messages to the TouchDesigner console.
+- `tokio` - Enable Tokio support. This can be used to spawn asynchronous tasks from the plugin from the shared
+  Tokio runtime exported as `RUNTIME`.
 
 ## ⚠️ Status ⚠️
 
