@@ -1,15 +1,20 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
+#![feature(lazy_cell)]
 
 use std::cell::OnceCell;
+use std::collections::HashMap;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
+use std::sync::{LazyLock, Mutex};
 
 pub use param::*;
 #[cfg(feature = "python")]
 pub use py::*;
+
+pub static HASHMAP: LazyLock<Mutex<HashMap<String, i32>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
 
 pub mod chop;
 pub mod cxx;
@@ -561,12 +566,30 @@ pub fn op_init() {
     {
         use tracing_subscriber::fmt;
         use tracing_subscriber::layer::SubscriberExt;
-        use tracing_subscriber::util::SubscriberInitExt;
         use tracing_subscriber::EnvFilter;
+        use tracing_subscriber::util::{SubscriberInitExt, TryInitError};
 
-        tracing_subscriber::registry()
-            .with(fmt::layer())
+        let fmt_layer = if cfg!(target_os = "windows") {
+            let mut f = fmt::layer();
+            f.set_ansi(false);
+            f
+        } else {
+            fmt::layer()
+        };
+        let init = tracing_subscriber::registry()
+            .with(fmt_layer)
             .with(EnvFilter::from_default_env())
-            .init();
+            .try_init();
+        match init {
+            Ok(_) => {}
+            Err(err) => {
+                match err {
+                    TryInitError { .. } => {}
+                    _ => {
+                        eprintln!("Failed to initialize tracing: {}", err);
+                    }
+                }
+            }
+        }
     }
 }
