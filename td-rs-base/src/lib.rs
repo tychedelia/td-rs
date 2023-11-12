@@ -3,18 +3,23 @@
 #![feature(lazy_cell)]
 
 use std::cell::OnceCell;
-use std::collections::HashMap;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
-use std::sync::{LazyLock, Mutex};
+use std::sync::LazyLock;
 
 pub use param::*;
 #[cfg(feature = "python")]
 pub use py::*;
 
-pub static HASHMAP: LazyLock<Mutex<HashMap<String, i32>>> = LazyLock::new(|| Mutex::new(HashMap::new()));
+#[cfg(feature = "tokio")]
+pub static RUNTIME: LazyLock<tokio_core::runtime::Runtime> = LazyLock::new(|| {
+    tokio_core::runtime::Builder::new_multi_thread()
+        .enable_all()
+        .build()
+        .expect("Failed to create tokio runtime")
+});
 
 pub mod chop;
 pub mod cxx;

@@ -12,9 +12,9 @@ crate-type = ["staticlib"]
 
 
 [dependencies]
-td-rs-top = { path = "../../../td-rs-top" }
+td-rs-top = { path = "../../../td-rs-top", features = ["tokio"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
-tokio = {  version = "1", features = ["rt-multi-thread"] }
+tokio = "1"
 reqwest = {  version = "0.11", default-features = false }
 futures = "0.3"
 anyhow = "1"
