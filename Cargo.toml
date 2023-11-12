@@ -22,6 +22,7 @@ members = [
     "plugins/chop/generator",
     "plugins/chop/python",
     "plugins/chop/wasm",
+    "plugins/chop/shared-memory",
     "plugins/dat/filter",
     "plugins/sop/generator-sop",
     "plugins/top/cpu-memory-top",
