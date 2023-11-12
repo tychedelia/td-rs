@@ -11,10 +11,6 @@ monome-rs = "1.1"
 [build-dependencies]
 cxx-build = "1"
 
-[lib]
-name = "td_rs"
-crate-type = ["staticlib"]
-
 [workspace]
 members = [
     "plugins/chop/euro-filter",
