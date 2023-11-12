@@ -1,0 +1,22 @@
+[package]
+name = "stylegan-http"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "top"
+
+[lib]
+name = "stylegan_http"
+crate-type = ["staticlib"]
+
+
+[dependencies]
+td-rs-top = { path = "../../../td-rs-top" }
+td-rs-derive = { path = "../../../td-rs-derive" }
+tokio = {  version = "1", features = ["rt-multi-thread"] }
+reqwest = {  version = "0.11", default-features = false }
+futures = "0.3"
+anyhow = "1"
+tracing = "0.1"
+tracing-subscriber = "0.3"
