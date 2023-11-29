@@ -3,8 +3,6 @@ use crate::metadata::PluginType;
 use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
-use plist::Value;
-use std::fs::metadata;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -112,38 +110,89 @@ fn write_xcodeproj(
     const BUNDLE_KEY: &str = "E23329D61DF092AD0002B4FE";
     const BUNDLE_CONFIGURATION_KEY: &str = "E23329D51DF092AD0002B4FE";
 
-    let plugin_type_name = plugin_type.to_short_name();
-
     std::fs::create_dir_all(path.parent().unwrap())
         .context("Could not create xcode project directory")?;
-    let mut project = Value::from_file(format!(
-        "td-rs-xtask/xcode/{plugin_type_name}/project.pbxproj"
-    ))
-    .expect("Could not read xcode project");
-    let p = project.as_dictionary_mut().unwrap();
-    let objs = p.get_mut("objects").unwrap().as_dictionary_mut().unwrap();
-    let lib = objs.get_mut(LIB_KEY).unwrap().as_dictionary_mut().unwrap();
-    lib.insert("name".to_string(), Value::String(format!("lib{plugin}.a")));
-    lib.insert(
-        "path".to_string(),
-        Value::String(format!("target/{target}/release/lib{plugin}.a")),
-    );
-    let bundle = objs
-        .get_mut(BUNDLE_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle.insert(
-        "name".to_string(),
-        Value::String(format!("{plugin}.plugin")),
-    );
-    let bundle_config = objs
-        .get_mut(BUNDLE_CONFIGURATION_KEY)
-        .unwrap()
-        .as_dictionary_mut()
-        .unwrap();
-    bundle_config.insert("name".to_string(), Value::String(plugin.to_string()));
-    bundle_config.insert("productName".to_string(), Value::String(plugin.to_string()));
-    project.to_file_xml(path)?;
+    let project = std::fs::read_to_string("td-rs-xtask/xcode/project.pbxproj")
+        .expect("Could not read xcode project")
+        .replace("{{ LIB_NAME }}", &format!("lib{plugin}.a"))
+        .replace(
+            "{{ LIB_PATH }}",
+            &format!("target/{}/release/lib{plugin}.a", target),
+        )
+        .replace("{{ PLUGIN_FILE_NAME }}", &format!("{plugin}.plugin"))
+        .replace("{{ PLUGIN_NAME }}", &plugin)
+        .replace("{{ PLUGIN_PRODUCT_NAME }}", &plugin)
+        .replace(
+            "{{ TD_OP_H_PATH }}",
+            &format!(
+                "{}/src/{}_CPlusPlusBase.h",
+                plugin_type.to_plugin_name(),
+                plugin_type.to_short_name().to_uppercase()
+            ),
+        )
+        .replace(
+            "{{ TD_OP_H_NAME }}",
+            &format!(
+                "{}_CPlusPlusBase.h",
+                plugin_type.to_short_name().to_uppercase()
+            ),
+        )
+        .replace(
+            "{{ PLUGIN_CPP_NAME }}",
+            &format!(
+                "Rust{}Plugin.cpp",
+                plugin_type.to_short_name().to_title_case()
+            ),
+        )
+        .replace(
+            "{{ PLUGIN_CPP_PATH }}",
+            &format!(
+                "{}/src/Rust{}Plugin.cpp",
+                plugin_type.to_plugin_name(),
+                plugin_type.to_short_name().to_title_case()
+            ),
+        )
+        .replace(
+            "{{ PLUGIN_H_NAME }}",
+            &format!(
+                "Rust{}Plugin.h",
+                plugin_type.to_short_name().to_title_case()
+            ),
+        )
+        .replace(
+            "{{ PLUGIN_H_PATH }}",
+            &format!(
+                "{}/src/Rust{}Plugin.h",
+                plugin_type.to_plugin_name(),
+                plugin_type.to_short_name().to_title_case()
+            ),
+        )
+        .replace(
+            "{{ OP_LIB_NAME }}",
+            &format!("lib{}.a", plugin_type.to_plugin_name().replace("-", "_")),
+        )
+        .replace(
+            "{{ OP_LIB_PATH }}",
+            &format!(
+                "target/{}/release/lib{}.a",
+                target,
+                plugin_type.to_plugin_name().replace("-", "_")
+            ),
+        );
+    std::fs::write(path, project)?;
     Ok(())
+}
+
+trait ToTitleCase {
+    fn to_title_case(&self) -> String;
+}
+
+impl ToTitleCase for str {
+    fn to_title_case(&self) -> String {
+        let mut c = self.chars();
+        match c.next() {
+            None => String::new(),
+            Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
+        }
+    }
 }
