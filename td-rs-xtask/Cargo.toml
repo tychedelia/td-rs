@@ -13,6 +13,3 @@ serde_json = "1"
 toml = "0.8"
 cargo_metadata = "0.15.4"
 homedir = "0.2"
-
-[target.'cfg(target_os = "macos")'.dependencies]
-plist = "1"
