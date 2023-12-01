@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32319.34
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RustSOP", "RustSOP.vcxproj", "{3F5BEECD-FA36-459F-91B8-BB481A67EF44}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RustOp", "RustOp.vcxproj", "{3F5BEECD-FA36-459F-91B8-BB481A67EF44}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

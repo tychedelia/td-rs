@@ -112,6 +112,10 @@ fn write_xcodeproj(
 
     std::fs::create_dir_all(path.parent().unwrap())
         .context("Could not create xcode project directory")?;
+    let short_title = plugin_type.to_short_name().to_title_case();
+    let short_upper = plugin_type.to_short_name().to_uppercase();
+    let op_path = plugin_type.to_plugin_name();
+
     let project = std::fs::read_to_string("td-rs-xtask/xcode/project.pbxproj")
         .expect("Could not read xcode project")
         .replace("{{ LIB_NAME }}", &format!("lib{plugin}.a"))
@@ -124,59 +128,38 @@ fn write_xcodeproj(
         .replace("{{ PLUGIN_PRODUCT_NAME }}", &plugin)
         .replace(
             "{{ TD_OP_H_PATH }}",
-            &format!(
-                "{}/src/{}_CPlusPlusBase.h",
-                plugin_type.to_plugin_name(),
-                plugin_type.to_short_name().to_uppercase()
-            ),
+            &format!("{}/src/{}_CPlusPlusBase.h", op_path, short_upper),
         )
         .replace(
             "{{ TD_OP_H_NAME }}",
-            &format!(
-                "{}_CPlusPlusBase.h",
-                plugin_type.to_short_name().to_uppercase()
-            ),
+            &format!("{}_CPlusPlusBase.h", short_upper),
         )
         .replace(
             "{{ PLUGIN_CPP_NAME }}",
-            &format!(
-                "Rust{}Plugin.cpp",
-                plugin_type.to_short_name().to_title_case()
-            ),
+            &format!("Rust{}Plugin.cpp", short_title),
         )
         .replace(
             "{{ PLUGIN_CPP_PATH }}",
-            &format!(
-                "{}/src/Rust{}Plugin.cpp",
-                plugin_type.to_plugin_name(),
-                plugin_type.to_short_name().to_title_case()
-            ),
+            &format!("{}/src/Rust{}Plugin.cpp", op_path, short_title),
         )
         .replace(
             "{{ PLUGIN_H_NAME }}",
-            &format!(
-                "Rust{}Plugin.h",
-                plugin_type.to_short_name().to_title_case()
-            ),
+            &format!("Rust{}Plugin.h", short_title),
         )
         .replace(
             "{{ PLUGIN_H_PATH }}",
-            &format!(
-                "{}/src/Rust{}Plugin.h",
-                plugin_type.to_plugin_name(),
-                plugin_type.to_short_name().to_title_case()
-            ),
+            &format!("{}/src/Rust{}Plugin.h", op_path, short_title),
         )
         .replace(
             "{{ OP_LIB_NAME }}",
-            &format!("lib{}.a", plugin_type.to_plugin_name().replace("-", "_")),
+            &format!("lib{}.a", op_path.replace("-", "_")),
         )
         .replace(
             "{{ OP_LIB_PATH }}",
             &format!(
                 "target/{}/release/lib{}.a",
                 target,
-                plugin_type.to_plugin_name().replace("-", "_")
+                op_path.replace("-", "_")
             ),
         );
     std::fs::write(path, project)?;
