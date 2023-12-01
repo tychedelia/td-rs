@@ -37,7 +37,7 @@ pub(crate) fn build_plugin(
         &["--release", &format!("--target={target}")],
     )?;
 
-    let solution_name = format!("Rust{}", plugin_type.to_short_name().to_uppercase());
+    let solution_name = "RustOp";
     let files = [
         format!("{solution_name}.sln"),
         format!("{solution_name}.vcxproj"),
@@ -47,11 +47,31 @@ pub(crate) fn build_plugin(
     println!("Write solution");
     let to_copy: Vec<String> = files
         .iter()
-        .map(|x| format!("./td-rs-xtask/msvc/{}/{}", plugin_type.to_short_name(), x))
+        .map(|x| format!("./td-rs-xtask/msvc/{x}"))
         .collect();
 
     println!("Run msbuild");
     fs_extra::copy_items(&to_copy, ".", &CopyOptions::new().overwrite(true))?;
+
+    let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))
+        .replace(
+            "{{ OP_LIB_NAME }}",
+            &format!("lib{}.a", op_path.replace("-", "_")),
+        )
+        .replace(
+            "{{ TD_OP_H_PATH }}",
+            &format!("{}/src/{}_CPlusPlusBase.h", op_path, short_upper),
+        )
+        .replace(
+            "{{ PLUGIN_H_PATH }}",
+            &format!("{}/src/Rust{}Plugin.h", op_path, short_title),
+        )
+        .replace(
+            "{{ PLUGIN_CPP_PATH }}",
+            &format!("{}/src/Rust{}Plugin.cpp", op_path, short_title),
+        );
+    std::fs::write(format!("./{solution_name}.vcxproj"), vcxproj)?;
+
     let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
     run_msbuild(config, &target, &plugin, is_python_enabled)?;
     fs_extra::remove_items(&files)?;
