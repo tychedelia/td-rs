@@ -312,6 +312,8 @@ pub struct ParamOptions {
     pub page: String,
     pub min: f64,
     pub max: f64,
+    pub clamp: bool,
+    pub default: f64,
 }
 
 impl From<ParamOptions> for NumericParameter {
@@ -320,9 +322,13 @@ impl From<ParamOptions> for NumericParameter {
             name: options.name,
             label: options.label,
             page: options.page,
+            default_values: [options.default; 4],
             min_values: [options.min; 4],
             max_values: [options.max; 4],
-            ..Default::default()
+            clamp_mins: [options.clamp; 4],
+            clamp_maxes: [options.clamp; 4],
+            min_sliders: [options.min; 4],
+            max_sliders: [options.max; 4],
         }
     }
 }

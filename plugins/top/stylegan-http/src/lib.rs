@@ -18,17 +18,17 @@ const MAX_TASKS: usize = 10;
 struct StyleganHttpTopParams {
     #[param(label = "Seed", page = "Network")]
     seed: u16,
-    #[param(label = "X Feature", page = "Network")]
+    #[param(label = "X Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     x_feature: u16,
-    #[param(label = "X Range", page = "Network")]
+    #[param(label = "X Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     x_range: u16,
-    #[param(label = "Y Feature", page = "Network")]
+    #[param(label = "Y Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     y_feature: u16,
-    #[param(label = "Y Range", page = "Network")]
+    #[param(label = "Y Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     y_range: u16,
-    #[param(label = "Z Feature", page = "Network")]
+    #[param(label = "Z Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     z_feature: u16,
-    #[param(label = "Z Range", page = "Network")]
+    #[param(label = "Z Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
     z_range: u16,
     #[param(label = "Blocking")]
     blocking: bool,
@@ -71,7 +71,9 @@ impl Future for StyleganHttpTop {
                 }
                 Poll::Pending => {
                     self.tasks.insert(0, task);
-                    return Poll::Ready(None);
+                    if !self.params.blocking {
+                        return Poll::Ready(None);
+                    }
                 }
             }
         }

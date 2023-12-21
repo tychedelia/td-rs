@@ -128,6 +128,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                 let mut page = None;
                 let mut min = None;
                 let mut max = None;
+                let mut clamp = None;
+                let mut default = None;
 
                 for attr in &field.attrs {
                     if attr.path.is_ident("param") {
@@ -155,6 +157,14 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                                         if let Lit::Float(lit_float) = lit {
                                             max = Some(lit_float.base10_parse().unwrap());
                                         }
+                                    } else if path.is_ident("clamp") {
+                                        if let Lit::Bool(lit_bool) = lit {
+                                            clamp = Some(lit_bool.value);
+                                        }
+                                    } else if path.is_ident("default") {
+                                        if let Lit::Float(lit_float) = lit {
+                                            default = Some(lit_float.base10_parse().unwrap());
+                                        }
                                     }
                                 }
                             }
@@ -169,6 +179,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                 let page = page.unwrap_or(default_page);
                 let min = min.unwrap_or(0.0);
                 let max = max.unwrap_or(1.0);
+                let clamp = clamp.unwrap_or(false);
+                let default = default.unwrap_or(0.0);
 
                 let register_field_code = quote! {
                     {
@@ -178,6 +190,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                             page: #page.to_string(),
                             min: #min,
                             max: #max,
+                            clamp: #clamp,
+                            default: #default,
                         };
                         Param::register(&self.#field_name, options, parameter_manager);
                     }
