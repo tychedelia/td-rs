@@ -6,6 +6,7 @@ use fs_extra::dir::CopyOptions;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use crate::util::ToTitleCase;
 
 pub(crate) fn install_plugin(
     config: &Config,
@@ -53,6 +54,9 @@ pub(crate) fn build_plugin(
     println!("Run msbuild");
     fs_extra::copy_items(&to_copy, ".", &CopyOptions::new().overwrite(true))?;
 
+    let short_title = plugin_type.to_short_name().to_title_case();
+    let short_upper = plugin_type.to_short_name().to_uppercase();
+    let op_path = plugin_type.to_plugin_name();
     let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))
         .replace(
             "{{ OP_LIB_NAME }}",

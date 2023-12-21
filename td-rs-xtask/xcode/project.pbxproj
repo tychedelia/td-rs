@@ -118,6 +118,7 @@
 		</dict>
 		<key>9ED7E4DF2999F4C9001F2445</key>
 		<dict>
+			<key>isa</key>
 			<string>PBXFileReference</string>
 			<key>lastKnownFileType</key>
 			<string>archive.ar</string>
