@@ -57,10 +57,10 @@ pub(crate) fn build_plugin(
     let short_title = plugin_type.to_short_name().to_title_case();
     let short_upper = plugin_type.to_short_name().to_uppercase();
     let op_path = plugin_type.to_plugin_name();
-    let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))
+    let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))?
         .replace(
             "{{ OP_LIB_NAME }}",
-            &format!("lib{}.a", op_path.replace("-", "_")),
+            &format!("{}.lib", op_path.replace("-", "_")),
         )
         .replace(
             "{{ TD_OP_H_PATH }}",
