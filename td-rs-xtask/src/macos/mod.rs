@@ -5,6 +5,7 @@ use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use crate::util::ToTitleCase;
 
 pub(crate) fn install_plugin(
     config: &Config,
@@ -106,10 +107,6 @@ fn write_xcodeproj(
     plugin_type: &PluginType,
     path: &PathBuf,
 ) -> anyhow::Result<()> {
-    const LIB_KEY: &str = "9E4ACB8B299AC54200A2B1CE";
-    const BUNDLE_KEY: &str = "E23329D61DF092AD0002B4FE";
-    const BUNDLE_CONFIGURATION_KEY: &str = "E23329D51DF092AD0002B4FE";
-
     std::fs::create_dir_all(path.parent().unwrap())
         .context("Could not create xcode project directory")?;
     let short_title = plugin_type.to_short_name().to_title_case();
@@ -164,18 +161,4 @@ fn write_xcodeproj(
         );
     std::fs::write(path, project)?;
     Ok(())
-}
-
-trait ToTitleCase {
-    fn to_title_case(&self) -> String;
-}
-
-impl ToTitleCase for str {
-    fn to_title_case(&self) -> String {
-        let mut c = self.chars();
-        match c.next() {
-            None => String::new(),
-            Some(f) => f.to_uppercase().collect::<String>() + c.as_str(),
-        }
-    }
 }
