@@ -1,0 +1,16 @@
+[package]
+name = "monome-grid"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "chop"
+
+[lib]
+name = "monome_grid"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../../td-rs-chop" }
+td-rs-derive = { path = "../../../td-rs-derive" }
+monome-rs = "1.1.3"
