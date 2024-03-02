@@ -43,7 +43,7 @@ pub(crate) fn build_plugin(
         &["--release", &format!("--target={target}")],
     )?;
 
-    let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
+    let is_python_enabled = crate::metadata::is_feature_enabled(plugin, "python", &plugin_type);
     let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 

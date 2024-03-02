@@ -1,10 +1,6 @@
-extern crate bindgen;
 extern crate cc;
 
 use std::{env, path::PathBuf, process::Command};
-
-use bindgen::CargoCallbacks;
-use regex::Regex;
 
 fn main() {
     if cfg!(windows) {

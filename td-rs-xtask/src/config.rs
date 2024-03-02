@@ -4,6 +4,9 @@ pub struct WindowsConfig {
     pub(crate) plugin_folder: String,
     pub(crate) python_include_dir: String,
     pub(crate) python_lib_dir: String,
+    pub(crate) python_libs: String,
+    pub(crate) cuda_lib_dir: String,
+    pub(crate) cuda_libs: String,
 }
 
 #[cfg(target_os = "macos")]

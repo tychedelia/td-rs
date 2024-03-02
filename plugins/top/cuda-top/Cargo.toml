@@ -11,7 +11,7 @@ name = "cuda_top"
 crate-type = ["staticlib"]
 
 [dependencies]
-td-rs-top = { path = "../../../td-rs-top" }
+td-rs-top = { path = "../../../td-rs-top", features = ["cuda"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
 
 #[target.'cfg(windows)'.dependencies]

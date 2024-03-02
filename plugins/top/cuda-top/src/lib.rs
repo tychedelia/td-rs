@@ -20,30 +20,15 @@ struct CudaTop {
 
 impl CudaTop {
     unsafe fn setup_cuda_surface(&mut self, mut surface: CUsurfObject, arr: CUarray) {
-        if !surface.is_null() {
-            let mut desc: CUDA_RESOURCE_DESC = Default::default();
-            cudarc::driver::sys::cuSurfObjectGetResourceDesc(
-                (&mut desc) as *mut CUDA_RESOURCE_DESC,
-                surface,
-            )
-            .result()
-            .expect("Failed to get surface resource description");
-            if desc.resType != cudarc::driver::sys::CUresourcetype_enum::CU_RESOURCE_TYPE_ARRAY {
-                panic!("Surface is not an array");
-            }
-            cudarc::driver::sys::cuSurfObjectDestroy(surface);
-            *surface = std::ptr::null_mut();
-        } else {
-            let mut desc: CUDA_RESOURCE_DESC = Default::default();
-            desc.resType = cudarc::driver::sys::CUresourcetype_enum::CU_RESOURCE_TYPE_ARRAY;
-            desc.res.array.hArray = arr;
-            cudarc::driver::sys::cuSurfObjectCreate(
-                (&mut surface) as *mut CUsurfObject,
-                (&mut desc) as *mut CUDA_RESOURCE_DESC,
-            )
+        let mut desc: CUDA_RESOURCE_DESC = Default::default();
+        desc.resType = cudarc::driver::sys::CUresourcetype_enum::CU_RESOURCE_TYPE_ARRAY;
+        desc.res.array.hArray = arr;
+        cudarc::driver::sys::cuSurfObjectCreate(
+            (&mut surface) as *mut CUsurfObject,
+            (&mut desc) as *mut CUDA_RESOURCE_DESC,
+        )
             .result()
             .expect("Failed to create surface");
-        }
     }
 }
 
@@ -70,8 +55,8 @@ impl Drop for CudaTop {
         if let Some(surf) = self.input_surface {
             cuda::surface::destroy(surf).expect("Failed to destroy input surface");
         }
-        for surf in self.output_surfaces {
-            cuda::surface::destroy(surf).expect("Failed to destroy output surface");
+        for surf in self.output_surfaces.iter() {
+            cuda::surface::destroy(*surf).expect("Failed to destroy output surface");
         }
     }
 }
@@ -97,12 +82,13 @@ impl Top for CudaTop {
     fn general_info(&self, _input: &OperatorInputs<TopInput>) -> TopGeneralInfo {
         TopGeneralInfo {
             cook_every_frame_if_asked: true,
-            ..default()
+            ..Default::default()
         }
     }
 
     fn execute(&mut self, _output: TopOutput, _input: &OperatorInputs<TopInput>) {
         self.execute_count += 1;
-
     }
 }
+
+top_plugin!(CudaTop);

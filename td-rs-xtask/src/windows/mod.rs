@@ -1,3 +1,4 @@
+use std::fmt::format;
 use crate::config::Config;
 use crate::metadata::PluginType;
 use crate::{build, PLUGIN_HOME};
@@ -76,8 +77,9 @@ pub(crate) fn build_plugin(
         );
     std::fs::write(format!("./{solution_name}.vcxproj"), vcxproj)?;
 
-    let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
-    run_msbuild(config, &target, &plugin, is_python_enabled)?;
+    let is_python_enabled = crate::metadata::is_feature_enabled(plugin, "python", &plugin_type);
+    let is_cuda_enabled = crate::metadata::is_feature_enabled(plugin, "cuda", &plugin_type);
+    run_msbuild(config, &target, &plugin, is_python_enabled, is_cuda_enabled)?;
     fs_extra::remove_items(&files)?;
 
     println!("Move plugin to target");
@@ -115,15 +117,40 @@ fn run_msbuild(
     target: &str,
     plugin: &str,
     is_python_enabled: bool,
+    is_cuda_enabled: bool,
 ) -> anyhow::Result<()> {
     let msbuild = find_msbuild()?;
+    println!("Found msbuild at {:?}", msbuild);
     let msbuild = msbuild.to_str().expect("Could not find msbuild");
     let lib = format!("{}.lib", plugin.replace("-", "_"));
-    let py_include = &config.windows.python_include_dir;
-    let py_lib = &config.windows.python_lib_dir;
-    let mut cmd = Command::new(msbuild)
-        .arg(format!("/p:AdditionalIncludeDirectories={py_include}"))
-        .arg(format!("/p:AdditionalLibraryDirectories={py_lib}"))
+
+    let mut additional_include_dirs = vec![];
+    let mut additional_library_dirs = vec![];
+    let mut additional_dependencies = vec![];
+
+    if is_python_enabled {
+        additional_include_dirs.push(config.windows.python_include_dir.as_str());
+        additional_library_dirs.push(config.windows.python_lib_dir.as_str());
+        additional_dependencies.push(config.windows.python_libs.as_str());
+    }
+    if is_cuda_enabled {
+        additional_library_dirs.push(config.windows.cuda_lib_dir.as_str());
+        additional_dependencies.push(config.windows.cuda_libs.as_str());
+    }
+
+    let additional_include_dirs = additional_include_dirs.join("\";\"");
+    let additional_library_dirs = additional_library_dirs.join("\";\"");
+    let additional_dependencies = additional_dependencies.join(";");
+
+    println!("is_python_enabled: {}", is_python_enabled);
+    println!("is_cuda_enabled: {}", is_cuda_enabled);
+
+    let mut cmd = Command::new("powershell.exe")
+        .arg(format!("&'{msbuild}'"))
+        .arg("--%")
+        .arg(format!("/p:AdditionalIncludeDirectories={additional_include_dirs}"))
+        .arg(format!("/p:AdditionalLibraryDirectories={additional_library_dirs}"))
+        .arg(format!("/p:AdditionalDependencies={additional_dependencies}"))
         .arg(if is_python_enabled {
             "/p:PreprocessorDefinitions=PYTHON_ENABLED"
         } else {

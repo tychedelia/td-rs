@@ -1,5 +1,6 @@
 pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     let python_enabled = std::env::var("CARGO_FEATURE_PYTHON").is_ok();
+    let cuda_enabled = std::env::var("CARGO_FEATURE_CUDA").is_ok();
 
     let path = std::path::PathBuf::from("src");
     let mut incs = vec![path];
@@ -11,6 +12,7 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     }
 
     println!("python_enabled: {}", python_enabled);
+    println!("cuda_enabled: {}", cuda_enabled);
 
     if python_enabled {
         if cfg!(windows) {
@@ -26,6 +28,14 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
             ));
         };
         clang_args.push("-DPYTHON_ENABLED");
+    }
+    if cuda_enabled {
+        if cfg!(windows) {
+            incs.push(std::path::PathBuf::from(
+                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.3\\lib\\x64\\",
+            ));
+        };
+        clang_args.push("-DCUDA_ENABLED");
     }
 
     if cfg!(windows) {

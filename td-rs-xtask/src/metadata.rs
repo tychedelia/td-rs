@@ -106,7 +106,7 @@ pub(crate) fn list_plugins() -> anyhow::Result<Vec<String>> {
     Ok(ws_members)
 }
 
-pub fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
+pub fn is_feature_enabled(plugin: &str, feature: &str, plugin_type: &PluginType) -> bool {
     let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
     let parent_dep = pkg
         .dependencies
@@ -116,6 +116,6 @@ pub fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
     parent_dep
         .features
         .iter()
-        .find(|feature| feature == &"python")
+        .find(|f| f == &feature)
         .is_some()
 }
