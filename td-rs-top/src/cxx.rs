@@ -211,9 +211,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
 
     fn setupParameters(&mut self, manager: Pin<&mut OP_ParameterManager>) {
         #[cfg(feature = "tracing")]
-        {
-            let span = tracing_base::trace_span!("setupParameters").entered();
-        }
+        let _span = { tracing_base::trace_span!("setupParameters").entered(); };
         let params = self.inner.params_mut();
         if let Some(params) = params {
             let mut manager = ParameterManager::new(manager);
@@ -223,9 +221,7 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
 
     unsafe fn pulsePressed(&mut self, name: *const std::ffi::c_char) {
         #[cfg(feature = "tracing")]
-        {
-            let span = tracing_base::trace_span!("pulsePressed").entered();
-        }
+        let _span = { tracing_base::trace_span!("pulsePressed").entered(); };
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
     }

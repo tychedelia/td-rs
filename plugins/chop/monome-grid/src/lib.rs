@@ -56,15 +56,28 @@ impl Op for MonomeGrid {
 impl Chop for MonomeGrid {
     fn execute(&mut self, output: &mut ChopOutput, inputs: &OperatorInputs<ChopInput>) {
         if self.params != self.prev_params || self.device.is_none() {
-            self.prev_params = self.params.clone();
-            let device = match Monome::new(&self.params.prefix) {
-                Ok(device) => device,
-                Err(err) => {
-                    self.set_error(&format!("Error connecting to monome: {}", err));
-                    return;
+            // Clear the grid if hold was just turned off
+            if self.prev_params.hold {
+                for i in 0..128 {
+                    self.grid[i] = false;
                 }
-            };
-            self.device = Some(device);
+            }
+
+            if let Some(ref mut device) = &mut self.device {
+                device.set_all(&self.grid);
+            } else {
+                // Connect to the monome
+                let device = match Monome::new(&self.params.prefix) {
+                    Ok(device) => device,
+                    Err(err) => {
+                        self.set_error(&format!("Error connecting to monome: {}", err));
+                        return;
+                    }
+                };
+                self.device = Some(device);
+            }
+
+            self.prev_params = self.params.clone();
         }
 
         if let Some(ref mut device) = &mut self.device {
@@ -102,7 +115,9 @@ impl Chop for MonomeGrid {
     }
 
     fn channel_name(&self, index: usize, _inputs: &OperatorInputs<ChopInput>) -> String {
-        format!("grid{}", index)
+        let x = index % 16;
+        let y = index / 16;
+        format!("grid_x{}_y{}", x, y)
     }
 
     fn output_info(&self, _inputs: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {

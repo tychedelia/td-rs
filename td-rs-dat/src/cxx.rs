@@ -97,9 +97,7 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
 
     fn execute(&mut self, outputs: Pin<&mut DAT_Output>, inputs: &OP_Inputs) {
         #[cfg(feature = "tracing")]
-        let span = {
-            tracing_base::trace_span!("execute").entered();
-        };
+        let _span = { tracing_base::trace_span!("execute").entered(); };
         let input = OperatorInputs::new(inputs);
         let output = DatOutput::new(outputs);
         if let Some(params) = self.inner.params_mut() {
