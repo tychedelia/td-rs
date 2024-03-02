@@ -24,6 +24,7 @@ members = [
     "plugins/top/cpu-memory-top",
     "plugins/top/stable-diffusion",
     "plugins/top/stylegan-http",
+    "plugins/top/cuda-top",
     "td-rs-autocxx-build",
     "td-rs-base",
     "td-rs-chop",

@@ -1,4 +1,6 @@
 pub mod cxx;
+#[cfg(feature = "cuda")]
+pub mod cuda;
 
 pub use ::cxx::UniquePtr;
 
