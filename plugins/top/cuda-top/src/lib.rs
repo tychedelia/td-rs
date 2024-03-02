@@ -1,5 +1,4 @@
 use cudarc::driver::result::stream::StreamKind;
-use cudarc::driver::result::stream::StreamKind::Default;
 use cudarc::driver::sys::{
     CUarray, CUDA_RESOURCE_DESC, CUstream, CUsurfObject,
 };
@@ -98,7 +97,7 @@ impl Top for CudaTop {
     fn general_info(&self, _input: &OperatorInputs<TopInput>) -> TopGeneralInfo {
         TopGeneralInfo {
             cook_every_frame_if_asked: true,
-            ..Default::default()
+            ..default()
         }
     }
 
