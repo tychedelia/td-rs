@@ -3,6 +3,7 @@ plugin_folder = "$HOME\\OneDrive\\Documents\\Derivative\\Plugins\\"
 python_include_dir = "\"C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include\";\"C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\Include\\PC\""
 python_lib_dir = "\"C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPlus\\3rdParty\\Python\\lib\\x64\""
 python_libs = "\"python311.lib\""
+cuda_include_dir = "\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.3\\include\""
 cuda_lib_dir = "\"C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.3\\lib\\x64\""
 cuda_libs = "\"cublas.lib;curand.lib;synchronization.lib;cuda.lib;cudart.lib\""
 

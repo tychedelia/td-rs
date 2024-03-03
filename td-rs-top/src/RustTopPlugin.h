@@ -12,6 +12,9 @@ TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer
 
 void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
+bool beginCudaOperations(TD::TOP_Context& context);
+void endCudaOperations(TD::TOP_Context& context);
+
 using namespace TD;
 
 class TopPlugin : public TOP_CPlusPlusBase {

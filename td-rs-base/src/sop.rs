@@ -443,6 +443,17 @@ impl_op_ex!(*|a: &Position, b: f32| -> Position {
 #[repr(transparent)]
 pub struct Color(cxx::Color);
 
+impl Default for Color {
+    fn default() -> Self {
+        Self(cxx::Color {
+            r: 0.0,
+            g: 0.0,
+            b: 0.0,
+            a: 1.0,
+        })
+    }
+}
+
 impl Clone for Color {
     fn clone(&self) -> Self {
         Self(cxx::Color {

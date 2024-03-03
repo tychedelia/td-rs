@@ -5,7 +5,6 @@
 #include <Python.h>
 #endif
 
-
 extern "C" {
 
 RustTopPlugin *top_new(const OP_NodeInfo &info, TOP_Context &context);
@@ -53,5 +52,13 @@ void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
     if (buffer) {
         buffer.release();
     }
+}
+
+bool beginCudaOperations(TD::TOP_Context& context) {
+    return context.beginCUDAOperations(0);
+}
+
+void endCudaOperations(TD::TOP_Context& context) {
+    context.endCUDAOperations(0);
 }
 

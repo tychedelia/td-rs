@@ -14,11 +14,11 @@
     <ClInclude Include="td-rs-base\src\CPlusPlus_Common.h" />
     <ClInclude Include="td-rs-base\src\GL_Extensions.h" />
     <ClInclude Include="td-rs-base\src\RustBase.h" />
-    <ClInclude Include="{{ TD_OP_H_PATH }}" />
-    <ClInclude Include="{{ PLUGIN_H_PATH }}" />
+    <ClInclude Include="td-rs-top/src/TOP_CPlusPlusBase.h" />
+    <ClInclude Include="td-rs-top/src/RustTopPlugin.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="{{ PLUGIN_CPP_PATH }}" />
+    <ClCompile Include="td-rs-top/src/RustTopPlugin.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{3F5BEECD-FA36-459F-91B8-BB481A67EF44}</ProjectGuid>
@@ -76,7 +76,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);$(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);$(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -95,7 +95,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>target\x86_64-pc-windows-msvc\release\build\cuda-top-c88d687cc2b6c6f8\out\;$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>foo.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);$(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>foo.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\td_rs_top.lib;$(PLUGIN);$(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

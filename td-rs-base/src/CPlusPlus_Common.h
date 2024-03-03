@@ -540,7 +540,8 @@ class OP_CUDAAcquireInfo {
 public:
   OP_CUDAAcquireInfo() { memset(reserved, 0, sizeof(reserved)); }
 
-  cudaStream_t stream = 0;
+  // HACK: pacify autocxx
+  void* stream = 0;
 
   uint32_t reserved[25];
 };

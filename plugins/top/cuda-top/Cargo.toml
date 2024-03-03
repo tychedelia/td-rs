@@ -15,7 +15,7 @@ td-rs-top = { path = "../../../td-rs-top", features = ["cuda"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
 
 #[target.'cfg(windows)'.dependencies]
-cudarc = "0.9"
+cudarc = "0.10"
 
 [build-dependencies]
 bindgen = "0.66.1"

@@ -49,6 +49,6 @@ fn main() {
         // cuda_target.debug(true);
 
         cuda_target.file("src/kernels/kernel.cu");
-        cuda_target.compile("kernel");
+        cuda_target.compile("baz");
     }
 }

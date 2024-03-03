@@ -52,6 +52,54 @@ impl<'execute> TopOutput<'execute> {
                 .uploadBuffer(buf.into_raw(), &info, std::ptr::null_mut())
         };
     }
+
+    pub fn create_cuda_array(&mut self, info: &TopCudaOutputInfo) -> Option<CudaArrayInfo> {
+        let info = crate::cxx::TOP_CUDAOutputInfo {
+            stream: info.stream,
+            textureDesc: crate::cxx::OP_TextureDesc {
+                aspectX: info.texture_desc.aspect_x,
+                aspectY: info.texture_desc.aspect_y,
+                depth: info.texture_desc.depth as u32,
+                height: info.texture_desc.height,
+                width: info.texture_desc.width,
+                texDim: match info.texture_desc.tex_dim {
+                    TexDim::EInvalid => cxx::OP_TexDim::eInvalid,
+                    TexDim::E2D => cxx::OP_TexDim::e2D,
+                    TexDim::E2DArray => cxx::OP_TexDim::e2DArray,
+                    TexDim::E3D => cxx::OP_TexDim::e3D,
+                    TexDim::ECube => cxx::OP_TexDim::eCube,
+                },
+                pixelFormat: (&info.texture_desc.pixel_format).into(),
+                reserved: Default::default(),
+            },
+            colorBufferIndex: info.color_buffer_index as u32,
+            reserved: Default::default(),
+        };
+        let info = unsafe {
+            let info = self.output
+                .as_mut()
+                .createCUDAArray(&info, std::ptr::null_mut());
+
+            if info.is_null() {
+                return None
+            }
+
+            &*info
+        };
+
+        Some(CudaArrayInfo {
+            texture_desc: TextureDesc {
+                width: info.textureDesc.width,
+                height: info.textureDesc.height,
+                depth: info.textureDesc.depth,
+                tex_dim: (&info.textureDesc.texDim).into(),
+                pixel_format: (&info.textureDesc.pixelFormat).into(),
+                aspect_x: info.textureDesc.aspectX,
+                aspect_y: info.textureDesc.aspectY,
+            },
+            cuda_array: info.cudaArray as *mut _ as cudarc::driver::sys::CUarray,
+        })
+    }
 }
 
 pub trait TopNew {
@@ -80,6 +128,14 @@ pub struct TopContext {
 impl TopContext {
     pub fn new(context: Pin<&'static mut cxx::TOP_Context>) -> Self {
         Self { context }
+    }
+
+    pub fn begin_cuda_operations(&mut self) -> bool {
+        cxx::beginCudaOperations(self.context.as_mut())
+    }
+
+    pub fn end_cuda_oprations(&mut self) {
+        cxx::endCudaOperations(self.context.as_mut());
     }
 
     pub fn create_output_buffer(&mut self, size: usize, flags: TopBufferFlags) -> TopBuffer {
@@ -138,6 +194,12 @@ impl Drop for TopBuffer {
         }
         cxx::releaseBuffer(self.buffer.pin_mut())
     }
+}
+
+pub struct TopCudaOutputInfo {
+    pub stream: *mut std::ffi::c_void,
+    pub texture_desc: TextureDesc,
+    pub color_buffer_index: usize,
 }
 
 #[derive(Debug, Default)]

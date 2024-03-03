@@ -32,9 +32,9 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     if cuda_enabled {
         if cfg!(windows) {
             incs.push(std::path::PathBuf::from(
-                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.3\\lib\\x64\\",
+                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.3\\include",
             ));
-        };
+        }
         clang_args.push("-DCUDA_ENABLED");
     }
 
@@ -50,6 +50,9 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     let mut b = b.build()?;
     if python_enabled {
         b.define("PYTHON_ENABLED", None);
+    }
+    if cuda_enabled {
+        b.define("CUDA_ENABLED", None);
     }
 
     b.flag_if_supported("-std=c++17");

@@ -36,12 +36,15 @@ include_cpp! {
     generate!("TD::TOP_Buffer")
     generate!("TD::TOP_Output")
     generate_pod!("TD::TOP_BufferFlags")
+    generate_pod!("TD::TOP_CUDAOutputInfo")
 
     // utility fns
     generate!("getBufferData")
     generate!("getBufferSize")
     generate!("getBufferFlags")
     generate!("releaseBuffer")
+    generate!("beginCudaOperations")
+    generate!("endCudaOperations")
 }
 
 pub use autocxx::c_void;

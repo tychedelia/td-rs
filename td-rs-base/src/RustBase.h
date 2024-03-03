@@ -31,4 +31,8 @@ void releaseDownloadResult(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
     result.release();
 }
 
+TD::OP_TextureDesc getInputTextureDesc(const TD::OP_TOPInput &input) {
+    return input.textureDesc;
+}
+
 #endif // TD_RS_RUSTBASE_H

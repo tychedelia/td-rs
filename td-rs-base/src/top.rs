@@ -1,4 +1,4 @@
-use crate::cxx::{OP_PixelFormat, OP_TOPInput};
+use crate::cxx::{cudaArray, OP_PixelFormat, OP_TexDim, OP_TOPInput};
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
 
@@ -12,11 +12,23 @@ pub enum TexDim {
     ECube,
 }
 
+impl From<&crate::cxx::OP_TexDim> for TexDim {
+    fn from(value: &OP_TexDim) -> Self {
+        match value {
+            OP_TexDim::eInvalid => TexDim::EInvalid,
+            OP_TexDim::e2D => TexDim::E2D,
+            OP_TexDim::e2DArray => TexDim::E2DArray,
+            OP_TexDim::e3D => TexDim::E3D,
+            OP_TexDim::eCube => TexDim::ECube,
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct TextureDesc {
-    pub width: usize,
-    pub height: usize,
-    pub depth: usize,
+    pub width: u32,
+    pub height: u32,
+    pub depth: u32,
     pub tex_dim: TexDim,
     pub pixel_format: PixelFormat,
     pub aspect_x: f32,
@@ -162,6 +174,46 @@ pub struct TopInput {
 }
 
 impl TopInput {
+    pub fn texture_desc(&self) -> TextureDesc {
+        let desc = unsafe { crate::cxx::getInputTextureDesc(&self.input) };
+        TextureDesc {
+            width: desc.width,
+            height: desc.height,
+            depth: desc.depth,
+            tex_dim: match desc.texDim {
+                crate::cxx::OP_TexDim::eInvalid => TexDim::EInvalid,
+                crate::cxx::OP_TexDim::e2D => TexDim::E2D,
+                crate::cxx::OP_TexDim::e2DArray => TexDim::E2DArray,
+                crate::cxx::OP_TexDim::e3D => TexDim::E3D,
+                crate::cxx::OP_TexDim::eCube => TexDim::ECube,
+            },
+            pixel_format: PixelFormat::from(&desc.pixelFormat),
+            aspect_x: desc.aspectX,
+            aspect_y: desc.aspectY,
+        }
+    }
+
+    #[cfg(feature = "cuda")]
+    pub fn get_cuda_array(&self, acquire_info: CudaAcquireInfo) -> CudaArrayInfo {
+        let info = unsafe { &*self.input.getCUDAArray(&crate::cxx::OP_CUDAAcquireInfo {
+            stream: acquire_info.stream,
+            reserved: Default::default(),
+        }, std::ptr::null_mut()) };
+
+        CudaArrayInfo {
+            texture_desc: TextureDesc {
+                width: info.textureDesc.width,
+                height: info.textureDesc.height,
+                depth: info.textureDesc.depth,
+                tex_dim: (&info.textureDesc.texDim).into(),
+                pixel_format: (&info.textureDesc.pixelFormat).into(),
+                aspect_x: info.textureDesc.aspectX,
+                aspect_y: info.textureDesc.aspectY,
+            },
+            cuda_array: info.cudaArray as *mut _ as cudarc::driver::sys::CUarray,
+        }
+    }
+
     pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: false,
@@ -170,6 +222,10 @@ impl TopInput {
         let download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)
     }
+}
+
+pub struct CudaAcquireInfo {
+    pub stream: *mut std::ffi::c_void,
 }
 
 pub struct TopDownloadResult {
@@ -196,9 +252,9 @@ impl TopDownloadResult {
     pub fn texture_desc(&mut self) -> TextureDesc {
         let desc = crate::cxx::getDownloadTextureDesc(self.result.pin_mut());
         TextureDesc {
-            width: desc.width as usize,
-            height: desc.height as usize,
-            depth: desc.depth as usize,
+            width: desc.width,
+            height: desc.height,
+            depth: desc.depth,
             tex_dim: match desc.texDim {
                 crate::cxx::OP_TexDim::eInvalid => TexDim::EInvalid,
                 crate::cxx::OP_TexDim::e2D => TexDim::E2D,
@@ -220,6 +276,12 @@ impl Drop for TopDownloadResult {
         }
         crate::cxx::releaseDownloadResult(self.result.pin_mut())
     }
+}
+
+#[cfg(feature = "cuda")]
+pub struct CudaArrayInfo {
+    pub texture_desc: TextureDesc,
+    pub cuda_array: cudarc::driver::sys::CUarray,
 }
 
 impl<'execute> GetInput<'execute, TopInput> for OperatorInputs<'execute, TopInput> {

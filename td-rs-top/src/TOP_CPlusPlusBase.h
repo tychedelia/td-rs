@@ -307,7 +307,8 @@ class TOP_CUDAOutputInfo {
 public:
   TOP_CUDAOutputInfo() { memset(reserved, 0, sizeof(reserved)); }
 
-  cudaStream_t stream = 0;
+  // HACK: pacify autocxx
+  void* stream = 0;
 
   // Describe the texture that should be created from the buffer
   OP_TextureDesc textureDesc;

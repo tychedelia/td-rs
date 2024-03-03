@@ -134,6 +134,7 @@ fn run_msbuild(
         additional_dependencies.push(config.windows.python_libs.as_str());
     }
     if is_cuda_enabled {
+        additional_include_dirs.push(config.windows.cuda_include_dir.as_str());
         additional_library_dirs.push(config.windows.cuda_lib_dir.as_str());
         additional_dependencies.push(config.windows.cuda_libs.as_str());
     }

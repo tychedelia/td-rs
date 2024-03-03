@@ -36,6 +36,8 @@ include_cpp! {
     generate!("TD::OP_SmartRef")
     generate_pod!("TD::OP_TextureDesc")
     generate_pod!("TD::OP_TexDim")
+    generate_pod!("TD::OP_CUDAArrayInfo")
+    generate_pod!("TD::OP_CUDAAcquireInfo")
 
     // util fns
     generate!("setString")
@@ -45,6 +47,7 @@ include_cpp! {
     generate!("getDownloadData")
     generate!("getDownloadTextureDesc")
     generate!("releaseDownloadResult")
+    generate!("getInputTextureDesc")
 }
 
 #[cfg(feature = "python")]

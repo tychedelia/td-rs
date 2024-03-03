@@ -18,6 +18,7 @@ pyo3-ffi = { version = "0.20", optional = true}
 tracing-base = { package = "tracing", version = "0.1", optional = true}
 tracing-subscriber = { version = "0.3", optional = true }
 tokio-core = { package = "tokio", version = "1", optional = true }
+cudarc = { version = "0.10", optional = true }
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }
@@ -29,3 +30,4 @@ default = []
 python = ["pyo3-ffi"]
 tracing = ["tracing-base", "tracing-subscriber", "tracing-subscriber/env-filter"]
 tokio = ["tokio-core", "tokio-core/rt-multi-thread"]
+cuda = ["cudarc"]

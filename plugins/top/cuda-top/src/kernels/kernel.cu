@@ -96,56 +96,57 @@ divUp(int a, int b)
     return ((a % b) != 0) ? (a / b + 1) : (a / b);
 }
 
+
+extern "C" {
+
 cudaError_t
-doCUDAOperation(int width, int height, int depth, TD::OP_TexDim dim, float4 color, cudaSurfaceObject_t input, cudaSurfaceObject_t output, cudaStream_t stream)
-{
+doCUDAOperation(int width, int height, int depth, TD::OP_TexDim dim, float r, float g, float b, float a,
+                cudaSurfaceObject_t input, cudaSurfaceObject_t output, void* stream) {
     cudaError_t cudaStatus;
 
     dim3 blockSize(16, 16, 1);
     dim3 gridSize(divUp(width, blockSize.x), divUp(height, blockSize.y), depth);
 
-    if (input)
-    {
-        switch (dim)
-        {
+    if (input) {
+        switch (dim) {
             case TD::OP_TexDim::e2D:
-                copyTextureRGBA82D << <gridSize, blockSize, 0, stream >> > (width, height, input, output);
+                copyTextureRGBA82D << < gridSize, blockSize, 0, stream >> > (width, height, input, output);
                 break;
             case TD::OP_TexDim::e3D:
-                copyTextureRGBA83D << <gridSize, blockSize, 0, stream >> > (width, height, input, output);
+                copyTextureRGBA83D << < gridSize, blockSize, 0, stream >> > (width, height, input, output);
                 break;
             case TD::OP_TexDim::eCube:
                 gridSize.z = 6;
-                copyTextureRGBA8Cube << <gridSize, blockSize, 0, stream >> > (width, height, input, output);
+                copyTextureRGBA8Cube << < gridSize, blockSize, 0, stream >> > (width, height, input, output);
                 break;
             case TD::OP_TexDim::e2DArray:
-                copyTextureRGBA82DArray << <gridSize, blockSize, 0, stream >> > (width, height, input, output);
+                copyTextureRGBA82DArray << < gridSize, blockSize, 0, stream >> > (width, height, input, output);
                 break;
         }
-    }
-    else
-    {
+    } else {
         dim3 gridSize(divUp(width, blockSize.x), divUp(height, blockSize.y), 1);
         uchar4 c8;
         // Flip R and B since we are outputting to BGRA8
-        c8.z = (uint8_t)std::min(std::max(color.x * 255.0f, 0.0f), 255.0f);
-        c8.y = (uint8_t)std::min(std::max(color.y * 255.0f, 0.0f), 255.0f);
-        c8.x = (uint8_t)std::min(std::max(color.z * 255.0f, 0.0f), 255.0f);
-        c8.w = (uint8_t)std::min(std::max(color.w * 255.0f, 0.0f), 255.0f);
-        fillOutput<<<gridSize, blockSize, 0, stream>>> (width, height, c8, output);
+        c8.z = (uint8_t) std::min(std::max(r * 255.0f, 0.0f), 255.0f);
+        c8.y = (uint8_t) std::min(std::max(g * 255.0f, 0.0f), 255.0f);
+        c8.x = (uint8_t) std::min(std::max(b * 255.0f, 0.0f), 255.0f);
+        c8.w = (uint8_t) std::min(std::max(a * 255.0f, 0.0f), 255.0f);
+        fillOutput<<<gridSize, blockSize, 0, stream>>>(width, height, c8, output);
     }
 
 
 #ifdef _DEBUG
     // any errors encountered during the launch.
-	cudaStatus = cudaDeviceSynchronize();
-	if (cudaStatus != cudaSuccess)
-	{
-		fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching kernel!\n", cudaStatus);
-	}
+    cudaStatus = cudaDeviceSynchronize();
+    if (cudaStatus != cudaSuccess)
+    {
+        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching kernel!\n", cudaStatus);
+    }
 #else
     cudaStatus = cudaSuccess;
 #endif
 
     return cudaStatus;
+}
+
 }
