@@ -128,6 +128,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                 let mut page = None;
                 let mut min = None;
                 let mut max = None;
+                let mut min_slider = None;
+                let mut max_slider = None;
                 let mut clamp = None;
                 let mut default = None;
 
@@ -157,6 +159,14 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                                         if let Lit::Float(lit_float) = lit {
                                             max = Some(lit_float.base10_parse().unwrap());
                                         }
+                                    } else if path.is_ident("min_slider") {
+                                        if let Lit::Float(lit_float) = lit {
+                                            min_slider = Some(lit_float.base10_parse().unwrap());
+                                        }
+                                    } else if path.is_ident("max_slider") {
+                                        if let Lit::Float(lit_float) = lit {
+                                            max_slider = Some(lit_float.base10_parse().unwrap());
+                                        }
                                     } else if path.is_ident("clamp") {
                                         if let Lit::Bool(lit_bool) = lit {
                                             clamp = Some(lit_bool.value);
@@ -179,6 +189,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                 let page = page.unwrap_or(default_page);
                 let min = min.unwrap_or(0.0);
                 let max = max.unwrap_or(1.0);
+                let min_slider = min_slider.unwrap_or(min);
+                let max_slider = max_slider.unwrap_or(max);
                 let clamp = clamp.unwrap_or(false);
                 let default = default.unwrap_or(0.0);
 
@@ -190,6 +202,8 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                             page: #page.to_string(),
                             min: #min,
                             max: #max,
+                            min_slider: #min_slider,
+                            max_slider: #max_slider,
                             clamp: #clamp,
                             default: #default,
                         };

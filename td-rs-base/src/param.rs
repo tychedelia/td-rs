@@ -312,6 +312,8 @@ pub struct ParamOptions {
     pub page: String,
     pub min: f64,
     pub max: f64,
+    pub min_slider: f64,
+    pub max_slider: f64,
     pub clamp: bool,
     pub default: f64,
 }
@@ -327,8 +329,8 @@ impl From<ParamOptions> for NumericParameter {
             max_values: [options.max; 4],
             clamp_mins: [options.clamp; 4],
             clamp_maxes: [options.clamp; 4],
-            min_sliders: [options.min; 4],
-            max_sliders: [options.max; 4],
+            min_sliders: [options.min_slider; 4],
+            max_sliders: [options.max_slider; 4],
         }
     }
 }

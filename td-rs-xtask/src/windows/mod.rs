@@ -87,19 +87,14 @@ pub(crate) fn build_plugin(
 }
 
 fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
-    let dll_name = match plugin_type {
-        PluginType::Chop => "RustCHOP",
-        PluginType::Sop => "RustSOP",
-        PluginType::Dat => "RustDAT",
-        PluginType::Top => "RustTOP",
-    };
+    let dll_name = "RustOp";
 
     let plugin_build_path = format!("./Release/{dll_name}.dll");
     let plugin_target_path = plugin_target_path(plugin);
     std::fs::create_dir_all(&plugin_target_path.parent().unwrap())
         .context("Could not create plugin directory")?;
     std::fs::copy(&plugin_build_path, &plugin_target_path)
-        .context("Could not move plugin to target directory")?;
+        .context(format!("Could not move plugin to target directory {:?}->{:?}", plugin_build_path, plugin_target_path))?;
     Ok(())
 }
 
