@@ -5,4 +5,4 @@ python_lib_dir = "C:\\Program Files\\Derivative\\TouchDesigner\\Samples\\CPlusPl
 
 [macos]
 plugin_folder = "$HOME/Library/Application Support/Derivative/TouchDesigner099/Plugins"
-python_include_dir = "/Applications/TouchDesigner.app/Contents/MacOS/TouchEngine.app/Contents/Frameworks/Python.framework/Headers"
+python_include_dir = "/Applications/TouchDesigner.app/Contents/Frameworks/Python.framework/Headers"

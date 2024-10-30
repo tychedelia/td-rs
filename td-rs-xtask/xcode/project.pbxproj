@@ -591,7 +591,7 @@
 				<key>DEAD_CODE_STRIPPING</key>
 				<string>YES</string>
 				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<string>/Applications/TouchDesigner.app/Contents/MacOS/TouchEngine.app/Contents/Frameworks</string>
+				<string>/Applications/TouchDesigner.app/Contents/Frameworks</string>
 				<key>INFOPLIST_FILE</key>
 				<string>$(SRCROOT)/Info.plist</string>
 				<key>INSTALL_PATH</key>
@@ -638,7 +638,7 @@
 				<key>DEAD_CODE_STRIPPING</key>
 				<string>YES</string>
 				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<string>/Applications/TouchDesigner.app/Contents/MacOS/TouchEngine.app/Contents/Frameworks</string>
+				<string>/Applications/TouchDesigner.app/Contents/Frameworks</string>
 				<key>INFOPLIST_FILE</key>
 				<string>$(SRCROOT)/Info.plist</string>
 				<key>INSTALL_PATH</key>
