@@ -206,12 +206,12 @@ impl <'cook> CustomAttributeData<'cook> {
     }
 }
 
-impl<'execute> GetInput<'execute, SopInput> for OperatorInputs<'execute, SopInput> {
+impl<'cook> GetInput<'cook, SopInput> for OperatorInputs<'cook, SopInput> {
     fn num_inputs(&self) -> usize {
         self.inputs.getNumInputs() as usize
     }
 
-    fn input(&self, index: usize) -> Option<&'execute SopInput> {
+    fn input(&self, index: usize) -> Option<&'cook SopInput> {
         let input = self.inputs.getInputSOP(index as i32);
         if input.is_null() {
             None

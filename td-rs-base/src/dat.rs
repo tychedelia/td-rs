@@ -59,12 +59,12 @@ impl DatInput {
     }
 }
 
-impl<'execute> GetInput<'execute, DatInput> for OperatorInputs<'execute, DatInput> {
+impl<'cook> GetInput<'cook, DatInput> for OperatorInputs<'cook, DatInput> {
     fn num_inputs(&self) -> usize {
         self.inputs.getNumInputs() as usize
     }
 
-    fn input(&self, index: usize) -> Option<&'execute DatInput> {
+    fn input(&self, index: usize) -> Option<&'cook DatInput> {
         let input = self.inputs.getInputDAT(index as i32);
         if input.is_null() {
             None

@@ -14,16 +14,16 @@ pub struct DatGeneralInfo {
     pub cook_every_frame_if_asked: bool,
 }
 
-pub struct DatOutput<'execute> {
-    output: Pin<&'execute mut cxx::DAT_Output>,
+pub struct DatOutput<'cook> {
+    output: Pin<&'cook mut cxx::DAT_Output>,
 }
 
-impl<'execute> DatOutput<'execute> {
-    pub fn new(output: Pin<&'execute mut cxx::DAT_Output>) -> Self {
+impl<'cook> DatOutput<'cook> {
+    pub fn new(output: Pin<&'cook mut cxx::DAT_Output>) -> Self {
         Self { output }
     }
 
-    pub fn table<T: CellType<'execute> + Default>(mut self) -> DatTableOutput<'execute, T> {
+    pub fn table<T: CellType<'cook> + Default>(mut self) -> DatTableOutput<'cook, T> {
         self.output
             .as_mut()
             .setOutputDataType(cxx::DAT_OutDataType::Table);
@@ -38,7 +38,7 @@ impl<'execute> DatOutput<'execute> {
         table_out
     }
 
-    pub fn text(mut self) -> DatTextOutput<'execute> {
+    pub fn text(mut self) -> DatTextOutput<'cook> {
         self.output
             .as_mut()
             .setOutputDataType(cxx::DAT_OutDataType::Text);
@@ -48,14 +48,14 @@ impl<'execute> DatOutput<'execute> {
     }
 }
 
-pub struct DatTableOutput<'execute, T> {
-    output: Pin<&'execute mut cxx::DAT_Output>,
+pub struct DatTableOutput<'cook, T> {
+    output: Pin<&'cook mut cxx::DAT_Output>,
     table: Vec<T>,
 }
 
-impl<'execute, T> DatTableOutput<'execute, T>
+impl<'cook, T> DatTableOutput<'cook, T>
 where
-    T: CellType<'execute> + Default,
+    T: CellType<'cook> + Default,
 {
     pub fn get(&self, row: usize, col: usize) -> &T {
         T::get(self, row, col)
@@ -82,18 +82,18 @@ where
 
 /// A type which can be used as a cell in a DAT table. Should not be implemented manually or used
 /// directly.
-pub trait CellType<'execute>
+pub trait CellType<'cook>
 where
     Self: Clone,
 {
     /// Get a reference to the value of this cell from the table.
-    fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self;
+    fn get<'a>(table: &'a DatTableOutput<'cook, Self>, row: usize, col: usize) -> &'a Self;
     /// Set the value of this cell in the table.
     fn set(table: &mut DatTableOutput<Self>, row: usize, col: usize, value: Self);
 }
 
-impl<'execute> CellType<'execute> for f64 {
-    fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
+impl<'cook> CellType<'cook> for f64 {
+    fn get<'a>(table: &'a DatTableOutput<'cook, Self>, row: usize, col: usize) -> &'a Self {
         let mut out = f64::default();
         let [rows, _] = table.table_size();
         let offset = row * rows + col;
@@ -124,8 +124,8 @@ impl<'execute> CellType<'execute> for f64 {
     }
 }
 
-impl<'execute> CellType<'execute> for i32 {
-    fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
+impl<'cook> CellType<'cook> for i32 {
+    fn get<'a>(table: &'a DatTableOutput<'cook, Self>, row: usize, col: usize) -> &'a Self {
         let mut out = i32::default();
         let [rows, _] = table.table_size();
         let offset = row * rows + col;
@@ -156,8 +156,8 @@ impl<'execute> CellType<'execute> for i32 {
     }
 }
 
-impl<'execute> CellType<'execute> for String {
-    fn get<'a>(table: &'a DatTableOutput<'execute, Self>, row: usize, col: usize) -> &'a Self {
+impl<'cook> CellType<'cook> for String {
+    fn get<'a>(table: &'a DatTableOutput<'cook, Self>, row: usize, col: usize) -> &'a Self {
         let rows = table.table_size()[0];
         let offset = row * rows + col;
         let out = unsafe {
@@ -189,9 +189,9 @@ impl<'execute> CellType<'execute> for String {
     }
 }
 
-impl<'execute, T> Index<[usize; 2]> for DatTableOutput<'execute, T>
+impl<'cook, T> Index<[usize; 2]> for DatTableOutput<'cook, T>
 where
-    T: CellType<'execute> + Default,
+    T: CellType<'cook> + Default,
 {
     type Output = T;
 
@@ -201,9 +201,9 @@ where
     }
 }
 
-impl<'execute, T> IndexMut<[usize; 2]> for DatTableOutput<'execute, T>
+impl<'cook, T> IndexMut<[usize; 2]> for DatTableOutput<'cook, T>
 where
-    T: CellType<'execute> + Default,
+    T: CellType<'cook> + Default,
 {
     fn index_mut(&mut self, index: [usize; 2]) -> &mut Self::Output {
         let [row, col] = index;
@@ -215,11 +215,11 @@ where
     }
 }
 
-pub struct DatTextOutput<'execute> {
-    output: Pin<&'execute mut cxx::DAT_Output>,
+pub struct DatTextOutput<'cook> {
+    output: Pin<&'cook mut cxx::DAT_Output>,
 }
 
-impl<'execute> DatTextOutput<'execute> {
+impl<'cook> DatTextOutput<'cook> {
     pub fn set_text(&mut self, text: &str) {
         unsafe {
             let c_str = CString::new(text).unwrap();
