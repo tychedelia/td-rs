@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::cxx::SOP_CustomAttribInfo;
+use crate::cxx::{PrimitiveType, SOP_CustomAttribInfo};
 use crate::{cxx, GetInput, OperatorInputs};
 use auto_ops::impl_op_ex;
 use derive_more::{AsRef, Deref, DerefMut, From, Into};
@@ -104,9 +104,9 @@ impl SopInput {
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
-pub struct PrimitiveInfo(cxx::SOP_PrimitiveInfo);
+pub struct PrimitiveInfo<'a>(&'a cxx::SOP_PrimitiveInfo);
 
-impl PrimitiveInfo {
+impl<'a> PrimitiveInfo<'a> {
     pub fn vertices(&self) -> &[u32] {
         unsafe {
             std::slice::from_raw_parts(self.pointIndices as *const u32, self.numVertices as usize)
@@ -121,6 +121,14 @@ impl PrimitiveInfo {
 
     pub fn point_indices_offset(&self) -> usize {
         self.pointIndicesOffset as usize
+    }
+
+    pub fn primitive_type(&self) -> &PrimitiveType {
+        &self.type_
+    }
+
+    pub fn is_closed(&self) -> bool {
+        self.isClosed
     }
 }
 
@@ -157,9 +165,9 @@ pub struct CustomAttributeInfo {
 
 #[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
 #[repr(transparent)]
-pub struct CustomAttributeData(cxx::SOP_CustomAttribData);
+pub struct CustomAttributeData<'cook>(cxx::SOP_CustomAttribData);
 
-impl CustomAttributeData {
+impl <'cook> CustomAttributeData<'cook> {
     pub fn attr_type(&self) -> AttributeType {
         match self.0._base.attribType {
             cxx::AttribType::Float => AttributeType::Float,
@@ -167,7 +175,7 @@ impl CustomAttributeData {
         }
     }
 
-    pub fn new_float(name: &str, data: &[f32], size: usize) -> Self {
+    pub fn new_float(name: &str, data: &'cook mut [f32], size: usize) -> Self {
         let name = std::ffi::CString::new(name).unwrap();
         let name = name.into_raw();
         let attr = cxx::SOP_CustomAttribData {
@@ -176,7 +184,7 @@ impl CustomAttributeData {
                 numComponents: size as i32,
                 attribType: cxx::AttribType::Float,
             },
-            floatData: data.as_ptr(),
+            floatData: data.as_mut_ptr(),
             intData: std::ptr::null_mut(),
         };
         Self(attr)
@@ -192,7 +200,7 @@ impl CustomAttributeData {
                 attribType: cxx::AttribType::Int,
             },
             floatData: std::ptr::null_mut(),
-            intData: data.as_ptr(),
+            intData: data.as_mut_ptr(),
         };
         Self(attr)
     }
