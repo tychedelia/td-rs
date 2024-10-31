@@ -1,6 +1,5 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
-#![feature(lazy_cell)]
 
 use std::cell::OnceCell;
 use std::ffi;
