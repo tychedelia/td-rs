@@ -286,6 +286,13 @@ public:
   // This is called whenever a pulse parameter is pressed
   virtual void pulsePressed(const char *name, void *reserved1) {}
 
+  // This is called whenever a dynamic menu type custom parameter needs to have
+  // it's content's updated. It may happen often, so this could should be
+  // efficient.
+  virtual void buildDynamicMenu(const OP_Inputs *inputs,
+                                OP_BuildDynamicMenuInfo *info,
+                                void *reserved1) {}
+
   // END PUBLIC INTERFACE
 
 private:
@@ -348,4 +355,5 @@ static_assert(offsetof(CHOP_Output, channels) == 24, "Incorrect Alignment");
 static_assert(sizeof(CHOP_Output) == 112, "Incorrect Size");
 
 }; // namespace TD
+
 #endif
