@@ -45,6 +45,13 @@ include_cpp! {
     generate!("getDownloadData")
     generate!("getDownloadTextureDesc")
     generate!("releaseDownloadResult")
+
+    // Custom ops
+    generate!("TD::OP_CustomOPInstance")
+    generate!("TD::CHOP_CPlusPlusBase")
+    generate!("TD::DAT_CPlusPlusBase")
+    generate!("TD::SOP_CPlusPlusBase")
+    generate!("TD::TOP_CPlusPlusBase")
 }
 
 #[cfg(feature = "python")]
