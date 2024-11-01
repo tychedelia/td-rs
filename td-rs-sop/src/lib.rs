@@ -140,12 +140,28 @@ impl<'cook> SopOutput<'cook> {
         self.output.as_mut().getNumTexCoordLayers() as usize
     }
 
-    pub fn set_custom_attribute(&mut self, attr: &CustomAttributeData, num_pts: usize) {
+    pub fn set_custom_attribute(&mut self, info: CustomAttributeInfo, data: CustomAttributeData, num_pts: usize) {
         unsafe {
-            let attr: *const CustomAttributeData = attr;
+            let info = cxx::SOP_CustomAttribInfo {
+                name: std::ffi::CString::new(info.name).unwrap().as_ptr(),
+                numComponents: info.num_components as i32,
+                attribType: (&info.attr_type).into(),
+            };
+            let attr = match data {
+                CustomAttributeData::Float(mut data) => cxx::SOP_CustomAttribData {
+                    _base: info,
+                    floatData: data.as_mut_ptr(),
+                    intData: std::ptr::null_mut(),
+                },
+                CustomAttributeData::Int(mut data) => cxx::SOP_CustomAttribData {
+                    _base: info,
+                    floatData: std::ptr::null_mut(),
+                    intData: data.as_mut_ptr(),
+                },
+            };
             self.output
                 .as_mut()
-                .setCustomAttribute(attr as *const SOP_CustomAttribData, num_pts as i32);
+                .setCustomAttribute(&attr as *const SOP_CustomAttribData, num_pts as i32);
         }
     }
 

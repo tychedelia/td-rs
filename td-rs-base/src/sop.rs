@@ -71,14 +71,45 @@ impl SopInput {
         self.input.getNumCustomAttributes() as usize
     }
 
-    pub fn custom_attribute(&self, index: usize) -> &CustomAttributeData {
+    pub fn custom_attribute(&self, index: usize) -> (CustomAttributeInfo, CustomAttributeData) {
         unsafe {
             let custom_attribute = self.input.getCustomAttribute(index as i32);
-            CustomAttributeData::ref_cast(&*custom_attribute)
+            if custom_attribute.is_null() {
+                panic!("Custom attribute is null");
+            }
+            let custom_attribute = &*custom_attribute;
+            
+            let name = custom_attribute._base.name;
+            let name = std::ffi::CStr::from_ptr(name).to_string_lossy().into_owned();
+            let num_components = custom_attribute._base.numComponents as usize;
+            let attr_type = &custom_attribute._base.attribType;
+            let attr_type = attr_type.into();
+            let info = CustomAttributeInfo {
+                name,
+                num_components,
+                attr_type,
+            };
+            let data = match info.attr_type {
+                AttributeType::Float => {
+                    let data = std::slice::from_raw_parts(
+                        custom_attribute.floatData as *const f32,
+                        num_components * self.num_points(),
+                    );
+                    CustomAttributeData::Float(data.to_vec())
+                }
+                AttributeType::Int => {
+                    let data = std::slice::from_raw_parts(
+                        custom_attribute.floatData as *const i32,
+                        num_components * self.num_points(),
+                    );
+                    CustomAttributeData::Int(data.to_vec())
+                }
+            };
+            (info, data)
         }
     }
 
-    pub fn custom_attributes(&self) -> impl Iterator<Item = &CustomAttributeData> + '_ {
+    pub fn custom_attributes(&self) -> impl Iterator<Item = (CustomAttributeInfo, CustomAttributeData)> + '_ {
         let num_custom_attributes = self.num_custom_attributes();
         (0..num_custom_attributes).map(move |i| self.custom_attribute(i))
     }
@@ -147,8 +178,26 @@ impl From<cxx::AttribType> for AttributeType {
     }
 }
 
+impl From<&cxx::AttribType> for AttributeType {
+    fn from(t: &cxx::AttribType) -> Self {
+        match t {
+            cxx::AttribType::Float => AttributeType::Float,
+            cxx::AttribType::Int => AttributeType::Int,
+        }
+    }
+}
+
 impl From<AttributeType> for cxx::AttribType {
     fn from(t: AttributeType) -> Self {
+        match t {
+            AttributeType::Float => cxx::AttribType::Float,
+            AttributeType::Int => cxx::AttribType::Int,
+        }
+    }
+}
+
+impl From<&AttributeType> for cxx::AttribType {
+    fn from(t: &AttributeType) -> Self {
         match t {
             AttributeType::Float => cxx::AttribType::Float,
             AttributeType::Int => cxx::AttribType::Int,
@@ -163,47 +212,10 @@ pub struct CustomAttributeInfo {
     pub attr_type: AttributeType,
 }
 
-#[derive(RefCast, Deref, DerefMut, AsRef, From, Into)]
-#[repr(transparent)]
-pub struct CustomAttributeData<'cook>(cxx::SOP_CustomAttribData);
-
-impl <'cook> CustomAttributeData<'cook> {
-    pub fn attr_type(&self) -> AttributeType {
-        match self.0._base.attribType {
-            cxx::AttribType::Float => AttributeType::Float,
-            cxx::AttribType::Int => AttributeType::Int,
-        }
-    }
-
-    pub fn new_float(name: &str, data: &'cook mut [f32], size: usize) -> Self {
-        let name = std::ffi::CString::new(name).unwrap();
-        let name = name.into_raw();
-        let attr = cxx::SOP_CustomAttribData {
-            _base: SOP_CustomAttribInfo {
-                name,
-                numComponents: size as i32,
-                attribType: cxx::AttribType::Float,
-            },
-            floatData: data.as_mut_ptr(),
-            intData: std::ptr::null_mut(),
-        };
-        Self(attr)
-    }
-
-    pub fn new_int(name: &str, data: &[i32], size: usize) -> Self {
-        let name = std::ffi::CString::new(name).unwrap();
-        let name = name.into_raw();
-        let attr = cxx::SOP_CustomAttribData {
-            _base: SOP_CustomAttribInfo {
-                name,
-                numComponents: size as i32,
-                attribType: cxx::AttribType::Int,
-            },
-            floatData: std::ptr::null_mut(),
-            intData: data.as_mut_ptr(),
-        };
-        Self(attr)
-    }
+#[derive(Debug)]
+pub enum CustomAttributeData {
+    Float(Vec<f32>),
+    Int(Vec<i32>),
 }
 
 impl<'cook> GetInput<'cook, SopInput> for OperatorInputs<'cook, SopInput> {

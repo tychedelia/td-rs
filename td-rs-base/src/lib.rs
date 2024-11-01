@@ -6,7 +6,7 @@ use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
-use std::sync::LazyLock;
+use std::sync::{LazyLock, Mutex};
 
 pub use param::*;
 #[cfg(feature = "python")]
