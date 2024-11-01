@@ -12,7 +12,7 @@ pub use param::*;
 pub use py::*;
 
 #[cfg(feature = "tokio")]
-pub static RUNTIME: LazyLock<tokio_core::runtime::Runtime> = LazyLock::new(|| {
+pub static RUNTIME: std::sync::LazyLock<tokio_core::runtime::Runtime> = std::sync::LazyLock::new(|| {
     tokio_core::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
