@@ -10,9 +10,8 @@
 #define TD_RS_RUSTPY_H
 
 #ifdef PYTHON_ENABLED
-std::unique_ptr<TD::PY_Context> getPyContext(TD::PY_Struct *pyStruct) {
-    auto ctx = pyStruct->context;
-    return std::unique_ptr<TD::PY_Context>(ctx);
+TD::PY_Context* getPyContext(TD::PY_Struct *pyStruct) {
+    return pyStruct->context;
 }
 
 void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *pygetsets, size_t getsetsize) {

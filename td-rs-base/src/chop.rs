@@ -36,12 +36,12 @@ impl ChopInput {
     }
 }
 
-impl<'execute> GetInput<'execute, ChopInput> for OperatorInputs<'execute, ChopInput> {
+impl<'cook> GetInput<'cook, ChopInput> for OperatorInputs<'cook, ChopInput> {
     fn num_inputs(&self) -> usize {
         self.inputs.getNumInputs() as usize
     }
 
-    fn input(&self, index: usize) -> Option<&'execute ChopInput> {
+    fn input(&self, index: usize) -> Option<&'cook ChopInput> {
         let input = self.inputs.getInputCHOP(index as i32);
         if input.is_null() {
             None

@@ -122,7 +122,7 @@ impl Sop for GeneratorSop {
             colors[i] = self.params.color.clone();
         }
         output.set_bounding_box((-1, -1, -1, 1, 1, 1));
-        let output = output.update_complete();
+        let _output = output.update_complete();
     }
 }
 

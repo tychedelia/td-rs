@@ -14,14 +14,14 @@ pub struct SopGeneralInfo {
     pub direct_to_gpu: bool,
 }
 
-pub struct SopOutput<'execute> {
-    output: Pin<&'execute mut cxx::SOP_Output>,
+pub struct SopOutput<'cook> {
+    output: Pin<&'cook mut cxx::SOP_Output>,
 }
 
-impl<'execute> SopOutput<'execute> {
+impl<'cook> SopOutput<'cook> {
     /// Create a new `SopOutput` from a pinning reference to a
     /// `SopOutput`.
-    pub fn new(output: Pin<&'execute mut cxx::SOP_Output>) -> SopOutput<'execute> {
+    pub fn new(output: Pin<&'cook mut cxx::SOP_Output>) -> SopOutput<'cook> {
         Self { output }
     }
 
@@ -140,12 +140,29 @@ impl<'execute> SopOutput<'execute> {
         self.output.as_mut().getNumTexCoordLayers() as usize
     }
 
-    pub fn set_custom_attribute(&mut self, attr: &CustomAttributeData, num_pts: usize) {
+    pub fn set_custom_attribute(&mut self, info: CustomAttributeInfo, data: CustomAttributeData, num_pts: usize) {
         unsafe {
-            let attr: *const CustomAttributeData = attr;
+            let name = std::ffi::CString::new(info.name).unwrap();
+            let info = cxx::SOP_CustomAttribInfo {
+                name: name.as_ptr(),
+                numComponents: info.num_components as i32,
+                attribType: (&info.attr_type).into(),
+            };
+            let attr = match data {
+                CustomAttributeData::Float(mut data) => cxx::SOP_CustomAttribData {
+                    _base: info,
+                    floatData: data.as_mut_ptr(),
+                    intData: std::ptr::null_mut(),
+                },
+                CustomAttributeData::Int(mut data) => cxx::SOP_CustomAttribData {
+                    _base: info,
+                    floatData: std::ptr::null_mut(),
+                    intData: data.as_mut_ptr(),
+                },
+            };
             self.output
                 .as_mut()
-                .setCustomAttribute(attr as *const SOP_CustomAttribData, num_pts as i32);
+                .setCustomAttribute(&attr as *const SOP_CustomAttribData, num_pts as i32);
         }
     }
 
@@ -326,15 +343,15 @@ pub struct Complete;
 
 pub type AllocAll = Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>;
 
-pub struct SopVboOutput<'execute, State> {
+pub struct SopVboOutput<'cook, State> {
     pub state: State,
-    output: Pin<&'execute mut cxx::SOP_VBOOutput>,
+    output: Pin<&'cook mut cxx::SOP_VBOOutput>,
 }
 
-impl<'execute, State> SopVboOutput<'execute, State> {
+impl<'cook, State> SopVboOutput<'cook, State> {
     /// Create a new `SopOutput` from a pinning reference to a
     /// `SopOutput`.
-    pub fn new(output: Pin<&'execute mut cxx::SOP_VBOOutput>) -> SopVboOutput<'execute, Unalloc> {
+    pub fn new(output: Pin<&'cook mut cxx::SOP_VBOOutput>) -> SopVboOutput<'cook, Unalloc> {
         SopVboOutput {
             state: Unalloc,
             output,
@@ -358,7 +375,7 @@ impl<'execute, State> SopVboOutput<'execute, State> {
     }
 }
 
-impl<'execute> SopVboOutput<'execute, Unalloc> {
+impl<'cook> SopVboOutput<'cook, Unalloc> {
     pub fn add_custom_attribute(&mut self, attr: CustomAttributeInfo) {
         let name = std::ffi::CString::new(attr.name).unwrap();
         let attr = cxx::SOP_CustomAttribInfo {
@@ -399,7 +416,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         vertices: usize,
         indices: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<(), (), ()>> {
+    ) -> SopVboOutput<'cook, Alloc<(), (), ()>> {
         self.alloc_inner(vertices, indices, false, false, 0, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -420,7 +437,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         indices: usize,
         tex_coords: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>> {
+    ) -> SopVboOutput<'cook, Alloc<NormalEnabled, ColorEnabled, TexCoordEnabled>> {
         self.alloc_inner(vertices, indices, true, true, tex_coords, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -440,7 +457,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         vertices: usize,
         indices: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, (), ()>> {
+    ) -> SopVboOutput<'cook, Alloc<NormalEnabled, (), ()>> {
         self.alloc_inner(vertices, indices, true, false, 0, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -460,7 +477,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         vertices: usize,
         indices: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<(), ColorEnabled, ()>> {
+    ) -> SopVboOutput<'cook, Alloc<(), ColorEnabled, ()>> {
         self.alloc_inner(vertices, indices, false, true, 0, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -481,7 +498,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         indices: usize,
         tex_coords: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<(), (), TexCoordEnabled>> {
+    ) -> SopVboOutput<'cook, Alloc<(), (), TexCoordEnabled>> {
         self.alloc_inner(vertices, indices, false, false, tex_coords, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -501,7 +518,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         vertices: usize,
         indices: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, ColorEnabled, ()>> {
+    ) -> SopVboOutput<'cook, Alloc<NormalEnabled, ColorEnabled, ()>> {
         self.alloc_inner(vertices, indices, true, true, 0, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -522,7 +539,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         indices: usize,
         tex_coords: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<NormalEnabled, (), TexCoordEnabled>> {
+    ) -> SopVboOutput<'cook, Alloc<NormalEnabled, (), TexCoordEnabled>> {
         self.alloc_inner(vertices, indices, true, false, tex_coords, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -543,7 +560,7 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
         indices: usize,
         tex_coords: usize,
         buffer_mode: BufferMode,
-    ) -> SopVboOutput<'execute, Alloc<(), ColorEnabled, TexCoordEnabled>> {
+    ) -> SopVboOutput<'cook, Alloc<(), ColorEnabled, TexCoordEnabled>> {
         self.alloc_inner(vertices, indices, false, true, tex_coords, buffer_mode);
         SopVboOutput {
             state: Alloc {
@@ -559,8 +576,8 @@ impl<'execute> SopVboOutput<'execute, Unalloc> {
     }
 }
 
-impl<'execute, C, T> SopVboOutput<'execute, Alloc<NormalEnabled, C, T>> {
-    pub fn normals(&mut self) -> &'execute mut [Vec3] {
+impl<'cook, C, T> SopVboOutput<'cook, Alloc<NormalEnabled, C, T>> {
+    pub fn normals(&mut self) -> &'cook mut [Vec3] {
         let normals = self.output.as_mut().getNormals();
         if normals.is_null() {
             panic!("normals is null")
@@ -569,8 +586,8 @@ impl<'execute, C, T> SopVboOutput<'execute, Alloc<NormalEnabled, C, T>> {
     }
 }
 
-impl<'execute, N, T> SopVboOutput<'execute, Alloc<N, ColorEnabled, T>> {
-    pub fn colors(&mut self) -> &'execute mut [Color] {
+impl<'cook, N, T> SopVboOutput<'cook, Alloc<N, ColorEnabled, T>> {
+    pub fn colors(&mut self) -> &'cook mut [Color] {
         let colors = self.output.as_mut().getColors();
         if colors.is_null() {
             panic!("colors is null")
@@ -579,8 +596,8 @@ impl<'execute, N, T> SopVboOutput<'execute, Alloc<N, ColorEnabled, T>> {
     }
 }
 
-impl<'execute, N, C> SopVboOutput<'execute, Alloc<N, C, TexCoordEnabled>> {
-    pub fn tex_coords(&mut self) -> &'execute mut [TexCoord] {
+impl<'cook, N, C> SopVboOutput<'cook, Alloc<N, C, TexCoordEnabled>> {
+    pub fn tex_coords(&mut self) -> &'cook mut [TexCoord] {
         let tex_coords = self.output.as_mut().getTexCoords();
         if tex_coords.is_null() {
             println!("tex_coords is null")
@@ -592,27 +609,27 @@ impl<'execute, N, C> SopVboOutput<'execute, Alloc<N, C, TexCoordEnabled>> {
     }
 }
 
-impl<'execute, N, C, T> SopVboOutput<'execute, Alloc<N, C, T>> {
-    pub fn positions(&mut self) -> &'execute mut [Position] {
+impl<'cook, N, C, T> SopVboOutput<'cook, Alloc<N, C, T>> {
+    pub fn positions(&mut self) -> &'cook mut [Position] {
         let positions = self.output.as_mut().getPos();
         if positions.is_null() {
             panic!("positions is null")
         }
         unsafe { std::slice::from_raw_parts_mut(positions as *mut Position, self.state.vertices) }
     }
-    pub fn add_triangles(&mut self, num_triangles: usize) -> &'execute mut [u32] {
+    pub fn add_triangles(&mut self, num_triangles: usize) -> &'cook mut [u32] {
         let triangles = self.output.as_mut().addTriangles(num_triangles as i32);
         unsafe { std::slice::from_raw_parts_mut(triangles as *mut u32, num_triangles * 3) }
     }
-    pub fn add_particle_system(&mut self, num_particles: usize) -> &'execute mut [u32] {
+    pub fn add_particle_system(&mut self, num_particles: usize) -> &'cook mut [u32] {
         let particles = self.output.as_mut().addParticleSystem(num_particles as i32);
         unsafe { std::slice::from_raw_parts_mut(particles as *mut u32, num_particles) }
     }
-    pub fn add_lines(&mut self, num_lines: usize) -> &'execute mut [u32] {
+    pub fn add_lines(&mut self, num_lines: usize) -> &'cook mut [u32] {
         let lines = self.output.as_mut().addLines(num_lines as i32);
         unsafe { std::slice::from_raw_parts_mut(lines as *mut u32, num_lines) }
     }
-    pub fn update_complete(mut self) -> SopVboOutput<'execute, Complete> {
+    pub fn update_complete(mut self) -> SopVboOutput<'cook, Complete> {
         self.output.as_mut().updateComplete();
         SopVboOutput {
             state: Complete,

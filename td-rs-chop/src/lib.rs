@@ -27,8 +27,8 @@ pub struct ChopGeneralInfo {
 
 /// A wrapper around a `ChopOutput` that provides a safe interface to the
 /// underlying C++ object and writing to the output buffer.
-pub struct ChopOutput<'execute> {
-    output: Pin<&'execute mut cxx::CHOP_Output>,
+pub struct ChopOutput<'cook> {
+    output: Pin<&'cook mut cxx::CHOP_Output>,
 }
 
 impl std::fmt::Debug for ChopOutput<'_> {
@@ -42,10 +42,10 @@ impl std::fmt::Debug for ChopOutput<'_> {
     }
 }
 
-impl<'execute> ChopOutput<'execute> {
+impl<'cook> ChopOutput<'cook> {
     /// Create a new `ChopOutput` from a pinning reference to a
     /// `ChopOutput`.
-    pub fn new(output: Pin<&'execute mut cxx::CHOP_Output>) -> ChopOutput<'execute> {
+    pub fn new(output: Pin<&'cook mut cxx::CHOP_Output>) -> ChopOutput<'cook> {
         Self { output }
     }
 

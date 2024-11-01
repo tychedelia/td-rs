@@ -44,7 +44,7 @@ pub trait CheckPyObj {
     unsafe fn check_py_obj(obj: *mut pyo3_ffi::PyObject) -> bool;
 }
 
-#[cfg(Windows)]
+#[cfg(windows)]
 impl FromPyObj for u32 {
     unsafe fn from_py_obj(obj: *mut pyo3_ffi::PyObject) -> Self {
         pyo3_ffi::PyLong_AsUnsignedLong(obj) as u32

@@ -68,7 +68,7 @@ impl AsPlugin for RustSopPluginImplCpp {
     }
 
     fn as_plugin_mut(&mut self) -> Pin<&mut Self::Plugin> {
-        // Safety: self can't be moved during the lifetime of 'execute.
+        // Safety: self can't be moved during the lifetime of 'cook.
         unsafe { Pin::new_unchecked(self).As_RustSopPlugin_mut() }
     }
 }

@@ -121,9 +121,9 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         autoCook: #auto_cook,
                                         reserved: [0; 50]
                                     };
-                                    let mut ctx = cxx::getPyContext(py_struct);
-                                    let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
-                                    std::mem::forget(ctx);
+
+                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
+                                    let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
                                     if me.is_null() {
                                             return std::ptr::null_mut();
                                     }
@@ -164,8 +164,8 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                         autoCook: #auto_cook,
                                         reserved: [0; 50]
                                     };
-                                    let mut ctx = cxx::getPyContext(py_struct);
-                                    let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
+                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
+                                    let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
                                     if me.is_null() {
                                         pyo3_ffi::PyErr_SetString(
                                             pyo3_ffi::PyExc_TypeError,
@@ -182,8 +182,8 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                                     };
 
                                     py_chop.#field_name = value;
-                                    ctx.pin_mut().makeNodeDirty(std::ptr::null_mut());
-                                    std::mem::forget(ctx);
+                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
+                                    ctx.makeNodeDirty(std::ptr::null_mut());
                                     return 0;
                                 }
                             })
@@ -319,8 +319,8 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 autoCook: true,
                                 reserved: [0; 50]
                             };
-                            let mut ctx = cxx::getPyContext(py_struct);
-                            let me = ctx.pin_mut().getNodeInstance(&info, std::ptr::null_mut());
+                            let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
+                            let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
                             if me.is_null() {
                                 pyo3_ffi::PyErr_SetString(
                                     pyo3_ffi::PyExc_TypeError,
@@ -336,8 +336,8 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 &mut *(me as *mut #struct_name)
                             };
                             let res = py_chop.#fn_name(args, nargs as usize);
-                            ctx.pin_mut().makeNodeDirty(std::ptr::null_mut());
-                            std::mem::forget(ctx);
+                            let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
+                            ctx.makeNodeDirty(std::ptr::null_mut());
                             res
                         }
                     }

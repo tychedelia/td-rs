@@ -6,12 +6,12 @@ use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
 
-pub struct TopOutput<'execute> {
-    output: Pin<&'execute mut cxx::TOP_Output>,
+pub struct TopOutput<'cook> {
+    output: Pin<&'cook mut cxx::TOP_Output>,
 }
 
-impl<'execute> TopOutput<'execute> {
-    pub fn new(output: Pin<&'execute mut cxx::TOP_Output>) -> TopOutput<'execute> {
+impl<'cook> TopOutput<'cook> {
+    pub fn new(output: Pin<&'cook mut cxx::TOP_Output>) -> TopOutput<'cook> {
         Self { output }
     }
 

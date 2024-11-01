@@ -8,10 +8,6 @@
 
 void setString(TD::OP_String *dest, const char *src) { dest->setString(src); }
 
-std::unique_ptr<TD::OP_Context> getOpContext(TD::OP_Context *ctx) {
-    return std::unique_ptr<TD::OP_Context>(ctx);
-}
-
 uint64_t getDownloadDataSize(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
     uint64_t size = result->size;
     return size;

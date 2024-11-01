@@ -1,5 +1,3 @@
-#![feature(fs_try_exists)]
-
 mod config;
 #[cfg(target_os = "macos")]
 mod macos;

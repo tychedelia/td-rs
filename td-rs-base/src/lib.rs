@@ -1,20 +1,18 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
-#![feature(lazy_cell)]
 
-use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
-use std::sync::LazyLock;
+use std::sync::Mutex;
 
 pub use param::*;
 #[cfg(feature = "python")]
 pub use py::*;
 
 #[cfg(feature = "tokio")]
-pub static RUNTIME: LazyLock<tokio_core::runtime::Runtime> = LazyLock::new(|| {
+pub static RUNTIME: std::sync::LazyLock<tokio_core::runtime::Runtime> = std::sync::LazyLock::new(|| {
     tokio_core::runtime::Builder::new_multi_thread()
         .enable_all()
         .build()
@@ -30,9 +28,9 @@ pub mod py;
 pub mod sop;
 pub mod top;
 
-static mut INFO_STR: OnceCell<String> = OnceCell::new();
-static mut ERROR_STR: OnceCell<String> = OnceCell::new();
-static mut WARNING_STR: OnceCell<String> = OnceCell::new();
+static INFO_STR: Mutex<String> = Mutex::new(String::new());
+static ERROR_STR: Mutex<String> = Mutex::new(String::new());
+static WARNING_STR: Mutex<String> = Mutex::new(String::new());
 
 /// Metadata describing the operator plugin.
 pub trait OpInfo {
@@ -92,54 +90,27 @@ pub trait Op {
     }
 
     fn set_info(&mut self, info: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let i = INFO_STR.get_mut();
-            if let Some(i) = i {
-                i.replace_range(.., info);
-            }
-        }
+        INFO_STR.lock().unwrap().replace_range(.., info);
     }
 
-    fn info(&self) -> &str {
-        unsafe { INFO_STR.get_or_init(|| "".to_string()) }
+    fn info(&self) -> String {
+        INFO_STR.lock().unwrap().clone()
     }
 
     fn set_error(&mut self, error: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let e = ERROR_STR.get_mut();
-            if let Some(e) = e {
-                e.replace_range(.., error);
-            }
-        }
+        ERROR_STR.lock().unwrap().replace_range(.., error);
     }
 
-    fn error(&self) -> &str {
-        unsafe { ERROR_STR.get_or_init(|| "".to_string()) }
+    fn error(&self) -> String {
+        ERROR_STR.lock().unwrap().clone()
     }
 
     fn set_warning(&mut self, warning: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let w = WARNING_STR.get_mut();
-            if let Some(w) = w {
-                w.replace_range(.., warning);
-            }
-        }
+        WARNING_STR.lock().unwrap().replace_range(.., warning);
     }
 
-    fn warning(&self) -> &str {
-        unsafe { WARNING_STR.get_or_init(|| "".to_string()) }
+    fn warning(&self) -> String {
+        WARNING_STR.lock().unwrap().clone()
     }
 
     fn pulse_pressed(&mut self, _name: &str) {}
@@ -170,11 +141,9 @@ impl Context {
     #[cfg(feature = "python")]
     pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
         let obj = unsafe {
-            let mut ctx = cxx::getOpContext(self.context);
+            let mut ctx = Pin::new_unchecked(&mut *self.context);
             let tuple = ctx
-                .pin_mut()
                 .createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
-            std::mem::forget(ctx);
             tuple
         };
         obj as *mut pyo3_ffi::PyObject
@@ -189,14 +158,13 @@ impl Context {
     ) -> *mut pyo3_ffi::PyObject {
         let callback = ffi::CString::new(callback).unwrap();
         let obj = unsafe {
-            let mut ctx = cxx::getOpContext(self.context);
-            let res = ctx.pin_mut().callPythonCallback(
+            let mut ctx = Pin::new_unchecked(&mut *self.context);
+            let res = ctx.callPythonCallback(
                 callback.as_ptr(),
                 args as *mut cxx::_object,
                 kw as *mut cxx::_object,
                 std::ptr::null_mut(),
             );
-            std::mem::forget(ctx);
             res
         };
         obj as *mut pyo3_ffi::PyObject
@@ -211,8 +179,8 @@ impl std::fmt::Debug for NodeInfo {
 
 /// Input to an operator, which can be used to get parameters, channels,
 /// and other information.
-pub struct OperatorInputs<'execute, Op> {
-    pub inputs: &'execute cxx::OP_Inputs,
+pub struct OperatorInputs<'cook, Op> {
+    pub inputs: &'cook cxx::OP_Inputs,
     _marker: std::marker::PhantomData<Op>,
 }
 
@@ -222,12 +190,12 @@ impl<T> std::fmt::Debug for OperatorInputs<'_, T> {
     }
 }
 
-impl<'execute, Op> OperatorInputs<'execute, Op>
+impl<'cook, Op> OperatorInputs<'cook, Op>
 where
-    Self: GetInput<'execute, Op>,
+    Self: GetInput<'cook, Op>,
 {
     /// Create a new operator input. This is only called by the operator.
-    pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> OperatorInputs<'execute, Op> {
+    pub fn new(inputs: &'cook crate::cxx::OP_Inputs) -> OperatorInputs<'cook, Op> {
         Self {
             inputs,
             _marker: Default::default(),
@@ -240,9 +208,9 @@ where
     }
 
     /// Get an input channel.
-    pub fn input(&self, index: usize) -> Option<&<Self as GetInput<'execute, Op>>::Input>
+    pub fn input(&self, index: usize) -> Option<&<Self as GetInput<'cook, Op>>::Input>
     where
-        OperatorInputs<'execute, Op>: GetInput<'execute, Op>,
+        OperatorInputs<'cook, Op>: GetInput<'cook, Op>,
     {
         GetInput::input(self, index)
     }
@@ -250,20 +218,20 @@ where
     /// Get the number of input channels.
     pub fn num_inputs(&self) -> usize
     where
-        OperatorInputs<'execute, Op>: GetInput<'execute, Op>,
+        OperatorInputs<'cook, Op>: GetInput<'cook, Op>,
     {
         GetInput::num_inputs(self)
     }
 }
 
 /// Parameter inputs to an operator.
-pub struct ParamInputs<'execute> {
-    inputs: &'execute crate::cxx::OP_Inputs,
+pub struct ParamInputs<'cook> {
+    inputs: &'cook crate::cxx::OP_Inputs,
 }
 
-impl<'execute> ParamInputs<'execute> {
+impl<'cook> ParamInputs<'cook> {
     /// Create a new operator input. This is only called by the operator.
-    pub fn new(inputs: &'execute crate::cxx::OP_Inputs) -> ParamInputs<'execute> {
+    pub fn new(inputs: &'cook crate::cxx::OP_Inputs) -> ParamInputs<'cook> {
         Self { inputs }
     }
 
@@ -482,7 +450,7 @@ impl<'execute> ParamInputs<'execute> {
 }
 
 /// Get an input to an operator.
-pub trait GetInput<'execute, Op>: Index<usize, Output = Self::Input> {
+pub trait GetInput<'cook, Op>: Index<usize, Output = Self::Input> {
     /// The type of the input.
     type Input = Op;
     /// The number of inputs available.
@@ -491,11 +459,11 @@ pub trait GetInput<'execute, Op>: Index<usize, Output = Self::Input> {
     fn input(&self, index: usize) -> Option<&Self::Input>;
 }
 
-impl<'execute, Op> Index<usize> for OperatorInputs<'execute, Op>
+impl<'cook, Op> Index<usize> for OperatorInputs<'cook, Op>
 where
-    Self: GetInput<'execute, Op>,
+    Self: GetInput<'cook, Op>,
 {
-    type Output = <Self as GetInput<'execute, Op>>::Input;
+    type Output = <Self as GetInput<'cook, Op>>::Input;
 
     fn index(&self, index: usize) -> &Self::Output {
         self.input(index).expect("Invalid input index")
@@ -561,12 +529,6 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
 
 /// Base functionality for all operator types.
 pub fn op_init() {
-    unsafe {
-        INFO_STR.get_or_init(|| "".to_string());
-        ERROR_STR.get_or_init(|| "".to_string());
-        WARNING_STR.get_or_init(|| "".to_string());
-    }
-
     #[cfg(feature = "tracing")]
     {
         use tracing_subscriber::fmt;

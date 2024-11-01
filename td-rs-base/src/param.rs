@@ -104,14 +104,14 @@ impl From<StringParameter> for cxx::OP_StringParameter {
 }
 
 /// Manager for registering parameters with TouchDesigner.
-pub struct ParameterManager<'execute> {
-    manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>,
+pub struct ParameterManager<'cook> {
+    manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>,
 }
 
-impl<'execute> ParameterManager<'execute> {
+impl<'cook> ParameterManager<'cook> {
     /// Create a new parameter manager. Should not be called by
     /// users.
-    pub fn new(manager: Pin<&'execute mut crate::cxx::OP_ParameterManager>) -> ParameterManager {
+    pub fn new(manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>) -> ParameterManager<'cook> {
         Self { manager }
     }
 
