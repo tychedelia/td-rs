@@ -40,7 +40,6 @@ include_cpp! {
     // util fns
     generate!("setString")
 
-    generate!("getOpContext")
     generate!("getDownloadDataSize")
     generate!("getDownloadData")
     generate!("getDownloadTextureDesc")
