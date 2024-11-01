@@ -2,6 +2,10 @@
 
 Experiments integrating Rust into TouchDesigner's plugin framework.
 
+## Version compatibility 
+
+The library is currently intended to be used with TouchDesigner version `2023.12000`.
+
 ## Getting started
 
 Fork and clone this repository. Plugins are built using the build system described below. New plugins

@@ -111,7 +111,6 @@ impl From<&OP_PixelFormat> for PixelFormat {
             OP_PixelFormat::SRGBA8Fixed => PixelFormat::SRGBA8Fixed,
             OP_PixelFormat::RGB10A2Fixed => PixelFormat::RGB10A2Fixed,
             OP_PixelFormat::RGB11Float => PixelFormat::RGB11Float,
-            _ => panic!("Unknown pixel format"),
         }
     }
 }
@@ -222,12 +221,12 @@ impl Drop for TopDownloadResult {
     }
 }
 
-impl<'execute> GetInput<'execute, TopInput> for OperatorInputs<'execute, TopInput> {
+impl<'cook> GetInput<'cook, TopInput> for OperatorInputs<'cook, TopInput> {
     fn num_inputs(&self) -> usize {
         self.inputs.getNumInputs() as usize
     }
 
-    fn input(&self, index: usize) -> Option<&'execute TopInput> {
+    fn input(&self, index: usize) -> Option<&'cook TopInput> {
         let input = self.inputs.getInputTOP(index as i32);
         if input.is_null() {
             None
