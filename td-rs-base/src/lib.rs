@@ -29,9 +29,9 @@ pub mod py;
 pub mod sop;
 pub mod top;
 
-static mut INFO_STR: OnceCell<String> = OnceCell::new();
-static mut ERROR_STR: OnceCell<String> = OnceCell::new();
-static mut WARNING_STR: OnceCell<String> = OnceCell::new();
+static INFO_STR: Mutex<String> = Mutex::new(String::new());
+static ERROR_STR: Mutex<String> = Mutex::new(String::new());
+static WARNING_STR: Mutex<String> = Mutex::new(String::new());
 
 /// Metadata describing the operator plugin.
 pub trait OpInfo {
@@ -91,54 +91,27 @@ pub trait Op {
     }
 
     fn set_info(&mut self, info: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let i = INFO_STR.get_mut();
-            if let Some(i) = i {
-                i.replace_range(.., info);
-            }
-        }
+        INFO_STR.lock().unwrap().replace_range(.., info);
     }
 
-    fn info(&self) -> &str {
-        unsafe { INFO_STR.get_or_init(|| "".to_string()) }
+    fn info(&self) -> String {
+        INFO_STR.lock().unwrap().clone()
     }
 
     fn set_error(&mut self, error: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let e = ERROR_STR.get_mut();
-            if let Some(e) = e {
-                e.replace_range(.., error);
-            }
-        }
+        ERROR_STR.lock().unwrap().replace_range(.., error);
     }
 
-    fn error(&self) -> &str {
-        unsafe { ERROR_STR.get_or_init(|| "".to_string()) }
+    fn error(&self) -> String {
+        ERROR_STR.lock().unwrap().clone()
     }
 
     fn set_warning(&mut self, warning: &str) {
-        // # Safety
-        // The plugin is held on a single thread, and setters
-        // are only ever called from the body of the plugin
-        // and not exposed to C++.
-        unsafe {
-            let w = WARNING_STR.get_mut();
-            if let Some(w) = w {
-                w.replace_range(.., warning);
-            }
-        }
+        WARNING_STR.lock().unwrap().replace_range(.., warning);
     }
 
-    fn warning(&self) -> &str {
-        unsafe { WARNING_STR.get_or_init(|| "".to_string()) }
+    fn warning(&self) -> String {
+        WARNING_STR.lock().unwrap().clone()
     }
 
     fn pulse_pressed(&mut self, _name: &str) {}
@@ -560,12 +533,6 @@ pub unsafe fn op_info<T: OpInfo + PyMethods + PyGetSets>(
 
 /// Base functionality for all operator types.
 pub fn op_init() {
-    unsafe {
-        INFO_STR.get_or_init(|| "".to_string());
-        ERROR_STR.get_or_init(|| "".to_string());
-        WARNING_STR.get_or_init(|| "".to_string());
-    }
-
     #[cfg(feature = "tracing")]
     {
         use tracing_subscriber::fmt;
