@@ -141,11 +141,9 @@ impl Context {
     #[cfg(feature = "python")]
     pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
         let obj = unsafe {
-            let mut ctx = cxx::getOpContext(self.context);
+            let mut ctx = Pin::new_unchecked(&mut *self.context);
             let tuple = ctx
-                .pin_mut()
                 .createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
-            std::mem::forget(ctx);
             tuple
         };
         obj as *mut pyo3_ffi::PyObject
@@ -160,14 +158,13 @@ impl Context {
     ) -> *mut pyo3_ffi::PyObject {
         let callback = ffi::CString::new(callback).unwrap();
         let obj = unsafe {
-            let mut ctx = cxx::getOpContext(self.context);
-            let res = ctx.pin_mut().callPythonCallback(
+            let mut ctx = Pin::new_unchecked(&mut *self.context);
+            let res = ctx.callPythonCallback(
                 callback.as_ptr(),
                 args as *mut cxx::_object,
                 kw as *mut cxx::_object,
                 std::ptr::null_mut(),
             );
-            std::mem::forget(ctx);
             res
         };
         obj as *mut pyo3_ffi::PyObject
