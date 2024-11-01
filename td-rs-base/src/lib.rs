@@ -1,12 +1,11 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
 
-use std::cell::OnceCell;
 use std::ffi;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
-use std::sync::{LazyLock, Mutex};
+use std::sync::Mutex;
 
 pub use param::*;
 #[cfg(feature = "python")]

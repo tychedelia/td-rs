@@ -111,7 +111,6 @@ impl From<&OP_PixelFormat> for PixelFormat {
             OP_PixelFormat::SRGBA8Fixed => PixelFormat::SRGBA8Fixed,
             OP_PixelFormat::RGB10A2Fixed => PixelFormat::RGB10A2Fixed,
             OP_PixelFormat::RGB11Float => PixelFormat::RGB11Float,
-            _ => panic!("Unknown pixel format"),
         }
     }
 }

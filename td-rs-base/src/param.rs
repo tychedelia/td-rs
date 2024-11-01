@@ -111,7 +111,7 @@ pub struct ParameterManager<'cook> {
 impl<'cook> ParameterManager<'cook> {
     /// Create a new parameter manager. Should not be called by
     /// users.
-    pub fn new(manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>) -> ParameterManager {
+    pub fn new(manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>) -> ParameterManager<'cook> {
         Self { manager }
     }
 

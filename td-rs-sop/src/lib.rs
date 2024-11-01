@@ -142,8 +142,9 @@ impl<'cook> SopOutput<'cook> {
 
     pub fn set_custom_attribute(&mut self, info: CustomAttributeInfo, data: CustomAttributeData, num_pts: usize) {
         unsafe {
+            let name = std::ffi::CString::new(info.name).unwrap();
             let info = cxx::SOP_CustomAttribInfo {
-                name: std::ffi::CString::new(info.name).unwrap().as_ptr(),
+                name: name.as_ptr(),
                 numComponents: info.num_components as i32,
                 attribType: (&info.attr_type).into(),
             };

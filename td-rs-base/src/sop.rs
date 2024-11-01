@@ -1,6 +1,6 @@
 #![allow(non_snake_case)]
 
-use crate::cxx::{PrimitiveType, SOP_CustomAttribInfo};
+use crate::cxx::PrimitiveType;
 use crate::{cxx, GetInput, OperatorInputs};
 use auto_ops::impl_op_ex;
 use derive_more::{AsRef, Deref, DerefMut, From, Into};
@@ -78,7 +78,7 @@ impl SopInput {
                 panic!("Custom attribute is null");
             }
             let custom_attribute = &*custom_attribute;
-            
+
             let name = custom_attribute._base.name;
             let name = std::ffi::CStr::from_ptr(name).to_string_lossy().into_owned();
             let num_components = custom_attribute._base.numComponents as usize;
