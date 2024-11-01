@@ -456,7 +456,9 @@ public:
 
 #ifdef _WIN32
   // The HINSTANCE of the process executable
-  HINSTANCE processHInstance;
+  // This is a hack to avoid including windows.h in this header file
+  // which autocxx doesn't know how to handle
+  int64_t processHInstance;
 #endif
 
 #ifdef _WIN32
