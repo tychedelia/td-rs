@@ -1,11 +1,11 @@
 use crate::config::Config;
 use crate::metadata::PluginType;
+use crate::util::ToTitleCase;
 use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use crate::util::ToTitleCase;
 
 pub(crate) fn install_plugin(
     config: &Config,
@@ -15,6 +15,7 @@ pub(crate) fn install_plugin(
     let plugin = &plugin.replace('-', "_");
     let plugin_target_path = plugin_target_path(plugin).join(format!("{plugin}.plugin"));
     let td_plugin_folder = &config.macos.plugin_folder;
+    std::fs::create_dir_all(&td_plugin_folder).context("Could not create plugin directory")?;
     println!(
         "Installing plugin {:?} to {}",
         plugin_target_path, td_plugin_folder
