@@ -62,6 +62,13 @@ into a C++ plugin that can be loaded in TouchDesigner.
 
 `cargo-xtask` is used for the build framework. A [`justfile`](./justfile) is also provided.
 
+### Dev/Watch Command
+
+You can use [bacon](https://dystroy.org/bacon) to watch for changes and build + install for you.
+
+1. `cargo install bacon`
+2. `just dev <name>` or `bacon dev -- <name>`
+
 ### `cargo-xtask`
 
 - `cargo xtask build $PLUGIN` - Build the plugin for the current platform.
