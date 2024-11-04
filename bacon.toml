@@ -1,0 +1,16 @@
+[jobs.dev]
+command = [
+    "cargo", "xtask",
+    "build", 
+]
+need_stdout = true
+background = false
+on_success = "job:install"
+
+[jobs.install]
+command = [
+    "cargo", "xtask",
+    "install", 
+]
+need_stdout = true
+background = false
