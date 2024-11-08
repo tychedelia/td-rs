@@ -98,7 +98,9 @@ fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow
         })
         .spawn()
         .expect("ls command failed to start");
-    cmd.wait().unwrap();
+    if !cmd.wait()?.success() {
+        anyhow::bail!("Could not build xcode project");
+    }
     Ok(())
 }
 
