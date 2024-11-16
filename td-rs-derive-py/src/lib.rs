@@ -91,183 +91,177 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
     let gen = match &input.data {
         syn::Data::Struct(data_struct) => match &data_struct.fields {
             syn::Fields::Named(fields_named) => {
-                let generated_get_sets: Vec<_> = fields_named.named.iter().filter_map(|field| {
-                    // Check for our attribute
-                    if let Some(attr) = field.attrs.iter().find(|attr| attr.path.is_ident("py")) {
-                        let args = if let Ok(meta) = attr.parse_meta() {
-                            if let syn::Meta::List(meta_list) = meta {
-                                parse_attribute_args(meta_list.nested.into_iter().collect()).expect("Failed to parse attribute args")
-                            } else {
-                                PyOpArgs::default()
-                            }
-                        } else {
-                            PyOpArgs::default()
-                        };
-                        let field_name = field.ident.as_ref().expect("Field must have a name").clone();
-                        let field_type = &field.ty;
-                        let getter_name = format_ident!("get_{}", field_name);
-                        let setter_name = format_ident!("set_{}", field_name);
-                        let auto_cook = args.auto_cook;
-
-                        let get_fn = if args.get {
-                            Some(quote! {
-                                pub unsafe extern "C" fn #getter_name(
-                                    _self: *mut pyo3_ffi::PyObject,
-                                    closure: *mut std::ffi::c_void
-                                ) -> *mut pyo3_ffi::PyObject {
-                                    use cxx::AsPlugin;
-                                    let py_struct = _self as *mut cxx::PY_Struct;
-                                    let info = cxx::PY_GetInfo {
-                                        autoCook: #auto_cook,
-                                        reserved: [0; 50]
-                                    };
-
-                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
-                                    let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
-                                    if me.is_null() {
-                                            return std::ptr::null_mut();
-                                    }
-                                    let py_chop = {
-                                        let me = cxx::plugin_cast(me);
-                                        let me = me.as_plugin().inner();
-                                        &mut *(me as *mut #struct_name)
-                                    };
-                                    py::ToPyObj::to_py_obj(py_chop.#field_name)
-                                }
-                            })
-                        } else {
-                            None
-                        };
-
-                        let set_fn = if args.set {
-                            Some(quote! {
-                                pub unsafe extern "C" fn #setter_name(
-                                    _self: *mut pyo3_ffi::PyObject,
-                                    value: *mut pyo3_ffi::PyObject,
-                                    closure: *mut std::ffi::c_void
-                                ) -> i32 {
-                                    use cxx::AsPlugin;
-                                    if !<#field_type as CheckPyObj>::check_py_obj(value) {
-                                        pyo3_ffi::PyErr_SetString(
-                                            pyo3_ffi::PyExc_TypeError,
-                                            "could not check argument\0"
-                                                .as_ptr()
-                                                .cast::<std::os::raw::c_char>(),
-                                        );
-                                        return -1;
-                                    }
-
-                                    let value = FromPyObj::from_py_obj(value);
-
-                                    let py_struct = _self as *mut cxx::PY_Struct;
-                                    let info = cxx::PY_GetInfo {
-                                        autoCook: #auto_cook,
-                                        reserved: [0; 50]
-                                    };
-                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
-                                    let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
-                                    if me.is_null() {
-                                        pyo3_ffi::PyErr_SetString(
-                                            pyo3_ffi::PyExc_TypeError,
-                                            "operator is null\0"
-                                                .as_ptr()
-                                                .cast::<std::os::raw::c_char>(),
-                                        );
-                                        return -1;
-                                    }
-                                    let py_chop = {
-                                        let me = cxx::plugin_cast(me);
-                                        let me = me.as_plugin_mut().innerMut();
-                                        &mut *(me as *mut #struct_name)
-                                    };
-
-                                    py_chop.#field_name = value;
-                                    let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
-                                    ctx.makeNodeDirty(std::ptr::null_mut());
-                                    return 0;
-                                }
-                            })
-                        } else {
-                            None
-                        };
-
-
-                        let get = if args.get {
-                            quote! {
-                                Some(#getter_name)
-                            }
-                        } else {
-                            quote! {
-                                None
-                            }
-                        };
-                        let set = if args.set {
-                            quote! {
-                                Some(#setter_name)
-                            }
-                        } else {
-                            quote! {
-                                None
-                            }
-                        };
-
-                        let doc = if let Some(doc) = &args.doc {
-                            quote! {
-                                concat!(stringify!(#doc), '\0').as_ptr().cast::<std::os::raw::c_char>()
-                            }
-                        } else {
-                            quote! {
-                                std::ptr::null_mut()
-                            }
-                        };
-                        let get_set_def = quote! {
-                            pyo3_ffi::PyGetSetDef {
-                                name: concat!(stringify!(#field_name), '\0').as_ptr().cast::<std::os::raw::c_char>(),
-                                get: #get,
-                                set: #set,
-                                doc: #doc,
-                                closure: std::ptr::null_mut(),
-                            },
-                        };
-
-                        Some(PyGetSet {
-                            py_get_set_def: get_set_def,
-                            get_body: get_fn,
-                            set_body: set_fn,
-                        })
-                    } else {
-                        None
-                    }
-                }).collect();
-
-                let defs: Vec<_> = generated_get_sets
-                    .iter()
-                    .map(|gf| &gf.py_get_set_def)
-                    .collect();
-                let getters: Vec<_> = generated_get_sets.iter().map(|gf| &gf.get_body).collect();
-                let setters: Vec<_> = generated_get_sets.iter().map(|gf| &gf.set_body).collect();
-                let size = generated_get_sets.len() + 1;
-
                 quote! {
-                    pub const GETSETS: [pyo3_ffi::PyGetSetDef; #size] = [
-                        #( #defs )*
-                        pyo3_ffi::PyGetSetDef {
-                            name: std::ptr::null_mut(),
-                            get: None,
-                            set: None,
-                            doc: std::ptr::null_mut(),
-                            closure: std::ptr::null_mut(),
+                    impl<'a, 'py> pyo3::impl_::extract_argument::ExtractPyClassRef<'a, 'py> for #struct_name {
+                        fn extract_ref(
+                            obj: &'a pyo3::Bound<'py, pyo3::PyAny>,
+                            holder: &'a mut Option<pyo3::PyRef<'py, Self>>,
+                        ) -> pyo3::PyResult<&'a Self> {
+                            unsafe {
+                                let me = obj.as_ptr();
+                                let py_struct = me as *mut cxx::PY_Struct;
+                                let info = cxx::PY_GetInfo {
+                                    autoCook: true,
+                                    reserved: [0; 50],
+                                };
+                                // SAFETY:
+                                // Pinning the context is safe because the context is not moved or dropped as it is
+                                // derived from our C++ operator instance which is not moved or dropped during the
+                                // lifetime of the Python object.
+                                let mut ctx = Pin::new_unchecked(&mut *cxx::getPyContext(py_struct));
+                                // Look up our operator instance.
+                                let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
+                                if me.is_null() {
+                                    return Err(pyo3::exceptions::PyTypeError::new_err("operator is null"));
+                                }
+                                let py_op = {
+                                    let me = cxx::plugin_cast(me);
+                                    let me = me.as_plugin().inner();
+                                    &*(me as *const #struct_name)
+                                };
+
+                                Ok(py_op)
+                            }
                         }
-                    ];
+                    }
+
+                    impl<'a, 'py> pyo3::impl_::extract_argument::ExtractPyClassRefMut<'a, 'py> for #struct_name {
+                        fn extract_mut(
+                            obj: &'a pyo3::Bound<'py, pyo3::PyAny>,
+                            holder: &'a mut Option<pyo3::PyRefMut<'py, Self>>,
+                        ) -> PyResult<&'a mut Self> {
+                            unsafe {
+                                let me = obj.as_ptr();
+                                let py_struct = me as *mut cxx::PY_Struct;
+                                let info = cxx::PY_GetInfo {
+                                    autoCook: true,
+                                    reserved: [0; 50],
+                                };
+                                // SAFETY:
+                                // Pinning the context is safe because the context is not moved or dropped as it is
+                                // derived from our C++ operator instance which is not moved or dropped during the
+                                // lifetime of the Python object.
+                                let py_ctx = cxx::getPyContext(py_struct);
+                                // Mark the node as dirty so that it will be cooked on the next frame.
+                                Pin::new_unchecked(&mut *py_ctx).makeNodeDirty(std::ptr::null_mut());
+                                // Look up our operator instance.
+                                let me = Pin::new_unchecked(&mut *py_ctx).getNodeInstance(&info, std::ptr::null_mut());
+                                if me.is_null() {
+                                    return Err(pyo3::exceptions::PyTypeError::new_err("operator is null"));
+                                }
+                                // SAFETY:
+                                // We have a valid operator instance pointer
+                                let py_op = {
+                                    let me = cxx::plugin_cast(me);
+                                    let me = me.as_plugin_mut().innerMut();
+                                    &mut *(me as *mut #struct_name)
+                                };
+                                Ok(py_op)
+                            }
+                        }
+                    }
 
                     impl PyGetSets for #struct_name {
                         fn get_get_sets() -> &'static [pyo3_ffi::PyGetSetDef] {
-                            &GETSETS
+                            let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
+                            let methods = clazz.py_methods();
+                            let mut getset_builders = std::collections::HashMap::<&std::ffi::CStr, pyo3::pyclass::create_type_object::GetSetDefBuilder>::new();
+                            for method in methods.methods {
+                                println!("method");
+                                let method_def = match method {
+                                    pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Runtime(m) => &m(),
+                                    pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Static(m) => m,
+                                };
+
+                                match method_def {
+                                    pyo3::PyMethodDefType::Getter(getter) => {
+                                        getset_builders
+                                            .entry(getter.name)
+                                            .or_default()
+                                            .add_getter(getter)
+                                    }
+                                    pyo3::PyMethodDefType::Setter(setter) => {
+                                        getset_builders
+                                            .entry(setter.name)
+                                            .or_default()
+                                            .add_setter(setter)
+                                    }
+                                    _ => {}
+                                }
+                            }
+
+                            let items = #struct_name::items_iter();
+                            for item in items {
+                                for method in item.methods {
+                                    println!("method");
+                                    let method_def = match method {
+                                        pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Runtime(m) => &m(),
+                                        pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Static(m) => m,
+                                    };
+    
+                                    match method_def {
+                                        pyo3::PyMethodDefType::Getter(getter) => {
+                                            getset_builders
+                                                .entry(getter.name)
+                                                .or_default()
+                                                .add_getter(getter)
+                                        }
+                                        pyo3::PyMethodDefType::Setter(setter) => {
+                                            getset_builders
+                                                .entry(setter.name)
+                                                .or_default()
+                                                .add_setter(setter)
+                                        }
+                                        _ => {}
+                                    }
+                                }
+                            }
+
+                            let mut getset_destructors = Vec::with_capacity(getset_builders.len());
+
+                            let property_defs: Vec<pyo3_ffi::PyGetSetDef> = getset_builders
+                                .iter()
+                                .map(|(name, builder)| {
+                                    let (def, destructor) = builder.as_get_set_def(name);
+                                    getset_destructors.push(destructor);
+                                    def
+                                })
+                                .collect();
+
+
+                            // We just have to leak these to keep them alive
+                            // TODO: right now we are leaking the memory, we should free it when the plugin is unloaded
+                            // but unless you're loading and unloading the plugin a lot, it's not a big deal
+                            getset_destructors.leak();
+                            property_defs.leak()
                         }
                     }
 
-                    #( #getters )*
-                    #( #setters )*
+                    impl td_rs_chop::PyMethods for #struct_name {
+                        fn get_methods() -> &'static [pyo3_ffi::PyMethodDef] {
+                            let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
+                            let methods = clazz.py_methods();
+                            let mut method_defs = Vec::new();
+                            for method in methods.methods {
+                                let method_def = match method {
+                                    pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Runtime(m) => &m(),
+                                    pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Static(m) => m,
+                                };
+
+                                match method_def {
+                                    pyo3::PyMethodDefType::Method(m) => {
+                                        method_defs.push(m.as_method_def());
+                                    }
+                                    _ => {}
+                                }
+                            }
+
+                            method_defs.leak()
+                        }
+                    }
+
+
+                    impl PyOp for #struct_name {}
                 }
             }
             _ => panic!("Only named fields are supported"),
@@ -330,12 +324,12 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                                 );
                                 return std::ptr::null_mut();
                             }
-                            let py_chop = {
+                            let py_op = {
                                 let me = cxx::plugin_cast(me);
                                 let me = me.as_plugin_mut().innerMut();
                                 &mut *(me as *mut #struct_name)
                             };
-                            let res = py_chop.#fn_name(args, nargs as usize);
+                            let res = py_op.#fn_name(args, nargs as usize);
                             let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
                             ctx.makeNodeDirty(std::ptr::null_mut());
                             res

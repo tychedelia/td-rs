@@ -1,4 +1,9 @@
 use pyo3_ffi::PyGetSetDef;
+use crate::Op;
+
+pub trait PyOp : Op {
+    
+}
 
 pub trait PyGetSets {
     fn get_get_sets() -> &'static [pyo3_ffi::PyGetSetDef];
@@ -27,6 +32,7 @@ pub(crate) unsafe fn py_op_info<T: PyMethods + PyGetSets>(
     let m_len = methods.len();
     let m_arr = methods.as_ptr() as *mut autocxx::prelude::c_void;
     let get_sets = T::get_get_sets();
+    println!("get_sets: {:?}", get_sets);
     let gs_len = get_sets.len();
     let gs_arr = get_sets.as_ptr() as *mut autocxx::prelude::c_void;
     crate::cxx::setPyInfo(op_info, m_arr, m_len, gs_arr, gs_len);
@@ -259,10 +265,11 @@ impl CheckPyObj for bool {
 
 impl FromPyObj for String {
     unsafe fn from_py_obj(obj: *mut pyo3_ffi::PyObject) -> Self {
-        let s = pyo3_ffi::PyUnicode_AsUTF8(obj);
-        let s = std::ffi::CStr::from_ptr(s);
-        let s = s.to_str().unwrap();
-        s.to_owned()
+        // let s = pyo3_ffi::PyUnicode_AsUTF8(obj);
+        // let s = std::ffi::CStr::from_ptr(s);
+        // let s = s.to_str().unwrap();
+        // s.to_owned()
+        todo!()
     }
 }
 
@@ -281,10 +288,11 @@ impl CheckPyObj for String {
 
 impl FromPyObj for &str {
     unsafe fn from_py_obj(obj: *mut pyo3_ffi::PyObject) -> Self {
-        let s = pyo3_ffi::PyUnicode_AsUTF8(obj);
-        let s = std::ffi::CStr::from_ptr(s);
-        let s = s.to_str().unwrap();
-        s
+        // let s = pyo3_ffi::PyUnicode_AsUTF8(obj);
+        // let s = std::ffi::CStr::from_ptr(s);
+        // let s = s.to_str().unwrap();
+        // s
+        todo!()
     }
 }
 
