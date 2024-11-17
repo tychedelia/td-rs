@@ -6,7 +6,9 @@ pub use param::*;
 pub use py::*;
 #[cfg(feature = "python")]
 use pyo3::prelude::*;
+#[cfg(feature = "python")]
 use pyo3::types::{IntoPyDict, PyTuple};
+#[cfg(feature = "python")]
 use pyo3::BoundObject;
 use std::ffi;
 use std::ffi::c_int;
