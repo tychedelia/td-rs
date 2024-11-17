@@ -162,12 +162,11 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                     }
 
                     impl PyGetSets for #struct_name {
-                        fn get_get_sets() -> &'static [pyo3_ffi::PyGetSetDef] {
+                        fn get_get_sets() -> &'static [pyo3::ffi::PyGetSetDef] {
                             let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
                             let methods = clazz.py_methods();
                             let mut getset_builders = std::collections::HashMap::<&std::ffi::CStr, pyo3::pyclass::create_type_object::GetSetDefBuilder>::new();
                             for method in methods.methods {
-                                println!("method");
                                 let method_def = match method {
                                     pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Runtime(m) => &m(),
                                     pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Static(m) => m,
@@ -193,12 +192,11 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                             let items = #struct_name::items_iter();
                             for item in items {
                                 for method in item.methods {
-                                    println!("method");
                                     let method_def = match method {
                                         pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Runtime(m) => &m(),
                                         pyo3::impl_::pyclass::MaybeRuntimePyMethodDef::Static(m) => m,
                                     };
-    
+
                                     match method_def {
                                         pyo3::PyMethodDefType::Getter(getter) => {
                                             getset_builders
@@ -219,7 +217,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
 
                             let mut getset_destructors = Vec::with_capacity(getset_builders.len());
 
-                            let property_defs: Vec<pyo3_ffi::PyGetSetDef> = getset_builders
+                            let property_defs: Vec<pyo3::ffi::PyGetSetDef> = getset_builders
                                 .iter()
                                 .map(|(name, builder)| {
                                     let (def, destructor) = builder.as_get_set_def(name);
@@ -238,7 +236,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                     }
 
                     impl td_rs_chop::PyMethods for #struct_name {
-                        fn get_methods() -> &'static [pyo3_ffi::PyMethodDef] {
+                        fn get_methods() -> &'static [pyo3::ffi::PyMethodDef] {
                             let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
                             let methods = clazz.py_methods();
                             let mut method_defs = Vec::new();
@@ -292,21 +290,21 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                 let fn_name = &method.sig.ident;
                 Some(PyMeth {
                     py_meth: quote! {
-                      pyo3_ffi::PyMethodDef {
+                      pyo3::ffi::PyMethodDef {
                             ml_name: concat!(stringify!(#fn_name), '\0').as_ptr().cast::<std::os::raw::c_char>(),
-                            ml_meth: pyo3_ffi::PyMethodDefPointer {
+                            ml_meth: pyo3::ffi::PyMethodDefPointer {
                                 _PyCFunctionFast: #fn_name,
                             },
-                            ml_flags: pyo3_ffi::METH_FASTCALL,
+                            ml_flags: pyo3::ffi::METH_FASTCALL,
                             ml_doc: std::ptr::null_mut(),
                       },
                     },
                     fn_body: quote! {
                         pub unsafe extern "C" fn #fn_name(
-                            _self: *mut pyo3_ffi::PyObject,
-                            args: *mut *mut pyo3_ffi::PyObject,
-                            nargs: pyo3_ffi::Py_ssize_t,
-                        ) -> *mut pyo3_ffi::PyObject {
+                            _self: *mut pyo3::ffi::PyObject,
+                            args: *mut *mut pyo3::ffi::PyObject,
+                            nargs: pyo3::ffi::Py_ssize_t,
+                        ) -> *mut pyo3::ffi::PyObject {
                             use cxx::AsPlugin;
                             let py_struct = _self as *mut cxx::PY_Struct;
                             let info = cxx::PY_GetInfo {
@@ -316,8 +314,8 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
                             let mut ctx = std::pin::Pin::new_unchecked(&mut*cxx::getPyContext(py_struct));;
                             let me = ctx.getNodeInstance(&info, std::ptr::null_mut());
                             if me.is_null() {
-                                pyo3_ffi::PyErr_SetString(
-                                    pyo3_ffi::PyExc_TypeError,
+                                pyo3::ffi::PyErr_SetString(
+                                    pyo3::ffi::PyExc_TypeError,
                                     "operator is null\0"
                                         .as_ptr()
                                         .cast::<std::os::raw::c_char>(),
@@ -352,14 +350,14 @@ pub fn py_op_methods(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #input
 
         impl PyMethods for #struct_name {
-            fn get_methods() -> &'static [pyo3_ffi::PyMethodDef] {
+            fn get_methods() -> &'static [pyo3::ffi::PyMethodDef] {
                 &METHODS
             }
         }
 
-        pub const METHODS: [pyo3_ffi::PyMethodDef; #size] = [
+        pub const METHODS: [pyo3::ffi::PyMethodDef; #size] = [
             #( #methods )*
-            pyo3_ffi::PyMethodDef::zeroed()
+            pyo3::ffi::PyMethodDef::zeroed()
         ];
 
         #( #fns )*

@@ -673,7 +673,7 @@ impl DatParam {
 }
 
 #[cfg(feature = "python")]
-impl Param for *mut pyo3_ffi::PyObject {
+impl Param for *mut pyo3::ffi::PyObject {
     fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
         let param = options.into();
         parameter_manager.append_python(param);
@@ -682,7 +682,7 @@ impl Param for *mut pyo3_ffi::PyObject {
     fn update(&mut self, name: &str, inputs: &ParamInputs) {
         // Ensure that the old object is decref'd
         unsafe {
-            pyo3_ffi::Py_XDECREF(*self);
+            pyo3::ffi::Py_XDECREF(*self);
         }
         *self = inputs.get_python(name);
     }

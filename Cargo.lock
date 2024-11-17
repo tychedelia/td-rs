@@ -3735,7 +3735,6 @@ dependencies = [
  "derive_more",
  "miette",
  "pyo3",
- "pyo3-ffi",
  "ref-cast",
  "rgb",
  "td-rs-autocxx-build",
