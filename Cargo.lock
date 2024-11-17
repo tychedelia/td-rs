@@ -2831,7 +2831,7 @@ dependencies = [
 [[package]]
 name = "pyo3"
 version = "0.23.0-dev"
-source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#b4352f0f55ba950f8be1901f5284710bf754a95e"
+source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#87522fd4202b66702957f7dd4becf5c17cf2d289"
 dependencies = [
  "cfg-if 1.0.0",
  "indoc 2.0.5",
@@ -2848,7 +2848,7 @@ dependencies = [
 [[package]]
 name = "pyo3-build-config"
 version = "0.23.0-dev"
-source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#b4352f0f55ba950f8be1901f5284710bf754a95e"
+source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#87522fd4202b66702957f7dd4becf5c17cf2d289"
 dependencies = [
  "once_cell",
  "target-lexicon",
@@ -2857,7 +2857,7 @@ dependencies = [
 [[package]]
 name = "pyo3-ffi"
 version = "0.23.0-dev"
-source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#b4352f0f55ba950f8be1901f5284710bf754a95e"
+source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#87522fd4202b66702957f7dd4becf5c17cf2d289"
 dependencies = [
  "libc",
  "pyo3-build-config",
@@ -2866,7 +2866,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros"
 version = "0.23.0-dev"
-source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#b4352f0f55ba950f8be1901f5284710bf754a95e"
+source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#87522fd4202b66702957f7dd4becf5c17cf2d289"
 dependencies = [
  "proc-macro2",
  "pyo3-macros-backend",
@@ -2877,7 +2877,7 @@ dependencies = [
 [[package]]
 name = "pyo3-macros-backend"
 version = "0.23.0-dev"
-source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#b4352f0f55ba950f8be1901f5284710bf754a95e"
+source = "git+https://github.com/tychedelia/pyo3?branch=td-rs#87522fd4202b66702957f7dd4becf5c17cf2d289"
 dependencies = [
  "heck 0.5.0",
  "proc-macro2",
@@ -3365,9 +3365,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.132"
+version = "1.0.133"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d726bfaff4b320266d395898905d0eba0345aae23b54aee3a737e260fd46db03"
+checksum = "c7fceb2473b9166b2294ef05efcb65a3db80803f0b03ef86a5fc88a2b85ee377"
 dependencies = [
  "itoa",
  "memchr 2.7.4",
