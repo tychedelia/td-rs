@@ -43,16 +43,8 @@ pub struct PythonChop {
 
 #[pymethods]
 impl PythonChop {
-    pub fn hello_world(&self, a: i32, b: i32, absTime: Bound<'_, PyAny>) -> PyResult<i32> {
-        let field_value = absTime.getattr("frame")?;
-        // print the pointer to the execute_count field
-        println!("execute_count: {:?}", &self.execute_count as *const u32);
-        let frames: i32 = field_value.extract()?;
-        println!(
-            "Hello, world! execute={} frames={}",
-            self.execute_count, frames
-        );
-        Ok(a + b)
+    pub fn reset(&mut self) {
+        self.offset = 0.0;
     }
 }
 
@@ -99,7 +91,9 @@ impl Op for PythonChop {
     }
 
     fn pulse_pressed(&mut self, name: &str) {
-        if name == "Reset" {}
+        if name == "Reset" {
+            self.reset();
+        }
     }
 }
 

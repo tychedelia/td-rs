@@ -12,7 +12,6 @@ crate-type = ["staticlib"]
 
 [dependencies]
 pyo3 = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features = ["abi3-py311"] }
-pyo3-ffi = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features = ["abi3-py311"] }
 td-rs-chop = { path = "../../../td-rs-chop", features = ["python"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
 td-rs-derive-py = { path = "../../../td-rs-derive-py" }
