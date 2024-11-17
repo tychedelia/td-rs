@@ -1,23 +1,28 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
 
+pub use param::*;
+#[cfg(feature = "python")]
+pub use py::*;
+#[cfg(feature = "python")]
+use pyo3::prelude::*;
+use pyo3::types::{IntoPyDict, PyTuple};
+use pyo3::BoundObject;
 use std::ffi;
+use std::ffi::c_int;
 use std::fmt::Formatter;
 use std::ops::Index;
 use std::pin::Pin;
 use std::sync::Mutex;
 
-pub use param::*;
-#[cfg(feature = "python")]
-pub use py::*;
-
 #[cfg(feature = "tokio")]
-pub static RUNTIME: std::sync::LazyLock<tokio_core::runtime::Runtime> = std::sync::LazyLock::new(|| {
-    tokio_core::runtime::Builder::new_multi_thread()
-        .enable_all()
-        .build()
-        .expect("Failed to create tokio runtime")
-});
+pub static RUNTIME: std::sync::LazyLock<tokio_core::runtime::Runtime> =
+    std::sync::LazyLock::new(|| {
+        tokio_core::runtime::Builder::new_multi_thread()
+            .enable_all()
+            .build()
+            .expect("Failed to create tokio runtime")
+    });
 
 pub mod chop;
 pub mod cxx;
@@ -139,35 +144,47 @@ pub struct Context {
 
 impl Context {
     #[cfg(feature = "python")]
-    pub fn create_arguments_tuple(&self, nargs: usize) -> *mut pyo3_ffi::PyObject {
-        let obj = unsafe {
-            let mut ctx = Pin::new_unchecked(&mut *self.context);
-            let tuple = ctx
-                .createArgumentsTuple(autocxx::c_int(nargs as i32), std::ptr::null_mut());
-            tuple
-        };
-        obj as *mut pyo3_ffi::PyObject
-    }
-
-    #[cfg(feature = "python")]
-    pub fn call_python_callback(
+    pub fn call_python_callback<'py, F>(
         &self,
+        py: Python<'py>,
         callback: &str,
-        args: *mut pyo3_ffi::PyObject,
-        kw: *mut pyo3_ffi::PyObject,
-    ) -> *mut pyo3_ffi::PyObject {
-        let callback = ffi::CString::new(callback).unwrap();
-        let obj = unsafe {
+        args: impl IntoPyObject<'py, Target = PyTuple>,
+        kwargs: Option<&Bound<'py, pyo3::types::PyDict>>,
+        f: F,
+    ) -> PyResult<()>
+    where
+        F: FnOnce(Python, &PyObject),
+    {
+        unsafe {
+            let callback = ffi::CString::new(callback)?;
+            let args = args.into_pyobject(py).map_err(Into::into)?.into_bound();
             let mut ctx = Pin::new_unchecked(&mut *self.context);
+            let op_tuple = ctx.createArgumentsTuple(autocxx::c_int(1), std::ptr::null_mut());
+            let op_tuple = op_tuple as *mut pyo3::ffi::PyObject;
+            let op_tuple = PyObject::from_owned_ptr(py, op_tuple);
+            let op_tuple = op_tuple.downcast_bound::<PyTuple>(py)?;
+            let op = op_tuple.get_item(0)?;
+            let mut args_elements = vec![op];
+
+            for args in args.iter() {
+                args_elements.push(args);
+            }
+            let args = PyTuple::new(py, &args_elements)?;
+
+            let mut ctx = Pin::new_unchecked(&mut *self.context);
+            let args = args.as_ptr();
+            let kwargs = kwargs.map(|kw| kw.as_ptr()).unwrap_or(std::ptr::null_mut());
             let res = ctx.callPythonCallback(
                 callback.as_ptr(),
                 args as *mut cxx::_object,
-                kw as *mut cxx::_object,
+                kwargs as *mut cxx::_object,
                 std::ptr::null_mut(),
             );
-            res
-        };
-        obj as *mut pyo3_ffi::PyObject
+            let res = res as *mut pyo3::ffi::PyObject;
+            let res = PyObject::from_owned_ptr(py, res);
+            f(py, &res);
+            Ok(())
+        }
     }
 }
 
@@ -332,7 +349,7 @@ impl<'cook> ParamInputs<'cook> {
     }
 
     #[cfg(feature = "python")]
-    fn get_python(&self, name: &str) -> *mut pyo3_ffi::PyObject {
+    fn get_python(&self, name: &str) -> *mut pyo3::ffi::PyObject {
         unsafe {
             let python = self
                 .inputs
@@ -340,7 +357,7 @@ impl<'cook> ParamInputs<'cook> {
             if python.is_null() {
                 std::ptr::null_mut()
             } else {
-                python as *mut pyo3_ffi::PyObject
+                python as *mut pyo3::ffi::PyObject
             }
         }
     }
@@ -533,8 +550,8 @@ pub fn op_init() {
     {
         use tracing_subscriber::fmt;
         use tracing_subscriber::layer::SubscriberExt;
-        use tracing_subscriber::EnvFilter;
         use tracing_subscriber::util::{SubscriberInitExt, TryInitError};
+        use tracing_subscriber::EnvFilter;
 
         let fmt_layer = if cfg!(target_os = "windows") {
             let mut f = fmt::layer();
@@ -549,14 +566,12 @@ pub fn op_init() {
             .try_init();
         match init {
             Ok(_) => {}
-            Err(err) => {
-                match err {
-                    TryInitError { .. } => {}
-                    _ => {
-                        eprintln!("Failed to initialize tracing: {}", err);
-                    }
+            Err(err) => match err {
+                TryInitError { .. } => {}
+                _ => {
+                    eprintln!("Failed to initialize tracing: {}", err);
                 }
-            }
+            },
         }
     }
 }
