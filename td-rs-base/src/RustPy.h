@@ -16,26 +16,18 @@ TD::PY_Context* getPyContext(TD::PY_Struct *pyStruct) {
 
 void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *pygetsets, size_t getsetsize) {
     if (size == 0) {
-        return;
+        std::cout << "No methods" << std::endl;
+        opInfo.pythonMethods = nullptr;
+    } else {
+        opInfo.pythonMethods = static_cast<PyMethodDef*>(pymethods);
     }
-    PyMethodDef *pm = (PyMethodDef*) pymethods;
-    std::vector<PyMethodDef> *methods = new std::vector<PyMethodDef>();
-    for (size_t i = 0; i < size; i++) {
-        methods->push_back(pm[i]);
-    }
-    PyMethodDef *arr = methods->data();
-    opInfo.pythonMethods = arr;
 
     if (getsetsize == 0) {
-        return;
+        std::cout << "No getsets" << std::endl;
+        opInfo.pythonGetSets = nullptr;
+    } else {
+        opInfo.pythonGetSets = static_cast<PyGetSetDef*>(pygetsets);
     }
-    PyGetSetDef *pgs = (PyGetSetDef*) pygetsets;
-    std::vector<PyGetSetDef> *getsets = new std::vector<PyGetSetDef>();
-    for (size_t i = 0; i < getsetsize; i++) {
-        getsets->push_back(pgs[i]);
-    }
-    PyGetSetDef *arr2 = getsets->data();
-    opInfo.pythonGetSets = arr2;
 }
 #else
 

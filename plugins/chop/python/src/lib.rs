@@ -1,8 +1,13 @@
 #![feature(min_specialization)]
 
+use pyo3::impl_::pyclass::{PyClassImpl, PyMethods};
+use pyo3::prelude::PyAnyMethods;
+use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
+use std::pin::Pin;
+use td_rs_chop::cxx::AsPlugin;
 use td_rs_chop::*;
 use td_rs_derive::*;
-use td_rs_derive_py::*;
+use td_rs_derive_py::PyOp;
 
 #[derive(Param, Default, Debug)]
 enum PythonChopShape {
@@ -24,15 +29,23 @@ struct PythonChopParams {
     reset: Pulse,
 }
 
-#[derive(PyOp, Debug)]
+#[derive(PyOp)]
+#[pyclass(unsendable)]
 pub struct PythonChop {
-    #[py(doc = "Get or Set the speed modulation.", auto_cook)]
+    info: NodeInfo,
+    #[pyo3(get, set)]
     speed: f32,
-    #[py(get, doc = "Get executed count.")]
+    #[pyo3(get)]
     execute_count: u32,
     offset: f32,
     params: PythonChopParams,
-    pub info: NodeInfo,
+}
+
+#[pymethods]
+impl PythonChop {
+    pub fn reset(&mut self) {
+        self.offset = 0.0;
+    }
 }
 
 impl OpNew for PythonChop {
@@ -44,25 +57,6 @@ impl OpNew for PythonChop {
             offset: 0.0,
             params: Default::default(),
         }
-    }
-}
-
-#[py_op_methods]
-impl PythonChop {
-    fn reset_filter(&mut self) {
-        self.offset = 0.0;
-    }
-
-    #[py_meth]
-    pub unsafe fn reset(
-        &mut self,
-        _args: *mut *mut pyo3_ffi::PyObject,
-        _nargs: usize,
-    ) -> *mut pyo3_ffi::PyObject {
-        self.reset_filter();
-        let none = pyo3_ffi::Py_None();
-        pyo3_ffi::Py_INCREF(none);
-        none
     }
 }
 
@@ -98,7 +92,7 @@ impl Op for PythonChop {
 
     fn pulse_pressed(&mut self, name: &str) {
         if name == "Reset" {
-            self.reset_filter();
+            self.reset();
         }
     }
 }
@@ -132,25 +126,20 @@ impl Chop for PythonChop {
             // Apply Python class modifications
             self.params.speed *= self.speed;
 
-            let arg_tuple = self.info.context().create_arguments_tuple(1);
-            unsafe {
-                pyo3_ffi::PyTuple_SET_ITEM(
-                    arg_tuple,
-                    1,
-                    pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double),
-                );
-                let res = self.info.context().call_python_callback(
+            Python::with_gil(|py| {
+                self.info.context().call_python_callback(
+                    py,
                     "getSpeedAdjust",
-                    arg_tuple,
-                    std::ptr::null_mut(),
-                );
-                if !res.is_null() {
-                    if pyo3_ffi::PyFloat_Check(res) != 0 {
-                        self.params.speed = pyo3_ffi::PyFloat_AsDouble(res) as f32;
-                    }
-                    pyo3_ffi::Py_DECREF(res);
-                }
-            }
+                    (self.speed,),
+                    None,
+                    |py, res| {
+                        if let Ok(speed) = res.extract::<f32>(py) {
+                            self.params.speed *= speed;
+                        }
+                    },
+                )
+            })
+            .unwrap();
 
             let phase = 2.0 * std::f32::consts::PI / output.num_channels() as f32;
             let num_samples = output.num_samples();

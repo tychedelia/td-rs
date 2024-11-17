@@ -11,3 +11,5 @@ RustCHOP.xcodeproj/project.xcworkspace/xcuserdata
 *.xcodeproj/
 cmake-build*
 output.plist
+
+venv/
