@@ -4,6 +4,7 @@ use pyo3::impl_::pyclass::{PyClassImpl, PyMethods};
 use pyo3::prelude::PyAnyMethods;
 use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult};
 use std::pin::Pin;
+use std::sync::{Arc, Mutex};
 use td_rs_chop::cxx::AsPlugin;
 use td_rs_chop::*;
 use td_rs_derive::*;
@@ -32,6 +33,7 @@ struct PythonChopParams {
 #[derive(PyOp)]
 #[pyclass]
 pub struct PythonChop {
+    info: Arc<Mutex<NodeInfo>>,
     #[pyo3(get, set)]
     speed: f32,
     #[pyo3(get)]
@@ -44,6 +46,8 @@ pub struct PythonChop {
 impl PythonChop {
     pub fn hello_world(&self, a: i32, b: i32, absTime: Bound<'_, PyAny>) -> PyResult<i32> {
         let field_value = absTime.getattr("frame")?;
+        // print the pointer to the execute_count field
+        println!("execute_count: {:?}", &self.execute_count as *const u32);
         let frames: i32 = field_value.extract()?;
         println!(
             "Hello, world! execute={} frames={}",
@@ -56,7 +60,7 @@ impl PythonChop {
 impl OpNew for PythonChop {
     fn new(info: NodeInfo) -> Self {
         Self {
-            // info,
+            info: Arc::new(Mutex::new(info)),
             speed: 1.0,
             execute_count: 0,
             offset: 0.0,
@@ -129,26 +133,29 @@ impl Chop for PythonChop {
             // Apply Python class modifications
             self.params.speed *= self.speed;
 
-            // let arg_tuple = self.info.context().create_arguments_tuple(1);
-            //
-            // unsafe {
-            //     pyo3_ffi::PyTuple_SET_ITEM(
-            //         arg_tuple,
-            //         1,
-            //         pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double),
-            //     );
-            //     let res = self.info.context().call_python_callback(
-            //         "getSpeedAdjust",
-            //         arg_tuple,
-            //         std::ptr::null_mut(),
-            //     );
-            //     if !res.is_null() {
-            //         if pyo3_ffi::PyFloat_Check(res) != 0 {
-            //             self.params.speed = pyo3_ffi::PyFloat_AsDouble(res) as f32;
-            //         }
-            //         pyo3_ffi::Py_DECREF(res);
-            //     }
-            // }
+            let info = self.info.lock().unwrap();
+            let arg_tuple = info 
+                .context()
+                .create_arguments_tuple(1);
+
+            unsafe {
+                pyo3_ffi::PyTuple_SET_ITEM(
+                    arg_tuple,
+                    1,
+                    pyo3_ffi::PyFloat_FromDouble(self.params.speed as std::ffi::c_double),
+                );
+                let res = info.context().call_python_callback(
+                    "getSpeedAdjust",
+                    arg_tuple,
+                    std::ptr::null_mut(),
+                );
+                if !res.is_null() {
+                    if pyo3_ffi::PyFloat_Check(res) != 0 {
+                        self.params.speed = pyo3_ffi::PyFloat_AsDouble(res) as f32;
+                    }
+                    pyo3_ffi::Py_DECREF(res);
+                }
+            }
 
             let phase = 2.0 * std::f32::consts::PI / output.num_channels() as f32;
             let num_samples = output.num_samples();
