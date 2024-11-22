@@ -1,11 +1,6 @@
 #![feature(min_specialization)]
 
-use pyo3::impl_::pyclass::{PyClassImpl, PyMethods};
-use pyo3::prelude::PyAnyMethods;
-use pyo3::{pyclass, pymethods, Bound, PyAny, PyResult, Python};
-use std::pin::Pin;
-use td_rs_dat::cxx::AsPlugin;
-use td_rs_dat::*;
+use td_rs_dat::prelude::*;
 use td_rs_derive::*;
 use td_rs_derive_py::PyOp;
 

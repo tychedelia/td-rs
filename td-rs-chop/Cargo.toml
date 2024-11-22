@@ -13,6 +13,7 @@ cxx = "1.0.78"
 td-rs-base = { path = "../td-rs-base" }
 tracing-base = { package = "tracing", version = "0.1", optional = true }
 tracing-subscriber = { version = "0.2", optional = true }
+pyo3 = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features = ["abi3-py311"], optional = true }
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }
@@ -21,6 +22,6 @@ miette = { version="5", features = [ "fancy" ] }
 
 [features]
 default = []
-python = ["td-rs-base/python"]
+python = ["td-rs-base/python", "dep:pyo3"]
 tracing = ["td-rs-base/tracing", "tracing-base", "tracing-subscriber"]
 tokio = ["td-rs-base/tokio"]
