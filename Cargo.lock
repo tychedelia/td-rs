@@ -2891,8 +2891,18 @@ name = "python-chop"
 version = "0.1.0"
 dependencies = [
  "pyo3",
- "pyo3-ffi",
  "td-rs-chop",
+ "td-rs-derive",
+ "td-rs-derive-py",
+]
+
+[[package]]
+name = "python-dat"
+version = "0.1.0"
+dependencies = [
+ "pyo3",
+ "td-rs-chop",
+ "td-rs-dat",
  "td-rs-derive",
  "td-rs-derive-py",
 ]

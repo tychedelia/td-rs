@@ -86,8 +86,8 @@ pub const THE_CUBE_TEXTURE: [TexCoord; THE_CUBE_NUM_PTS] = [
     // front
     TexCoord::new(2.0 / 3.0, 0.0, 0.0),
     TexCoord::new(2.0 / 3.0, 0.5, 0.0),
-    TexCoord::new(3.0 / 3.0, 0.0, 0.0),
-    TexCoord::new(3.0 / 3.0, 0.5, 0.0),
+    TexCoord::new(1.0, 0.0, 0.0),
+    TexCoord::new(1.0, 0.5, 0.0),
     // back
     TexCoord::new(0.0 / 3.0, 0.5, 0.0),
     TexCoord::new(0.0 / 3.0, 0.0, 0.0),
@@ -95,9 +95,9 @@ pub const THE_CUBE_TEXTURE: [TexCoord; THE_CUBE_NUM_PTS] = [
     TexCoord::new(1.0 / 3.0, 0.0, 0.0),
     // top
     TexCoord::new(2.0 / 3.0, 1.0, 0.0),
-    TexCoord::new(3.0 / 3.0, 1.0, 0.0),
+    TexCoord::new(1.0, 1.0, 0.0),
     TexCoord::new(2.0 / 3.0, 0.5, 0.0),
-    TexCoord::new(3.0 / 3.0, 0.5, 0.0),
+    TexCoord::new(1.0, 0.5, 0.0),
     // bottom
     TexCoord::new(1.0 / 3.0, 0.5, 0.0),
     TexCoord::new(2.0 / 3.0, 0.5, 0.0),

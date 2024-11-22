@@ -20,6 +20,7 @@ members = [
     "plugins/chop/python",
     "plugins/chop/wasm",
     "plugins/dat/filter",
+    "plugins/dat/python-dat",
     "plugins/sop/generator-sop",
     "plugins/top/cpu-memory-top",
     "plugins/top/stable-diffusion",

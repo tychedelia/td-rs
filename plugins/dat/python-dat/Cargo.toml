@@ -1,0 +1,18 @@
+[package]
+name = "python-dat"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "dat"
+
+[lib]
+name = "python_dat"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-dat = { path = "../../../td-rs-dat", features = ["python"] }
+td-rs-chop = { path = "../../../td-rs-chop", features = ["python"] }
+td-rs-derive = { path = "../../../td-rs-derive" }
+pyo3 = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features = ["abi3-py311"] }
+td-rs-derive-py = { path = "../../../td-rs-derive-py" }
