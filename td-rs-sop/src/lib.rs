@@ -6,6 +6,7 @@ pub use td_rs_base::sop::*;
 pub use td_rs_base::*;
 
 pub mod cxx;
+pub mod prelude;
 
 #[derive(Debug, Default)]
 pub struct SopGeneralInfo {
@@ -140,7 +141,12 @@ impl<'cook> SopOutput<'cook> {
         self.output.as_mut().getNumTexCoordLayers() as usize
     }
 
-    pub fn set_custom_attribute(&mut self, info: CustomAttributeInfo, data: CustomAttributeData, num_pts: usize) {
+    pub fn set_custom_attribute(
+        &mut self,
+        info: CustomAttributeInfo,
+        data: CustomAttributeData,
+        num_pts: usize,
+    ) {
         unsafe {
             let name = std::ffi::CString::new(info.name).unwrap();
             let info = cxx::SOP_CustomAttribInfo {

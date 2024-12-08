@@ -8,6 +8,7 @@ pub use td_rs_base::chop::*;
 pub use td_rs_base::*;
 
 pub mod cxx;
+pub mod prelude;
 
 #[derive(Debug, Default)]
 pub struct ChopOutputInfo {
