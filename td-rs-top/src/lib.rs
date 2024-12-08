@@ -6,6 +6,8 @@ use std::pin::Pin;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
 
+pub mod prelude;
+
 pub struct TopOutput<'cook> {
     output: Pin<&'cook mut cxx::TOP_Output>,
 }

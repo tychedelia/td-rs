@@ -7,6 +7,7 @@ pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::*;
 
 pub mod cxx;
+pub mod prelude;
 
 #[derive(Debug, Default)]
 pub struct DatGeneralInfo {
