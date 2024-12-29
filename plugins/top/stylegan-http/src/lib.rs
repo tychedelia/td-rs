@@ -8,30 +8,70 @@ use std::task::Poll;
 use td_rs_derive::Params;
 use td_rs_top::*;
 use tokio::task::JoinHandle;
+use tracing::{error, info};
 
-const URL: &str = "http://localhost:5000";
 const WIDTH: usize = 1024;
 const HEIGHT: usize = 1024;
 const MAX_TASKS: usize = 10;
 
 #[derive(Params, Default, Clone, Debug)]
 struct StyleganHttpTopParams {
-    #[param(label = "Seed", page = "Network")]
+    #[param(label = "Ip Address", page = "Config", default = "localhost")]
+    ip: String,
+    #[param(label = "Port", page = "Config", default = 5000)]
+    port: u16,
+    #[param(label = "Seed", page = "Stylegan")]
     seed: u16,
-    #[param(label = "X Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    x_feature: u16,
-    #[param(label = "X Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    x_range: u16,
-    #[param(label = "Y Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    y_feature: u16,
-    #[param(label = "Y Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    y_range: u16,
-    #[param(label = "Z Feature", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    z_feature: u16,
-    #[param(label = "Z Range", page = "Network", min = 0.0, max = 512.0, clamp = true)]
-    z_range: u16,
-    #[param(label = "Blocking")]
+    #[param(label = "Config")]
     blocking: bool,
+    #[param(
+        label = "X Feature",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    x_feature: u16,
+    #[param(
+        label = "X Range",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    x_range: u16,
+    #[param(
+        label = "Y Feature",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    y_feature: u16,
+    #[param(
+        label = "Y Range",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    y_range: u16,
+    #[param(
+        label = "Z Feature",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    z_feature: u16,
+    #[param(
+        label = "Z Range",
+        page = "Stylegan",
+        min = 0.0,
+        max = 512.0,
+        clamp = true
+    )]
+    z_range: u16,
 }
 
 pub type Task = JoinHandle<anyhow::Result<Vec<u8>>>;
@@ -52,7 +92,8 @@ impl Future for StyleganHttpTop {
     fn poll(mut self: Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> Poll<Self::Output> {
         let req = self.params_as_req();
         if self.last_req.as_ref() != Some(&req) && self.tasks.len() < MAX_TASKS {
-            self.tasks.push_back(tokio::spawn(Self::request_image(req.clone())));
+            self.tasks
+                .push_back(tokio::spawn(Self::request_image(req.clone())));
             self.last_req = Some(req);
         };
 
@@ -67,6 +108,7 @@ impl Future for StyleganHttpTop {
                     return Poll::Ready(Some(image));
                 }
                 Poll::Ready(Ok(Err(_))) | Poll::Ready(Err(_)) => {
+                    self.set_warning(&format!("Error fetching image"));
                     continue;
                 }
                 Poll::Pending => {
@@ -78,12 +120,13 @@ impl Future for StyleganHttpTop {
             }
         }
 
-        return Poll::Ready(None);
+        Poll::Ready(None)
     }
 }
 
 #[derive(Default, Clone, Debug, Eq, PartialEq)]
 struct ImageReq {
+    url: String,
     seed: u16,
     x: u16,
     x_range: u16,
@@ -100,6 +143,11 @@ impl StyleganHttpTop {
 
     fn params_as_req(&self) -> ImageReq {
         ImageReq {
+            url: format!(
+                "http://{ip}:{port}",
+                ip = self.params.ip,
+                port = self.params.port
+            ),
             seed: self.params.seed,
             x: self.params.x_feature,
             x_range: self.params.x_range,
@@ -112,6 +160,7 @@ impl StyleganHttpTop {
 
     async fn request_image(image_req: ImageReq) -> anyhow::Result<Vec<u8>> {
         let ImageReq {
+            url,
             seed,
             x,
             x_range,
@@ -120,26 +169,15 @@ impl StyleganHttpTop {
             z,
             z_range,
         } = image_req;
-        let mut bytes = reqwest::get(format!(
-            "{URL}?seed={seed}&x={x}&x_range={x_range}&y={y}&y_range={y_range}&z={z}&z_range={z_range}"
+        let bytes = reqwest::get(format!(
+            "{url}?seed={seed}&x={x}&x_range={x_range}&y={y}&y_range={y_range}&z={z}&z_range={z_range}"
         ))
         .await?
         .bytes()
         .await?
         .to_vec();
 
-        let image = bytes
-            .chunks_exact_mut(3)
-            .map(|c| {
-                let mut c = c.to_vec();
-                c.reverse();
-                c.push(255);
-                c
-            })
-            .flatten()
-            .collect::<Vec<u8>>();
-
-        Ok(image)
+        Ok(bytes)
     }
 }
 
@@ -189,6 +227,14 @@ impl Top for StyleganHttpTop {
         self.execute_count += 1;
 
         if let Some(mut image) = self.get_image() {
+            if image.len() < WIDTH * HEIGHT * 4 {
+                self.set_warning(&format!(
+                    "Image size mismatch, expected 1024x1024x4, got {len:?}",
+                    len = image.len()
+                ));
+                return;
+            }
+
             // kick off another request optimistically
             self.get_image();
             let mut buf = self
@@ -210,6 +256,7 @@ impl Top for StyleganHttpTop {
                 first_pixel: FirstPixel::TopLeft,
                 color_buffer_index: 0,
             };
+
             output.upload_buffer(&mut buf, &info);
         }
     }
