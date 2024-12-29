@@ -175,6 +175,9 @@ fn impl_params(input: &DeriveInput) -> TokenStream {
                                         if let Lit::Float(lit_float) = lit {
                                             default = Some(lit_float.base10_parse().unwrap());
                                         }
+                                        if let Lit::Int(lit_int) = lit {
+                                            default = Some(lit_int.base10_parse().unwrap());
+                                        }
                                     }
                                 }
                             }
