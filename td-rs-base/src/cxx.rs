@@ -36,6 +36,7 @@ include_cpp! {
     generate!("TD::OP_SmartRef")
     generate_pod!("TD::OP_TextureDesc")
     generate_pod!("TD::OP_TexDim")
+    generate!("TD::OP_BuildDynamicMenuInfo")
 
     // util fns
     generate!("setString")
@@ -44,6 +45,7 @@ include_cpp! {
     generate!("getDownloadData")
     generate!("getDownloadTextureDesc")
     generate!("releaseDownloadResult")
+    generate!("getBuildDynamicMenuInfoNames")
 
     // Custom ops
     generate!("TD::OP_CustomOPInstance")

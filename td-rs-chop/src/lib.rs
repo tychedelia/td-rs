@@ -120,6 +120,13 @@ pub trait Chop: Op {
     fn output_info(&self, _input: &OperatorInputs<ChopInput>) -> Option<ChopOutputInfo> {
         None
     }
+
+    fn build_dynamic_menu(
+        &self,
+        inputs: &OperatorInputs<ChopInput>,
+        menu_info: &mut DynamicMenuInfo,
+    ) {
+    }
 }
 
 #[macro_export]

@@ -1,6 +1,7 @@
 #![feature(associated_type_defaults)]
 #![feature(min_specialization)]
 
+use crate::cxx::OP_Inputs;
 pub use param::*;
 #[cfg(feature = "python")]
 pub use py::*;
@@ -243,6 +244,30 @@ where
     }
 }
 
+pub struct DynamicMenuInfo<'cook> {
+    pub menu_info: Pin<&'cook mut cxx::OP_BuildDynamicMenuInfo>,
+}
+
+impl<'cook> DynamicMenuInfo<'cook> {
+    pub fn new(menu_info: Pin<&'cook mut cxx::OP_BuildDynamicMenuInfo>) -> Self {
+        Self { menu_info }
+    }
+
+    pub fn param_name(&mut self) -> &str {
+        let name = cxx::getBuildDynamicMenuInfoNames(self.menu_info.as_mut());
+        unsafe { ffi::CStr::from_ptr(name).to_str().unwrap() }
+    }
+
+    pub fn add_menu_entry(&mut self, name: &str, label: &str) -> bool {
+        unsafe {
+            self.menu_info.as_mut().addMenuEntry(
+                ffi::CString::new(name).unwrap().into_raw(),
+                ffi::CString::new(label).unwrap().into_raw(),
+            )
+        }
+    }
+}
+
 /// Parameter inputs to an operator.
 pub struct ParamInputs<'cook> {
     inputs: &'cook crate::cxx::OP_Inputs,
@@ -276,6 +301,11 @@ impl<'cook> ParamInputs<'cook> {
             let res = self
                 .inputs
                 .getParString(ffi::CString::new(name).unwrap().into_raw());
+
+            if res.is_null() {
+                return "";
+            }
+
             ffi::CStr::from_ptr(res).to_str().unwrap()
         }
     }

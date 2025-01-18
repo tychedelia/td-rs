@@ -1,4 +1,5 @@
 use monome::{KeyDirection, Monome, MonomeDevice, MonomeEvent};
+use td_rs_chop::cxx::OP_Inputs;
 use td_rs_chop::*;
 use td_rs_derive::{Param, Params};
 
@@ -70,7 +71,7 @@ impl Chop for MonomeGrid {
         if let Some(ref mut device) = &mut self.device {
             while let Some(event) = device.poll() {
                 match event {
-                    MonomeEvent::GridKey { x, y, direction, } => {
+                    MonomeEvent::GridKey { x, y, direction } => {
                         let index = (y * 16 + x) as usize;
                         if self.params.hold {
                             if matches!(direction, KeyDirection::Down) {

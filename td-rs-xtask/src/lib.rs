@@ -2,9 +2,9 @@ mod config;
 #[cfg(target_os = "macos")]
 mod macos;
 mod metadata;
+mod util;
 #[cfg(target_os = "windows")]
 mod windows;
-mod util;
 
 #[cfg(target_os = "macos")]
 use crate::macos::{build_plugin, install_plugin};
