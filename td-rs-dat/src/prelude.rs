@@ -2,7 +2,7 @@ pub use crate::cxx::AsPlugin;
 pub use crate::*;
 
 #[cfg(feature = "python")]
-pub use pyo3::impl_::pyclass::{PyClassImpl, PyMethods};
+pub use pyo3::impl_::pyclass::PyClassImpl;
 #[cfg(feature = "python")]
 pub use pyo3::prelude::*;
 #[cfg(feature = "python")]

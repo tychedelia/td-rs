@@ -164,7 +164,7 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                     impl PyGetSets for #struct_name {
                         fn get_get_sets() -> &'static [pyo3::ffi::PyGetSetDef] {
                             let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
-                            let methods = clazz.py_methods();
+                            let methods = <pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name> as pyo3::impl_::pyclass::PyMethods::<#struct_name>>::py_methods(clazz);
                             let mut getset_builders = std::collections::HashMap::<&std::ffi::CStr, pyo3::pyclass::create_type_object::GetSetDefBuilder>::new();
                             for method in methods.methods {
                                 let method_def = match method {
@@ -235,10 +235,10 @@ fn impl_py_op(input: &DeriveInput) -> TokenStream {
                         }
                     }
 
-                    impl td_rs_chop::PyMethods for #struct_name {
+                    impl PyMethods for #struct_name {
                         fn get_methods() -> &'static [pyo3::ffi::PyMethodDef] {
                             let clazz = pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name>::new();
-                            let methods = clazz.py_methods();
+                            let methods = <pyo3::impl_::pyclass::PyClassImplCollector::<#struct_name> as pyo3::impl_::pyclass::PyMethods::<#struct_name>>::py_methods(clazz);
                             let mut method_defs = Vec::new();
                             for method in methods.methods {
                                 let method_def = match method {
