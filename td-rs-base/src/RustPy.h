@@ -16,14 +16,12 @@ TD::PY_Context* getPyContext(TD::PY_Struct *pyStruct) {
 
 void setPyInfo(TD::OP_CustomOPInfo &opInfo, void *pymethods, size_t size, void *pygetsets, size_t getsetsize) {
     if (size == 0) {
-        std::cout << "No methods" << std::endl;
         opInfo.pythonMethods = nullptr;
     } else {
         opInfo.pythonMethods = static_cast<PyMethodDef*>(pymethods);
     }
 
     if (getsetsize == 0) {
-        std::cout << "No getsets" << std::endl;
         opInfo.pythonGetSets = nullptr;
     } else {
         opInfo.pythonGetSets = static_cast<PyGetSetDef*>(pygetsets);

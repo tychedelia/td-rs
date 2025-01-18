@@ -1,12 +1,12 @@
 use crate::config::Config;
 use crate::metadata::PluginType;
+use crate::util::ToTitleCase;
 use crate::{build, PLUGIN_HOME};
 use anyhow::Context;
 use fs_extra::dir::CopyOptions;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use crate::util::ToTitleCase;
 
 pub(crate) fn install_plugin(
     config: &Config,
@@ -93,8 +93,10 @@ fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
     let plugin_target_path = plugin_target_path(plugin);
     std::fs::create_dir_all(&plugin_target_path.parent().unwrap())
         .context("Could not create plugin directory")?;
-    std::fs::copy(&plugin_build_path, &plugin_target_path)
-        .context(format!("Could not move plugin to target directory {:?}->{:?}", plugin_build_path, plugin_target_path))?;
+    std::fs::copy(&plugin_build_path, &plugin_target_path).context(format!(
+        "Could not move plugin to target directory {:?}->{:?}",
+        plugin_build_path, plugin_target_path
+    ))?;
     Ok(())
 }
 
