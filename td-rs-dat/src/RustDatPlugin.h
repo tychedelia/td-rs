@@ -89,15 +89,24 @@ public:
   };
 
   virtual void pulsePressed(const char *name) {}
+
+  virtual void buildDynamicMenu(const OP_Inputs *inputs,
+                                OP_BuildDynamicMenuInfo *info,
+                                void *reserved1) {
+    this->buildDynamicMenu(*inputs, *info);
+  }
+
+  virtual void buildDynamicMenu(const OP_Inputs &inputs,
+                                OP_BuildDynamicMenuInfo &info) {}
 };
 
 class RustDatPlugin : public DatPlugin {
 public:
   virtual ~RustDatPlugin(){};
 
-  virtual void* inner() const = 0;
+  virtual void *inner() const = 0;
 
-  virtual void* innerMut() = 0;
+  virtual void *innerMut() = 0;
 
   virtual void getGeneralInfo(DAT_GeneralInfo &info,
                               const OP_Inputs &inputs) = 0;
@@ -123,6 +132,9 @@ public:
   virtual void setupParameters(OP_ParameterManager &manager) = 0;
 
   virtual void pulsePressed(const char *name) = 0;
+
+  virtual void buildDynamicMenu(const OP_Inputs &inputs,
+                                OP_BuildDynamicMenuInfo &info) = 0;
 };
 
 #endif // TD_RS_RUSTDAT_H

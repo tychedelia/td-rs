@@ -8,7 +8,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, NodeInfo, OperatorInputs};
+use td_rs_base::{param::ParameterManager, DynamicMenuInfo, NodeInfo, OperatorInputs};
 
 include_cpp! {
     #include "SOP_CPlusPlusBase.h"
@@ -31,6 +31,7 @@ include_cpp! {
     extern_cpp_type!("TD::SOP_CustomAttribData", td_rs_base::cxx::SOP_CustomAttribData)
     extern_cpp_type!("TD::SOP_CustomAttribInfo", td_rs_base::cxx::SOP_CustomAttribInfo)
     extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    extern_cpp_type!("TD::OP_BuildDynamicMenuInfo", td_rs_base::cxx::OP_BuildDynamicMenuInfo)
     pod!("TD::OP_CustomOPInfo")
     generate_pod!("TD::SOP_GroupType")
     generate_pod!("TD::SOP_Winding")
@@ -219,5 +220,13 @@ impl RustSopPlugin_methods for RustSopPluginImpl {
         let _span = { tracing_base::trace_span!("pulsePressed").entered() };
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+    }
+
+    fn buildDynamicMenu(&mut self, inputs: &OP_Inputs, info: Pin<&mut OP_BuildDynamicMenuInfo>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("buildDynamicMenu").entered() };
+        let input = OperatorInputs::new(inputs);
+        let mut info = DynamicMenuInfo::new(info);
+        self.inner.build_dynamic_menu(&input, &mut info);
     }
 }

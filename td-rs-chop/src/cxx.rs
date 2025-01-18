@@ -11,7 +11,7 @@ use autocxx::subclass::*;
 pub use ffi::TD::*;
 pub use ffi::*;
 pub use td_rs_base::cxx::*;
-use td_rs_base::{NodeInfo, OperatorInputs, ParameterManager};
+use td_rs_base::{DynamicMenuInfo, NodeInfo, OperatorInputs, ParameterManager};
 
 use crate::{Chop, ChopOutput};
 
@@ -25,6 +25,7 @@ include_cpp! {
     extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
     extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
     extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    extern_cpp_type!("TD::OP_BuildDynamicMenuInfo", td_rs_base::cxx::OP_BuildDynamicMenuInfo)
     pod!("TD::OP_CustomOPInfo")
     generate_pod!("TD::CHOP_PluginInfo")
     generate_pod!("TD::CHOP_GeneralInfo")
@@ -235,5 +236,13 @@ impl RustChopPlugin_methods for RustChopPluginImpl {
         let _span = { tracing_base::trace_span!("pulsePressed").entered() };
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+    }
+
+    fn buildDynamicMenu(&mut self, inputs: &OP_Inputs, info: Pin<&mut OP_BuildDynamicMenuInfo>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("buildDynamicMenu").entered() };
+        let input = OperatorInputs::new(inputs);
+        let mut info = DynamicMenuInfo::new(info);
+        self.inner.build_dynamic_menu(&input, &mut info);
     }
 }

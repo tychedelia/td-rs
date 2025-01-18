@@ -27,4 +27,8 @@ void releaseDownloadResult(TD::OP_SmartRef<TD::OP_TOPDownloadResult> &result) {
     result.release();
 }
 
+const char* getBuildDynamicMenuInfoNames(TD::OP_BuildDynamicMenuInfo &info) {
+    return info.name;
+}
+
 #endif // TD_RS_RUSTBASE_H

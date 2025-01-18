@@ -2,6 +2,7 @@ use crate::cxx::{SOP_CustomAttribData, VBOBufferMode, Vector};
 
 use std::pin::Pin;
 
+use td_rs_base::chop::ChopInput;
 pub use td_rs_base::sop::*;
 pub use td_rs_base::*;
 
@@ -683,6 +684,13 @@ pub trait Sop: Op {
 
     fn execute_vbo(&mut self, _output: SopVboOutput<Unalloc>, _inputs: &OperatorInputs<SopInput>) {
         // Do nothing by default.
+    }
+
+    fn build_dynamic_menu(
+        &mut self,
+        inputs: &OperatorInputs<SopInput>,
+        menu_info: &mut DynamicMenuInfo,
+    ) {
     }
 }
 

@@ -111,7 +111,9 @@ pub struct ParameterManager<'cook> {
 impl<'cook> ParameterManager<'cook> {
     /// Create a new parameter manager. Should not be called by
     /// users.
-    pub fn new(manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>) -> ParameterManager<'cook> {
+    pub fn new(
+        manager: Pin<&'cook mut crate::cxx::OP_ParameterManager>,
+    ) -> ParameterManager<'cook> {
         Self { manager }
     }
 
@@ -300,6 +302,12 @@ impl<'cook> ParameterManager<'cook> {
     pub fn append_wh(&mut self, param: NumericParameter) {
         let param = param.into();
         self.manager.as_mut().appendWH(&param);
+    }
+
+    /// Append a dynamic menu parameter.
+    pub fn append_dynamic_menu(&mut self, param: StringParameter) {
+        let param = param.into();
+        self.manager.as_mut().appendDynamicStringMenu(&param);
     }
 }
 
@@ -702,5 +710,22 @@ impl Param for Color {
     fn update(&mut self, name: &str, inputs: &ParamInputs) {
         let [r, g, b, a] = inputs.get_double_arr::<4>(name);
         *self = (r, g, b, a).into();
+    }
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct DynamicMenuParam(pub Option<String>);
+
+impl Param for DynamicMenuParam {
+    fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+        let param = options.into();
+        parameter_manager.append_dynamic_menu(param);
+    }
+
+    fn update(&mut self, name: &str, inputs: &ParamInputs) {
+        let name = inputs.get_string(name);
+        if !name.is_empty() {
+            self.0 = Some(name.to_string());
+        }
     }
 }

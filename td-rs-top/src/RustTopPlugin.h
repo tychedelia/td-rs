@@ -95,6 +95,15 @@ public:
     };
 
     virtual void pulsePressed(const char *name) {}
+
+    virtual void buildDynamicMenu(const OP_Inputs *inputs,
+                                  OP_BuildDynamicMenuInfo *info,
+                                  void *reserved1) {
+        this->buildDynamicMenu(*inputs, *info);
+    }
+
+    virtual void buildDynamicMenu(const OP_Inputs &inputs,
+                                  OP_BuildDynamicMenuInfo &info) {}
 };
 
 class RustTopPlugin : public TopPlugin {
@@ -129,6 +138,9 @@ public:
     virtual void setupParameters(OP_ParameterManager &manager) = 0;
 
     virtual void pulsePressed(const char *name) = 0;
+
+    virtual void buildDynamicMenu(const OP_Inputs &inputs,
+                                  OP_BuildDynamicMenuInfo &info) = 0;
 };
 
 #endif //TD_RS_RUSTTOPPLUGIN_H

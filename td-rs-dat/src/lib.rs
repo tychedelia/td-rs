@@ -2,6 +2,7 @@ use std::ffi::CString;
 use std::ops::{Index, IndexMut};
 use std::pin::Pin;
 
+use td_rs_base::chop::ChopInput;
 pub use td_rs_base::dat::*;
 pub use td_rs_base::param::OperatorParams;
 pub use td_rs_base::*;
@@ -236,6 +237,13 @@ pub trait Dat: Op {
 
     fn execute(&mut self, _output: DatOutput, _input: &OperatorInputs<DatInput>) {
         // Do nothing by default.
+    }
+
+    fn build_dynamic_menu(
+        &mut self,
+        inputs: &OperatorInputs<DatInput>,
+        menu_info: &mut DynamicMenuInfo,
+    ) {
     }
 }
 

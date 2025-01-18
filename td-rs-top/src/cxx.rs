@@ -5,7 +5,7 @@ use autocxx::prelude::*;
 use autocxx::subclass::*;
 use std::ffi::CString;
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, NodeInfo, OperatorInputs};
+use td_rs_base::{param::ParameterManager, DynamicMenuInfo, NodeInfo, OperatorInputs};
 
 use crate::{TopContext, TopOutput};
 // use crate::mode::cpu::{TopCpuInput, TopCpuOutput};
@@ -29,6 +29,7 @@ include_cpp! {
     pod!("TD::OP_TextureDesc")
     extern_cpp_type!("TD::OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
     extern_cpp_type!("TD::OP_CUDAArrayInfo", td_rs_base::cxx::OP_CUDAArrayInfo)
+    extern_cpp_type!("TD::OP_BuildDynamicMenuInfo", td_rs_base::cxx::OP_BuildDynamicMenuInfo)
     generate_pod!("TD::TOP_UploadInfo")
     generate_pod!("TD::TOP_GeneralInfo")
     generate_pod!("TD::TOP_PluginInfo")
@@ -228,5 +229,13 @@ impl RustTopPlugin_methods for RustTopPluginImpl {
         }
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+    }
+
+    fn buildDynamicMenu(&mut self, inputs: &OP_Inputs, info: Pin<&mut OP_BuildDynamicMenuInfo>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("buildDynamicMenu").entered() };
+        let input = OperatorInputs::new(inputs);
+        let mut info = DynamicMenuInfo::new(info);
+        self.inner.build_dynamic_menu(&input, &mut info);
     }
 }

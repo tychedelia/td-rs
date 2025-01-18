@@ -80,7 +80,9 @@ impl SopInput {
             let custom_attribute = &*custom_attribute;
 
             let name = custom_attribute._base.name;
-            let name = std::ffi::CStr::from_ptr(name).to_string_lossy().into_owned();
+            let name = std::ffi::CStr::from_ptr(name)
+                .to_string_lossy()
+                .into_owned();
             let num_components = custom_attribute._base.numComponents as usize;
             let attr_type = &custom_attribute._base.attribType;
             let attr_type = attr_type.into();
@@ -109,7 +111,9 @@ impl SopInput {
         }
     }
 
-    pub fn custom_attributes(&self) -> impl Iterator<Item = (CustomAttributeInfo, CustomAttributeData)> + '_ {
+    pub fn custom_attributes(
+        &self,
+    ) -> impl Iterator<Item = (CustomAttributeInfo, CustomAttributeData)> + '_ {
         let num_custom_attributes = self.num_custom_attributes();
         (0..num_custom_attributes).map(move |i| self.custom_attribute(i))
     }

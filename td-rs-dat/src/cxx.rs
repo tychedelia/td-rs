@@ -8,7 +8,7 @@ use autocxx::subclass::*;
 use std::ffi::CString;
 
 use std::pin::Pin;
-use td_rs_base::{param::ParameterManager, NodeInfo, OperatorInputs};
+use td_rs_base::{param::ParameterManager, DynamicMenuInfo, NodeInfo, OperatorInputs};
 
 include_cpp! {
     #include "DAT_CPlusPlusBase.h"
@@ -20,6 +20,7 @@ include_cpp! {
     extern_cpp_type!("TD::OP_InfoCHOPChan", td_rs_base::cxx::OP_InfoCHOPChan)
     extern_cpp_type!("TD::OP_Inputs", td_rs_base::cxx::OP_Inputs)
     extern_cpp_type!("TD::OP_CustomOPInfo", td_rs_base::cxx::OP_CustomOPInfo)
+    extern_cpp_type!("TD::OP_BuildDynamicMenuInfo", td_rs_base::cxx::OP_BuildDynamicMenuInfo)
     pod!("TD::OP_CustomOPInfo")
     generate!("TD::DAT_Output")
     generate_pod!("TD::DAT_GeneralInfo")
@@ -200,5 +201,13 @@ impl RustDatPlugin_methods for RustDatPluginImpl {
         let _span = { tracing_base::trace_span!("pulsePressed").entered() };
         self.inner
             .pulse_pressed(std::ffi::CStr::from_ptr(name).to_str().unwrap());
+    }
+
+    fn buildDynamicMenu(&mut self, inputs: &OP_Inputs, info: Pin<&mut OP_BuildDynamicMenuInfo>) {
+        #[cfg(feature = "tracing")]
+        let _span = { tracing_base::trace_span!("buildDynamicMenu").entered() };
+        let input = OperatorInputs::new(inputs);
+        let mut info = DynamicMenuInfo::new(info);
+        self.inner.build_dynamic_menu(&input, &mut info);
     }
 }
