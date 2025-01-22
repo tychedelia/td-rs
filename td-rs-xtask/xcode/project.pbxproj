@@ -10,6 +10,26 @@
 	<string>46</string>
 	<key>objects</key>
 	<dict>
+		<key>6A7F74C12D40EA7500969072</key>
+		<dict>
+			<key>isa</key>
+			<string>PBXFileReference</string>
+			<key>lastKnownFileType</key>
+			<string>wrapper.framework</string>
+			<key>name</key>
+			<string>SystemConfiguration.framework</string>
+			<key>path</key>
+			<string>System/Library/Frameworks/SystemConfiguration.framework</string>
+			<key>sourceTree</key>
+			<string>SDKROOT</string>
+		</dict>
+		<key>6A7F74C22D40EA7500969072</key>
+		<dict>
+			<key>fileRef</key>
+			<string>6A7F74C12D40EA7500969072</string>
+			<key>isa</key>
+			<string>PBXBuildFile</string>
+		</dict>
 		<key>6A99B73F29FD8AD100197036</key>
 		<dict>
 			<key>fileEncoding</key>
@@ -140,6 +160,7 @@
 		<dict>
 			<key>children</key>
 			<array>
+				<string>6A7F74C12D40EA7500969072</string>
 				<string>6AD906B42AE10A9400997BA1</string>
 				<string>6AD906B42AE10A9400997BA2</string>
 				<string>9E4ACB8B299AC54200A2B1CE</string>
@@ -258,6 +279,7 @@
 			<string>2147483647</string>
 			<key>files</key>
 			<array>
+				<string>6A7F74C22D40EA7500969072</string>
 				<string>6AD906B52AE10A9400997BA1</string>
 				<string>6AD906B52AE10A9400997BA2</string>
 				<string>9E4ACB8C299AC54200A2B1CE</string>
