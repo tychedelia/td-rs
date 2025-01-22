@@ -22,7 +22,7 @@ struct StyleganHttpTopParams {
     port: u16,
     #[param(label = "Seed", page = "Stylegan")]
     seed: u16,
-    #[param(label = "Config")]
+    #[param(label = "Blocing", page = "Config")]
     blocking: bool,
     #[param(
         label = "X Feature",
@@ -31,7 +31,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    x_feature: u16,
+    x_feature: u32,
     #[param(
         label = "X Range",
         page = "Stylegan",
@@ -39,7 +39,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    x_range: u16,
+    x_range: f32,
     #[param(
         label = "Y Feature",
         page = "Stylegan",
@@ -47,7 +47,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    y_feature: u16,
+    y_feature: u32,
     #[param(
         label = "Y Range",
         page = "Stylegan",
@@ -55,7 +55,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    y_range: u16,
+    y_range: f32,
     #[param(
         label = "Z Feature",
         page = "Stylegan",
@@ -63,7 +63,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    z_feature: u16,
+    z_feature: u32,
     #[param(
         label = "Z Range",
         page = "Stylegan",
@@ -71,7 +71,7 @@ struct StyleganHttpTopParams {
         max = 512.0,
         clamp = true
     )]
-    z_range: u16,
+    z_range: f32,
 }
 
 pub type Task = JoinHandle<anyhow::Result<Vec<u8>>>;
@@ -124,16 +124,16 @@ impl Future for StyleganHttpTop {
     }
 }
 
-#[derive(Default, Clone, Debug, Eq, PartialEq)]
+#[derive(Default, Clone, Debug, PartialEq)]
 struct ImageReq {
     url: String,
     seed: u16,
-    x: u16,
-    x_range: u16,
-    y: u16,
-    y_range: u16,
-    z: u16,
-    z_range: u16,
+    x: u32,
+    x_range: f32,
+    y: u32,
+    y_range: f32,
+    z: u32,
+    z_range: f32,
 }
 
 impl StyleganHttpTop {
