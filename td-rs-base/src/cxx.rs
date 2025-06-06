@@ -37,7 +37,9 @@ include_cpp! {
     generate_pod!("TD::OP_TextureDesc")
     generate_pod!("TD::OP_TexDim")
     generate!("TD::OP_BuildDynamicMenuInfo")
-
+    // CUDA types (opaque pointers due to non-POD members)
+    generate!("TD::OP_CUDAArrayInfo")
+    generate!("TD::OP_CUDAAcquireInfo")
     // util fns
     generate!("setString")
 
@@ -46,6 +48,13 @@ include_cpp! {
     generate!("getDownloadTextureDesc")
     generate!("releaseDownloadResult")
     generate!("getBuildDynamicMenuInfoNames")
+
+    // CUDA helper functions for base types
+    generate!("getCUDAArrayInfoTextureDesc")
+    generate!("getCUDAArrayInfoArray")
+    generate!("getTOPInputTextureDesc")
+    generate!("getCUDAAcquireInfoStream")
+    generate!("createCUDAAcquireInfo")
 
     // Custom ops
     generate!("TD::OP_CustomOPInstance")

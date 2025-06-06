@@ -25,11 +25,14 @@ include_cpp! {
     extern_cpp_type!("TD::OP_TOPInput", td_rs_base::cxx::OP_TOPInput)
     extern_cpp_type!("TD::OP_TOPInputDownloadOptions", td_rs_base::cxx::OP_TOPInputDownloadOptions)
     extern_cpp_type!("TD::OP_PixelFormat", td_rs_base::cxx::OP_PixelFormat)
+    extern_cpp_type!("TD::OP_TexDim", td_rs_base::cxx::OP_TexDim)
     extern_cpp_type!("TD::OP_TextureDesc", td_rs_base::cxx::OP_TextureDesc)
     pod!("TD::OP_TextureDesc")
     extern_cpp_type!("TD::OP_CPUMemPixelType", td_rs_base::cxx::OP_CPUMemPixelType)
     extern_cpp_type!("TD::OP_CUDAArrayInfo", td_rs_base::cxx::OP_CUDAArrayInfo)
+    extern_cpp_type!("TD::OP_CUDAAcquireInfo", td_rs_base::cxx::OP_CUDAAcquireInfo)
     extern_cpp_type!("TD::OP_BuildDynamicMenuInfo", td_rs_base::cxx::OP_BuildDynamicMenuInfo)
+    generate!("TD::TOP_CUDAOutputInfo")
     generate_pod!("TD::TOP_UploadInfo")
     generate_pod!("TD::TOP_GeneralInfo")
     generate_pod!("TD::TOP_PluginInfo")
@@ -43,6 +46,14 @@ include_cpp! {
     generate!("getBufferSize")
     generate!("getBufferFlags")
     generate!("releaseBuffer")
+
+    // CUDA helper functions (TOP-specific only)
+    generate!("getCUDAOutputInfoTextureDesc")
+    generate!("getCUDAOutputInfoStream")
+    generate!("getCUDAOutputInfoColorBufferIndex")
+    generate!("createCUDAOutputInfo")
+    generate!("beginCUDAOperations")
+    generate!("endCUDAOperations")
 }
 
 pub use autocxx::c_void;

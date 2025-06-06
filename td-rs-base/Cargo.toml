@@ -18,6 +18,8 @@ pyo3 = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features 
 tracing-base = { package = "tracing", version = "0.1", optional = true}
 tracing-subscriber = { version = "0.3", optional = true }
 tokio-core = { package = "tokio", version = "1", optional = true }
+anyhow = "1.0"
+cudarc = { version = "0.16.4", optional = true, features = ["runtime", "nvrtc", "driver", "cuda-11080", "dynamic-linking"], default-features = false }
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }
@@ -29,3 +31,4 @@ default = []
 python = ["pyo3"]
 tracing = ["tracing-base", "tracing-subscriber", "tracing-subscriber/env-filter"]
 tokio = ["tokio-core", "tokio-core/rt-multi-thread"]
+cuda = ["cudarc"]

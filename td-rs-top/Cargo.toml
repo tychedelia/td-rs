@@ -15,6 +15,8 @@ ref-cast = "1.0"
 tracing-base = { package = "tracing", version = "0.1", optional = true }
 tracing-subscriber = { version = "0.2", optional = true }
 pyo3 = { git = "https://github.com/tychedelia/pyo3", branch = "td-rs", features = ["abi3-py311"], optional = true }
+cudarc = { version = "0.16.4", optional = true, features = ["runtime", "nvrtc", "driver", "cuda-11080", "dynamic-linking"], default-features = false }
+anyhow = "1.0"
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }
@@ -26,3 +28,4 @@ default = []
 python = ["td-rs-base/python", "dep:pyo3"]
 tracing = ["td-rs-base/tracing", "tracing-base", "tracing-subscriber"]
 tokio = ["td-rs-base/tokio"]
+cuda = ["cudarc", "td-rs-base/cuda"]
