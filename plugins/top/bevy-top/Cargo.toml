@@ -13,7 +13,45 @@ crate-type = ["staticlib"]
 [dependencies]
 td-rs-top = { path = "../../../td-rs-top", features = ["cuda"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
-bevy = "0.16"
+bevy = { version = "0.16",  default-features = false,  features = [
+    "std",
+    "async_executor",
+    "android-game-activity",
+    "android_shared_stdcxx",
+    "animation",
+    "bevy_asset",
+    "bevy_audio",
+    "bevy_color",
+    "bevy_core_pipeline",
+    "bevy_gilrs",
+    "bevy_gizmos",
+    "bevy_gltf",
+    "bevy_input_focus",
+    "bevy_log",
+    "bevy_mesh_picking_backend",
+    "bevy_pbr",
+    "bevy_picking",
+    "bevy_render",
+    "bevy_scene",
+    "bevy_sprite",
+    "bevy_sprite_picking_backend",
+    "bevy_state",
+    "bevy_text",
+    "bevy_ui",
+    "bevy_ui_picking_backend",
+    "bevy_window",
+    "bevy_winit",
+    "custom_cursor",
+    "default_font",
+    "hdr",
+    "png",
+    "smaa_luts",
+    "sysinfo_plugin",
+    "tonemapping_luts",
+    "vorbis",
+    "webgl2",
+    "x11",
+] }
 ash = "0.38"
 cudarc = { version = "0.16.4", features = ["runtime", "nvrtc", "driver", "cuda-12080", "dynamic-linking"], default-features = false }
 anyhow = "1.0"

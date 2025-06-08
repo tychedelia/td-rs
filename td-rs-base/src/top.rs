@@ -5,7 +5,7 @@ use ref_cast::RefCast;
 #[cfg(feature = "cuda")]
 use crate::cxx::OP_CUDAArrayInfo;
 
-#[derive(Debug, Default, Eq, PartialEq)]
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub enum TexDim {
     #[default]
     EInvalid,
@@ -15,7 +15,7 @@ pub enum TexDim {
     ECube,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TextureDesc {
     pub width: usize,
     pub height: usize,
@@ -40,7 +40,7 @@ impl Default for TextureDesc {
     }
 }
 
-#[derive(Debug, Default, Clone, Copy, PartialEq)]
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq)]
 pub enum PixelFormat {
     #[default]
     Invalid,

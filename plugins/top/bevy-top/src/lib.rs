@@ -1,13 +1,16 @@
 use anyhow::Result;
 use ash::{khr, vk, Device, Instance};
+use bevy::ecs::entity::EntityHashMap;
+use bevy::reflect::List;
 use bevy::render::camera::{
     ManualTextureView, ManualTextureViewHandle, ManualTextureViews, RenderTarget,
 };
 use bevy::render::pipelined_rendering::PipelinedRenderingPlugin;
-use bevy::render::render_resource::{Texture, TextureFormat};
+use bevy::render::render_resource::{Texture, TextureDescriptor, TextureFormat, TextureView};
 use bevy::render::texture::DefaultImageSampler;
 use bevy::render::Extract;
 use bevy::{
+    core_pipeline::post_process::ChromaticAberration,
     prelude::*,
     render::{
         render_asset::RenderAssets, renderer::RenderDevice, texture::GpuImage, ExtractSchedule,
@@ -16,6 +19,8 @@ use bevy::{
     window::WindowPlugin,
 };
 use cudarc::driver::{sys, CudaContext};
+use cudarc::runtime::sys::CUstream_st;
+use std::collections::HashMap;
 use std::f32::consts::PI;
 use std::fs::File;
 use std::mem::ManuallyDrop;
@@ -23,7 +28,7 @@ use std::os::windows::io::{AsRawHandle, FromRawHandle, RawHandle};
 use std::sync::{Arc, Mutex};
 use td_rs_derive::Params;
 use td_rs_top::*;
-use wgpu::{Extent3d, TextureDescriptor, TextureDimension, TextureUsages};
+use wgpu::{Extent3d, TextureDimension, TextureUsages};
 
 fn get_bytes_per_pixel(format: &PixelFormat) -> usize {
     match format {
@@ -159,77 +164,111 @@ fn pixel_format_to_wgpu_format(format: &PixelFormat) -> TextureFormat {
 
 #[derive(Params, Default, Clone, Debug)]
 struct BevyTopParams {
-    #[param(label = "Test CUDA→Vulkan", default = 1.0)]
-    test_param: f64,
+    #[param(
+        label = "Intensity",
+        page = "Chromatic Aberration ",
+        default = 0.01,
+        min = 0.0,
+        max = 0.4
+    )]
+    chromatic_aberration_intensity: f64,
+    #[param(label = "Color LUT", page = "Chromatic Aberration ")]
+    chromatic_aberration_color_lut: TopParam,
+    #[param(
+        label = "Intensity",
+        page = "Chromatic Aberration ",
+        default = 8.0,
+        min = 1.0,
+        max = 16.0
+    )]
+    chromatic_aberration_max_samples: u32,
 }
 
 pub struct BevyTop {
     params: BevyTopParams,
     context: Arc<Mutex<TopContext>>,
-    bevy_app: Option<App>,
-    textures: Option<ImportedTextures>,
-    cuda_context: Option<Arc<CudaContext>>,
-    cuda_stream: Option<cudarc::runtime::sys::cudaStream_t>,
+    app: Option<App>,
+    inputs_entities: HashMap<usize, Entity>,
+    output_entities: HashMap<usize, Entity>,
 }
 
+#[derive(Component)]
 struct SharedTexture {
     vulkan_memory: vk::DeviceMemory,
-    vulkan_image: Option<vk::Image>,
-
-    vulkan_device: Option<Device>,
+    vulkan_image: vk::Image,
+    vulkan_device: Device,
     width: u32,
     height: u32,
+    texture_desc: TextureDesc,
     pixel_format: PixelFormat,
-    actual_row_pitch: Option<usize>,
-
-    cuda_external_memory: Option<ExternalMemory>,
+    row_pitch: usize,
 }
 
-struct ImportedTextures {
-    input_texture: Option<SharedTexture>,
-    output_texture: Option<SharedTexture>,
-}
+#[derive(Default, Deref, DerefMut)]
+pub struct SharedTextureExternalMemory(EntityHashMap<ExternalMemory>);
 
 impl Drop for SharedTexture {
     fn drop(&mut self) {
-        if let Some(ref device) = self.vulkan_device {
-            if let Some(image) = self.vulkan_image {
-                unsafe {
-                    device.destroy_image(image, None);
-                }
-            }
+        unsafe {
+            self.vulkan_device.destroy_image(self.vulkan_image, None);
+        }
 
-            if self.vulkan_memory != vk::DeviceMemory::null() {
-                unsafe {
-                    device.free_memory(self.vulkan_memory, None);
-                }
-            }
+        unsafe {
+            self.vulkan_device.free_memory(self.vulkan_memory, None);
         }
     }
 }
 
-impl Drop for ImportedTextures {
-    fn drop(&mut self) {}
+#[derive(Component)]
+struct InputTexture(usize);
+
+#[derive(Component, Deref)]
+struct InputTextureImage(Handle<Image>);
+
+#[derive(Component)]
+struct OutputTexture(usize);
+
+#[derive(Component, Deref)]
+pub struct WgpuTexture(Texture);
+
+#[derive(Component, Deref)]
+pub struct WgpuTextureView(TextureView);
+
+#[derive(Component, PartialEq)]
+pub struct TextureKey(TextureDesc);
+
+#[derive(Component)]
+struct OutputCamera(usize);
+
+#[derive(Component)]
+struct InputTexturedQuad;
+
+#[derive(Component, Deref)]
+pub struct CudaArray(CudaArrayInfo);
+
+#[derive(Resource)]
+pub struct CudaCtx(Arc<CudaContext>);
+
+#[derive(Deref)]
+pub struct CudaStream(*mut CUstream_st);
+
+#[derive(Resource)]
+struct AppSettings {
+    chromatic_aberration_intensity: f32,
 }
 
-#[derive(Resource, Default)]
-struct ExternalTextures {
-    input_handle: Option<Handle<Image>>,
-    input_manual_view_handle: Option<ManualTextureViewHandle>,
-    input_texture: Option<Texture>,
-    output_manual_view_handle: Option<ManualTextureViewHandle>,
-    output_texture: Option<Texture>,
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            chromatic_aberration_intensity: 0.01,
+        }
+    }
 }
 
-#[derive(Component)]
-struct OutputCamera;
-
-#[derive(Component)]
-struct InputTexturedCube;
-
-#[derive(Component)]
-struct RotatingCube {
-    speed: Vec3,
+#[derive(Resource)]
+struct PreferredOutput {
+    format: PixelFormat,
+    resolution: UVec2,
 }
 
 impl TopNew for BevyTop {
@@ -237,10 +276,9 @@ impl TopNew for BevyTop {
         Self {
             params: BevyTopParams::default(),
             context: Arc::new(Mutex::new(context)),
-            bevy_app: None,
-            textures: None,
-            cuda_context: None,
-            cuda_stream: None,
+            app: None,
+            inputs_entities: HashMap::default(),
+            output_entities: HashMap::default(),
         }
     }
 }
@@ -249,7 +287,7 @@ impl OpInfo for BevyTop {
     const OPERATOR_LABEL: &'static str = "Bevy";
     const OPERATOR_TYPE: &'static str = "Bevy";
     const OPERATOR_ICON: &'static str = "BVY";
-    const MIN_INPUTS: usize = 0;
+    const MIN_INPUTS: usize = 1;
     const MAX_INPUTS: usize = 1;
 }
 
@@ -280,42 +318,74 @@ impl Top for BevyTop {
 }
 
 impl BevyTop {
-    fn can_reuse_texture(
-        existing: Option<&SharedTexture>,
-        width: u32,
-        height: u32,
-        format: &PixelFormat,
-    ) -> bool {
-        existing.map_or(false, |texture| {
-            texture.width == width && texture.height == height && texture.pixel_format == *format
-        })
-    }
     fn execute_inner(
         &mut self,
         output: &mut TopOutput,
-        input: &OperatorInputs<TopInput>,
+        top_input: &OperatorInputs<TopInput>,
     ) -> Result<()> {
-        if self.bevy_app.is_none() {
-            self.init_bevy_app()?;
+        if self.app.is_none() {
+            self.app = Some(Self::init_bevy_app());
         }
 
-        let mut inputs = vec![];
-        for i in 0..input.num_inputs() {
-            if let Some(input_desc) = input.input(i).map(|td_input| td_input.texture_desc()) {
-                inputs.push(input_desc);
+        let Some(app) = self.app.as_mut() else {
+            return Err(anyhow::anyhow!("Bevy app is not initialized"));
+        };
+
+        Self::update_app_settings(&self.params, app);
+
+        // Setup cuda context and stream
+        if let None = app.world().get_resource::<CudaCtx>() {
+            let ctx = CudaContext::new(0)
+                .map_err(|e| anyhow::anyhow!("Failed to create CUDA context: {:?}", e))?;
+            app.world_mut().insert_resource(CudaCtx(ctx));
+        }
+        if let None = app.world().get_non_send_resource::<CudaStream>() {
+            unsafe {
+                use cudarc::runtime::sys::*;
+                let mut stream = std::ptr::null_mut();
+                let result = cudaStreamCreate(&mut stream);
+                if result != cudaError::cudaSuccess {
+                    return Err(anyhow::anyhow!(
+                        "Failed to create CUDA stream: {:?}",
+                        result
+                    ));
+                }
+                app.world_mut().insert_non_send_resource(CudaStream(stream));
             }
         }
 
-        let input_cuda_info = input
-            .input(0)
-            .filter(|_| input.num_inputs() > 0)
-            .map(|td_input| td_input.get_cuda_array(std::ptr::null_mut()).ok())
-            .flatten();
+        let (output_width, output_height, output_format) = Self::get_resolution_and_format(
+            top_input.params(),
+            top_input.input(0).map(|x| x.texture_desc()),
+        );
+        app.world_mut().insert_resource(PreferredOutput {
+            format: output_format,
+            resolution: UVec2::new(output_width as u32, output_height as u32),
+        });
 
-        let params = input.params();
-        let first_input_desc = input.input(0).map(|td_input| td_input.texture_desc());
-        let (output_width, output_height, output_format) =
-            Self::get_resolution_and_format(params, first_input_desc);
+        for idx in 0..top_input.num_inputs() {
+            let input = top_input
+                .input(idx)
+                .ok_or_else(|| anyhow::anyhow!("Input {} not found in OperatorInputs", idx))?;
+            let cuda_array =
+                input.get_cuda_array(app.world().non_send_resource::<CudaStream>().0)?;
+            let texture_desc = cuda_array.texture_desc();
+            let cuda_array = CudaArray(cuda_array);
+            let entity = self.inputs_entities.entry(idx).or_insert_with(|| {
+                let image_handle = app
+                    .world_mut()
+                    .resource_mut::<Assets<Image>>()
+                    .reserve_handle();
+                app.world_mut()
+                    .spawn((
+                        InputTexture(idx),
+                        InputTextureImage(image_handle),
+                        TextureKey(texture_desc),
+                    ))
+                    .id()
+            });
+            app.world_mut().entity_mut(*entity).insert(cuda_array);
+        }
 
         let output_cuda_info = CudaOutputInfo {
             stream: std::ptr::null_mut(),
@@ -332,6 +402,17 @@ impl BevyTop {
         };
 
         let output_array_info = output.create_cuda_array(&output_cuda_info)?;
+
+        self.output_entities.entry(0).or_insert_with(|| {
+            app.world_mut()
+                .spawn((
+                    OutputTexture(0),
+                    TextureKey(output_array_info.texture_desc()),
+                    CudaArray(output_array_info),
+                ))
+                .id()
+        });
+
         let began_successfully = {
             let mut ctx = self
                 .context
@@ -344,24 +425,14 @@ impl BevyTop {
             return Err(anyhow::anyhow!("Failed to begin CUDA operations"));
         }
 
-        if unsafe { output_array_info.cuda_array().is_null() } {
-            return Ok(());
-        }
+        Self::update(app);
+        Self::export_output(app.world_mut())
+            .map_err(|e| anyhow::anyhow!("Failed to export output: {}", e))?;
 
-        if self.textures.is_none() {
-            self.textures = Some(ImportedTextures {
-                input_texture: None,
-                output_texture: None,
-            });
-        }
-
-        self.import_input(input_cuda_info.as_ref())?;
-        self.import_output(&output_array_info)?;
-        self.create_manual_texture_views()?;
-        self.update()?;
-        self.export_output(&output_array_info)?;
-
-        self.context.lock().unwrap().end_cuda_operations();
+        self.context
+            .lock()
+            .map_err(|e| anyhow::anyhow!("Failed to lock context: {}", e))?
+            .end_cuda_operations();
 
         Ok(())
     }
@@ -548,82 +619,46 @@ impl BevyTop {
         (output_width, output_height, output_format)
     }
 
-    fn import_input(
-        &mut self,
-        cuda_array_info: Option<&td_rs_top::cuda::CudaArrayInfo>,
-    ) -> Result<()> {
-        let cuda_array_info = match cuda_array_info {
-            Some(info) => info,
-            None => return Ok(()),
-        };
-
-        let ctx = self.get_or_create_cuda_context()?;
-
-        if let Some(ref app) = self.bevy_app {
-            let render_device = app
-                .world()
-                .get_resource::<RenderDevice>()
-                .ok_or_else(|| anyhow::anyhow!("RenderDevice not found"))?;
-
-            let texture_desc = cuda_array_info.texture_desc();
+    fn import_inputs(
+        mut commands: Commands,
+        arrays: Query<(Entity, &CudaArray, &TextureKey), With<InputTexture>>,
+        render_device: Res<RenderDevice>,
+        cuda_ctx: Res<CudaCtx>,
+        mut shared_texture_external_memory: NonSendMut<SharedTextureExternalMemory>,
+    ) -> bevy::prelude::Result {
+        for (entity, array, key) in arrays.iter() {
+            let texture_desc = array.texture_desc();
             let width = texture_desc.width as u32;
             let height = texture_desc.height as u32;
 
-            let need_new_texture = self
-                .textures
-                .as_ref()
-                .map(|textures| {
-                    !Self::can_reuse_texture(
-                        textures.input_texture.as_ref(),
-                        width,
-                        height,
-                        &texture_desc.pixel_format,
-                    )
-                })
-                .unwrap_or(true);
-
-            if need_new_texture {
-                let input_texture_result = unsafe {
+            if *key != TextureKey(texture_desc) {
+                unsafe {
                     render_device
                         .wgpu_device()
                         .as_hal::<wgpu::hal::api::Vulkan, _, _>(|device| {
                             let Some(device) = device else {
-                                return None;
+                                return Err(anyhow::anyhow!("Failed to get Vulkan device"));
                             };
 
                             let instance = device.shared_instance().raw_instance();
                             let physical_device = device.raw_physical_device();
                             let vulkan_device = device.raw_device();
-
-                            match self.create_input_external_memory(
-                                &ctx,
+                            let (texture, external_memory) = Self::create_input_external_memory(
+                                &cuda_ctx.0,
                                 instance,
                                 vulkan_device,
                                 physical_device,
-                                &cuda_array_info,
+                                &array,
                                 width,
                                 height,
-                            ) {
-                                Ok(texture) => Some(texture),
-                                Err(_) => None,
-                            }
-                        })
-                };
-
-                if let (Some(input_texture), Some(ref mut textures)) =
-                    (input_texture_result, &mut self.textures)
-                {
-                    textures.input_texture = Some(input_texture);
-                }
-            }
-
-            self.update_input_texture_data(&ctx, cuda_array_info)?;
-
-            if let Ok(stream) = self.get_or_create_cuda_stream() {
-                unsafe {
-                    use cudarc::runtime::sys::*;
-                    let sync_result = cudaStreamSynchronize(stream);
-                    if sync_result == cudaError::cudaSuccess {}
+                            )?;
+                            commands
+                                .entity(entity)
+                                .remove::<WgpuTexture>()
+                                .insert(texture);
+                            shared_texture_external_memory.insert(entity, external_memory);
+                            Ok(())
+                        })?;
                 }
             }
         }
@@ -631,62 +666,49 @@ impl BevyTop {
         Ok(())
     }
 
-    fn import_output(&mut self, output_array_info: &CudaArrayInfo) -> Result<()> {
-        let ctx = self.get_or_create_cuda_context()?;
+    fn import_outputs(
+        mut commands: Commands,
+        arrays: Query<(Entity, &CudaArray, &TextureKey), With<OutputTexture>>,
+        render_device: Res<RenderDevice>,
+        cuda_ctx: Res<CudaCtx>,
+        mut shared_texture_external_memory: NonSendMut<SharedTextureExternalMemory>,
+    ) -> bevy::prelude::Result {
+        for (entity, array, key) in arrays.iter() {
+            let texture_desc = array.texture_desc();
 
-        let output_desc = output_array_info.texture_desc();
-        let need_new_output = self
-            .textures
-            .as_ref()
-            .map(|textures| {
-                !Self::can_reuse_texture(
-                    textures.output_texture.as_ref(),
-                    output_desc.width as u32,
-                    output_desc.height as u32,
-                    &output_desc.pixel_format,
-                )
-            })
-            .unwrap_or(true);
+            if *key != TextureKey(texture_desc) {
+                let output_desc = array.texture_desc();
+                if *key != TextureKey(output_desc) {
+                    unsafe {
+                        render_device
+                            .wgpu_device()
+                            .as_hal::<wgpu::hal::api::Vulkan, _, _>(|device| {
+                                let Some(device) = device else {
+                                    return Err(anyhow::anyhow!("Failed to get Vulkan device"));
+                                };
 
-        if need_new_output {
-            let output_texture_result = if let Some(ref app) = self.bevy_app {
-                let render_device = app
-                    .world()
-                    .get_resource::<RenderDevice>()
-                    .ok_or_else(|| anyhow::anyhow!("RenderDevice not found"))?;
+                                let instance = device.shared_instance().raw_instance();
+                                let physical_device = device.raw_physical_device();
+                                let vulkan_device = device.raw_device();
 
-                unsafe {
-                    render_device
-                        .wgpu_device()
-                        .as_hal::<wgpu::hal::api::Vulkan, _, _>(|device| {
-                            let Some(device) = device else {
-                                return None;
-                            };
+                                let (texture, external_memory) =
+                                    Self::create_output_external_memory(
+                                        &cuda_ctx.0,
+                                        instance,
+                                        vulkan_device,
+                                        physical_device,
+                                        array,
+                                    )?;
 
-                            let instance = device.shared_instance().raw_instance();
-                            let physical_device = device.raw_physical_device();
-                            let vulkan_device = device.raw_device();
-
-                            match self.create_output_external_memory(
-                                &ctx,
-                                instance,
-                                vulkan_device,
-                                physical_device,
-                                output_array_info,
-                            ) {
-                                Ok(texture) => Some(texture),
-                                Err(_) => None,
-                            }
-                        })
+                                commands
+                                    .entity(entity)
+                                    .remove::<WgpuTexture>()
+                                    .insert(texture);
+                                shared_texture_external_memory.insert(entity, external_memory);
+                                Ok(())
+                            })?;
+                    };
                 }
-            } else {
-                None
-            };
-
-            if let (Some(output_texture), Some(ref mut textures)) =
-                (output_texture_result, &mut self.textures)
-            {
-                textures.output_texture = Some(output_texture);
             }
         }
 
@@ -694,13 +716,12 @@ impl BevyTop {
     }
 
     fn create_output_external_memory(
-        &self,
         ctx: &CudaContext,
         instance: &Instance,
         device: &Device,
         physical_device: vk::PhysicalDevice,
-        output_array_info: &td_rs_top::cuda::CudaArrayInfo,
-    ) -> Result<SharedTexture> {
+        output_array_info: &CudaArrayInfo,
+    ) -> Result<(SharedTexture, ExternalMemory)> {
         let output_desc = output_array_info.texture_desc();
         let width = output_desc.width as u32;
         let height = output_desc.height as u32;
@@ -775,7 +796,7 @@ impl BevyTop {
         };
 
         let file = unsafe { File::from_raw_handle(handle as RawHandle) };
-        let output_cuda_ext_memory =
+        let cuda_external_memory =
             unsafe { import_external_memory_dedicated(&ctx, file, image_mem_reqs.size) }
                 .map_err(|e| anyhow::anyhow!("Failed to import output external memory: {:?}", e))?;
 
@@ -786,32 +807,31 @@ impl BevyTop {
         };
         let actual_layout =
             unsafe { device.get_image_subresource_layout(output_image, image_subresource) };
-        let actual_row_pitch = actual_layout.row_pitch as usize;
+        let row_pitch = actual_layout.row_pitch as usize;
 
         let output_texture = SharedTexture {
             vulkan_memory: output_memory,
-            vulkan_image: Some(output_image),
-            vulkan_device: Some(device.clone()),
+            vulkan_image: output_image,
+            vulkan_device: device.clone(),
             width,
             height,
-            pixel_format: output_desc.pixel_format.clone(),
-            actual_row_pitch: Some(actual_row_pitch),
-            cuda_external_memory: Some(output_cuda_ext_memory),
+            texture_desc: output_desc.clone(),
+            pixel_format: output_desc.pixel_format,
+            row_pitch,
         };
 
-        Ok(output_texture)
+        Ok((output_texture, cuda_external_memory))
     }
 
     fn create_input_external_memory(
-        &self,
         ctx: &CudaContext,
         instance: &Instance,
         device: &Device,
         physical_device: vk::PhysicalDevice,
-        cuda_array_info: &td_rs_top::cuda::CudaArrayInfo,
+        cuda_array_info: &CudaArrayInfo,
         width: u32,
         height: u32,
-    ) -> Result<SharedTexture> {
+    ) -> Result<(SharedTexture, ExternalMemory)> {
         let mut ext_mem_image_info = vk::ExternalMemoryImageCreateInfoKHR::default();
         ext_mem_image_info.handle_types = vk::ExternalMemoryHandleTypeFlags::OPAQUE_WIN32;
 
@@ -880,9 +900,8 @@ impl BevyTop {
                 .map_err(|e| anyhow::anyhow!("Failed to get Win32 handle for input: {:?}", e))?
         };
 
-        let file =
-            unsafe { std::fs::File::from_raw_handle(handle as std::os::windows::io::RawHandle) };
-        let cuda_ext_memory =
+        let file = unsafe { File::from_raw_handle(handle as RawHandle) };
+        let cuda_external_memory =
             unsafe { import_external_memory_dedicated(ctx, file, image_mem_reqs.size) }
                 .map_err(|e| anyhow::anyhow!("Failed to import external memory: {:?}", e))?;
 
@@ -893,286 +912,214 @@ impl BevyTop {
         };
         let input_layout =
             unsafe { device.get_image_subresource_layout(input_image, input_subresource) };
-        let input_row_pitch = input_layout.row_pitch as usize;
+        let row_pitch = input_layout.row_pitch as usize;
 
         let input_texture = SharedTexture {
             vulkan_memory: input_memory,
-            vulkan_image: Some(input_image),
-            vulkan_device: Some(device.clone()),
+            vulkan_image: input_image,
+            vulkan_device: device.clone(),
             width,
             height,
-            pixel_format: cuda_array_info.texture_desc().pixel_format.clone(),
-            actual_row_pitch: Some(input_row_pitch),
-            cuda_external_memory: Some(cuda_ext_memory),
+            texture_desc: cuda_array_info.texture_desc(),
+            pixel_format: cuda_array_info.texture_desc().pixel_format,
+            row_pitch,
         };
 
-        Ok(input_texture)
+        Ok((input_texture, cuda_external_memory))
     }
 
     fn update_input_texture_data(
-        &mut self,
-        _ctx: &CudaContext,
-        cuda_array_info: &td_rs_top::cuda::CudaArrayInfo,
-    ) -> Result<()> {
-        let textures = self
-            .textures
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No textures available"))?;
+        input_textures: Query<(Entity, &SharedTexture, &CudaArray), With<InputTexture>>,
+        cuda_stream: NonSend<CudaStream>,
+        shared_texture_external_memory: NonSend<SharedTextureExternalMemory>,
+    ) -> bevy::prelude::Result {
+        for (entity, input_texture, cuda_array) in input_textures {
+            let cuda_external_memory =
+                shared_texture_external_memory.get(&entity).ok_or_else(|| {
+                    anyhow::anyhow!(
+                        "External memory for input texture {:?} not found",
+                        input_texture.vulkan_image
+                    )
+                })?;
+            let device_ptr = cuda_external_memory.map_all_ref().map_err(|e| {
+                anyhow::anyhow!("Failed to map input external memory for update: {:?}", e)
+            })?;
 
-        let input_texture = textures
-            .input_texture
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No input texture available"))?;
+            let (width, height, row_pitch) = (
+                input_texture.width,
+                input_texture.height,
+                input_texture.row_pitch,
+            );
 
-        let cuda_external_memory = input_texture
-            .cuda_external_memory
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("Input texture has no external memory!"))?;
+            let input_desc = cuda_array.texture_desc();
+            let cuda_array = unsafe { cuda_array.cuda_array() };
 
-        let device_ptr = cuda_external_memory.map_all_ref().map_err(|e| {
-            anyhow::anyhow!("Failed to map input external memory for update: {:?}", e)
-        })?;
+            Self::copy_from_array(
+                cuda_array,
+                device_ptr,
+                width,
+                height,
+                &input_desc.pixel_format,
+                row_pitch,
+                **cuda_stream,
+            )?;
+        }
 
-        let (width, height, actual_row_pitch) = (
-            input_texture.width,
-            input_texture.height,
-            input_texture.actual_row_pitch,
-        );
-
-        let td_cuda_array = unsafe { cuda_array_info.cuda_array() };
-        let input_desc = cuda_array_info.texture_desc();
-
-        let stream = self.get_or_create_cuda_stream()?;
-
-        Self::copy_from_array(
-            td_cuda_array as *mut cudarc::runtime::sys::cudaArray,
-            device_ptr,
-            width,
-            height,
-            &input_desc.pixel_format,
-            actual_row_pitch,
-            stream,
-        )?;
+        unsafe {
+            use cudarc::runtime::sys::*;
+            let sync_result = cudaStreamSynchronize(**cuda_stream);
+            if sync_result != cudaError::cudaSuccess {
+                return Err(anyhow::anyhow!(
+                    "Failed to synchronize CUDA stream after updating input textures: {:?}",
+                    sync_result
+                ))?;
+            }
+        }
 
         Ok(())
     }
 
-    fn create_manual_texture_views(&mut self) -> Result<()> {
-        if let Some(ref mut app) = self.bevy_app {
-            let srgb_view_formats = vec![TextureFormat::Bgra8UnormSrgb];
-            let rgba_srgb_view_formats = vec![TextureFormat::Rgba8UnormSrgb];
-            let empty_view_formats: Vec<TextureFormat> = vec![];
+    fn sync_textures(
+        mut commands: Commands,
+        input_textures: Query<
+            (Entity, &SharedTexture, &InputTexture),
+            (With<InputTexture>, Without<WgpuTexture>),
+        >,
+        output_textures: Query<
+            (Entity, &SharedTexture, &OutputTexture),
+            (With<OutputTexture>, Without<WgpuTexture>),
+        >,
+        render_device: Res<RenderDevice>,
+        mut manual_texture_views: ResMut<ManualTextureViews>,
+    ) -> bevy::prelude::Result {
+        let srgb_view_formats = vec![TextureFormat::Bgra8UnormSrgb];
+        let rgba_srgb_view_formats = vec![TextureFormat::Rgba8UnormSrgb];
+        let empty_view_formats: Vec<TextureFormat> = vec![];
 
-            let (input, output) = {
-                let mut input: Option<(wgpu::hal::vulkan::Texture, wgpu::TextureDescriptor)> = None;
-                let mut output: Option<(wgpu::hal::vulkan::Texture, wgpu::TextureDescriptor)> =
-                    None;
-
-                if let Some(ref textures) = self.textures {
-                    if let Some(ref input_texture) = textures.input_texture {
-                        if let Some(vulkan_image) = input_texture.vulkan_image {
-                            let input_format = input_texture.pixel_format.clone();
-                            let wgpu_format = pixel_format_to_wgpu_format(&input_format);
-
-                            match Self::image_as_hal(
-                                vulkan_image,
-                                input_texture.width,
-                                input_texture.height,
-                                wgpu_format,
-                            ) {
-                                Ok(texture) => {
-                                    input = Some((
-                                        texture,
-                                        TextureDescriptor {
-                                            label: Some("input_texture"),
-                                            size: Extent3d {
-                                                width: input_texture.width,
-                                                height: input_texture.height,
-                                                depth_or_array_layers: 1,
-                                            },
-                                            mip_level_count: 1,
-                                            sample_count: 1,
-                                            dimension: TextureDimension::D2,
-                                            format: wgpu_format,
-                                            usage: TextureUsages::COPY_SRC
-                                                | TextureUsages::TEXTURE_BINDING,
-                                            view_formats: &[],
-                                        },
-                                    ));
-                                }
-                                Err(_) => {}
-                            }
-                        } else {
-                        }
-                    } else {
-                    }
-
-                    if let Some(ref output_texture) = textures.output_texture {
-                        if let Some(vulkan_image) = output_texture.vulkan_image {
-                            let output_format = output_texture.pixel_format.clone();
-                            let wgpu_format = pixel_format_to_wgpu_format(&output_format);
-
-                            let view_formats_slice = match wgpu_format {
-                                TextureFormat::Bgra8Unorm => &srgb_view_formats,
-                                TextureFormat::Rgba8Unorm => &rgba_srgb_view_formats,
-                                _ => &empty_view_formats,
-                            };
-
-                            match Self::image_as_hal(
-                                vulkan_image,
-                                output_texture.width,
-                                output_texture.height,
-                                wgpu_format,
-                            ) {
-                                Ok(texture) => {
-                                    output = Some((
-                                        texture,
-                                        TextureDescriptor {
-                                            label: Some("output_texture"),
-                                            size: Extent3d {
-                                                width: output_texture.width,
-                                                height: output_texture.height,
-                                                depth_or_array_layers: 1,
-                                            },
-                                            mip_level_count: 1,
-                                            sample_count: 1,
-                                            dimension: TextureDimension::D2,
-                                            format: wgpu_format,
-                                            usage: TextureUsages::COPY_DST
-                                                | TextureUsages::RENDER_ATTACHMENT,
-                                            view_formats: view_formats_slice,
-                                        },
-                                    ));
-                                }
-                                Err(_e) => {}
-                            }
-                        }
-                    } else {
-                    }
-                } else {
-                }
-
-                (input, output)
+        for (entity, shared_texture, input_tag) in input_textures {
+            let input_format = shared_texture.pixel_format.clone();
+            let wgpu_format = pixel_format_to_wgpu_format(&input_format);
+            let hal_texture = Self::image_as_hal(
+                shared_texture.vulkan_image,
+                shared_texture.width,
+                shared_texture.height,
+                wgpu_format,
+            )?;
+            let texture_descriptor = TextureDescriptor {
+                label: Some("input_texture"),
+                size: Extent3d {
+                    width: shared_texture.width,
+                    height: shared_texture.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D2,
+                format: wgpu_format,
+                usage: TextureUsages::COPY_SRC | TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
             };
 
-            unsafe {
-                let render_device = app.world().resource::<RenderDevice>();
+            let input_texture = unsafe {
+                render_device
+                    .wgpu_device()
+                    .create_texture_from_hal::<wgpu::hal::api::Vulkan>(
+                        hal_texture,
+                        &texture_descriptor,
+                    )
+            };
+            let input_texture_view =
+                input_texture.create_view(&wgpu::TextureViewDescriptor::default());
 
-                let mut input_data: Option<(
-                    wgpu::Texture,
-                    wgpu::TextureView,
-                    UVec2,
-                    TextureFormat,
-                )> = None;
-                let mut output_data: Option<(
-                    wgpu::Texture,
-                    wgpu::TextureView,
-                    UVec2,
-                    TextureFormat,
-                )> = None;
+            let handle = ManualTextureViewHandle(input_tag.0 as u32);
+            manual_texture_views.insert(
+                handle,
+                ManualTextureView {
+                    texture_view: input_texture_view.clone().into(),
+                    size: UVec2::new(
+                        texture_descriptor.size.width,
+                        texture_descriptor.size.height,
+                    ),
+                    format: wgpu_format,
+                },
+            );
 
-                if let Some((input_texture, input_descriptor)) = input {
-                    let input_size = input_descriptor.size.clone();
-                    let input_format = input_descriptor.format;
-                    let input_texture = render_device
-                        .wgpu_device()
-                        .create_texture_from_hal::<wgpu::hal::api::Vulkan>(
-                            input_texture,
-                            &input_descriptor,
-                        );
-                    let input_texture_view =
-                        input_texture.create_view(&wgpu::TextureViewDescriptor::default());
-
-                    input_data = Some((
-                        input_texture,
-                        input_texture_view,
-                        UVec2::new(input_size.width, input_size.height),
-                        input_format,
-                    ));
-                }
-
-                if let Some((output_texture, output_descriptor)) = output {
-                    let output_size = output_descriptor.size.clone();
-                    let output_format = output_descriptor.format;
-                    let output_texture = render_device
-                        .wgpu_device()
-                        .create_texture_from_hal::<wgpu::hal::api::Vulkan>(
-                            output_texture,
-                            &output_descriptor,
-                        );
-
-                    let output_view_format = match output_format {
-                        TextureFormat::Bgra8Unorm => TextureFormat::Bgra8UnormSrgb,
-                        TextureFormat::Rgba8Unorm => TextureFormat::Rgba8UnormSrgb,
-                        _ => output_format,
-                    };
-                    let output_texture_view =
-                        output_texture.create_view(&wgpu::TextureViewDescriptor {
-                            label: Some("output_texture_view"),
-                            format: Some(output_view_format),
-                            ..Default::default()
-                        });
-
-                    output_data = Some((
-                        output_texture,
-                        output_texture_view,
-                        UVec2::new(output_size.width, output_size.height),
-                        output_view_format,
-                    ));
-                }
-
-                if let Some((input_texture, input_texture_view, input_size, input_format)) =
-                    input_data
-                {
-                    {
-                        let mut manual_texture_views =
-                            app.world_mut().resource_mut::<ManualTextureViews>();
-                        manual_texture_views.insert(
-                            ManualTextureViewHandle(1),
-                            ManualTextureView {
-                                texture_view: input_texture_view.into(),
-                                size: input_size,
-                                format: input_format,
-                            },
-                        );
-                    }
-
-                    {
-                        let mut external_textures =
-                            app.world_mut().resource_mut::<ExternalTextures>();
-                        external_textures.input_texture = Some(input_texture.into());
-                        external_textures.input_manual_view_handle =
-                            Some(ManualTextureViewHandle(1));
-                    }
-                }
-
-                if let Some((output_texture, output_texture_view, output_size, output_format)) =
-                    output_data
-                {
-                    {
-                        let mut manual_texture_views =
-                            app.world_mut().resource_mut::<ManualTextureViews>();
-                        manual_texture_views.insert(
-                            ManualTextureViewHandle(2),
-                            ManualTextureView {
-                                texture_view: output_texture_view.into(),
-                                size: output_size,
-                                format: output_format,
-                            },
-                        );
-                    }
-
-                    {
-                        let mut external_textures =
-                            app.world_mut().resource_mut::<ExternalTextures>();
-                        external_textures.output_texture = Some(output_texture.into());
-                        external_textures.output_manual_view_handle =
-                            Some(ManualTextureViewHandle(2));
-                    }
-                }
-            }
+            commands.entity(entity).insert((
+                WgpuTexture(Texture::from(input_texture)),
+                WgpuTextureView(TextureView::from(input_texture_view)),
+                handle,
+            ));
         }
 
+        for (entity, output_texture, output_tag) in output_textures {
+            let output_format = output_texture.pixel_format.clone();
+            let wgpu_format = pixel_format_to_wgpu_format(&output_format);
+
+            let view_formats_slice = match wgpu_format {
+                TextureFormat::Bgra8Unorm => &srgb_view_formats,
+                TextureFormat::Rgba8Unorm => &rgba_srgb_view_formats,
+                _ => &empty_view_formats,
+            };
+
+            let hal_texture = Self::image_as_hal(
+                output_texture.vulkan_image,
+                output_texture.width,
+                output_texture.height,
+                wgpu_format,
+            )?;
+            let texture_descriptor = TextureDescriptor {
+                label: Some("output_texture"),
+                size: Extent3d {
+                    width: output_texture.width,
+                    height: output_texture.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: TextureDimension::D2,
+                format: wgpu_format,
+                usage: TextureUsages::COPY_DST | TextureUsages::RENDER_ATTACHMENT,
+                view_formats: view_formats_slice,
+            };
+            let output_texture = unsafe {
+                render_device
+                    .wgpu_device()
+                    .create_texture_from_hal::<wgpu::hal::api::Vulkan>(
+                        hal_texture,
+                        &texture_descriptor,
+                    )
+            };
+
+            let output_view_format = match wgpu_format {
+                TextureFormat::Bgra8Unorm => TextureFormat::Bgra8UnormSrgb,
+                TextureFormat::Rgba8Unorm => TextureFormat::Rgba8UnormSrgb,
+                _ => wgpu_format,
+            };
+            let output_texture_view = output_texture.create_view(&wgpu::TextureViewDescriptor {
+                label: Some("output_texture_view"),
+                format: Some(output_view_format),
+                ..Default::default()
+            });
+
+            let handle = ManualTextureViewHandle((output_tag.0 * 10) as u32);
+            manual_texture_views.insert(
+                handle,
+                ManualTextureView {
+                    texture_view: output_texture_view.clone().into(),
+                    size: UVec2::new(
+                        texture_descriptor.size.width,
+                        texture_descriptor.size.height,
+                    ),
+                    format: wgpu_format,
+                },
+            );
+
+            commands.entity(entity).insert((
+                WgpuTexture(Texture::from(output_texture)),
+                WgpuTextureView(TextureView::from(output_texture_view)),
+                handle,
+            ));
+        }
         Ok(())
     }
 
@@ -1211,93 +1158,71 @@ impl BevyTop {
         Ok(hal_texture)
     }
 
-    fn export_output(&mut self, output_array_info: &CudaArrayInfo) -> Result<()> {
-        let td_output_array = unsafe { output_array_info.cuda_array() };
+    fn export_output(world: &mut World) -> bevy::prelude::Result {
+        let mut outputs = world.query::<(Entity, &CudaArray, &SharedTexture, &OutputTexture)>();
+        let cuda_stream = world.non_send_resource::<CudaStream>();
+        let shared_texture_external_memory =
+            world.non_send_resource::<SharedTextureExternalMemory>();
 
-        if td_output_array.is_null() {
-            return Ok(());
-        }
+        let stream = **cuda_stream;
 
-        let export_info = self
-            .textures
-            .as_ref()
-            .and_then(|textures| textures.output_texture.as_ref())
-            .and_then(|output_texture| {
-                output_texture
-                    .cuda_external_memory
-                    .as_ref()
-                    .map(|cuda_external_memory| {
-                        (
-                            cuda_external_memory,
-                            output_texture.width,
-                            output_texture.height,
-                        )
-                    })
-            });
+        for (entity, cuda_array, shared_texture, output_tag) in outputs.iter(world) {
+            let cuda_array = unsafe { cuda_array.cuda_array() };
 
-        if let Some((cuda_external_memory, width, height)) = export_info {
+            if cuda_array.is_null() {
+                return Err(anyhow::anyhow!("Output CUDA array is null"))?;
+            }
+
+            let cuda_external_memory =
+                shared_texture_external_memory.get(&entity).ok_or_else(|| {
+                    anyhow::anyhow!("External memory for output {} not found", output_tag.0)
+                })?;
             let device_ptr = cuda_external_memory
                 .map_all_ref()
                 .map_err(|e| anyhow::anyhow!("Failed to map output external memory: {:?}", e))?;
 
-            let output_desc = output_array_info.texture_desc();
-
-            let output_row_pitch = self
-                .textures
-                .as_ref()
-                .and_then(|textures| textures.output_texture.as_ref())
-                .and_then(|output_texture| output_texture.actual_row_pitch);
-
-            let stream = self
-                .get_or_create_cuda_stream()
-                .unwrap_or(std::ptr::null_mut());
-
-            Self::copy_buffer_to_td_texture_static_ptr_async(
+            Self::copy_to_array(
                 device_ptr,
-                td_output_array as *mut cudarc::runtime::sys::cudaArray,
-                width,
-                height,
-                &output_desc.pixel_format,
-                output_row_pitch,
+                cuda_array,
+                shared_texture.texture_desc.width as u32,
+                shared_texture.texture_desc.height as u32,
+                &shared_texture.pixel_format,
+                shared_texture.row_pitch,
                 stream,
             )?;
+        }
 
-            if !stream.is_null() {
-                unsafe {
-                    use cudarc::runtime::sys::*;
-                    let sync_result = cudaStreamSynchronize(stream);
-                    if sync_result == cudaError::cudaSuccess {}
-                }
+        if !stream.is_null() {
+            unsafe {
+                use cudarc::runtime::sys::*;
+                let sync_result = cudaStreamSynchronize(stream);
+                if sync_result == cudaError::cudaSuccess {}
             }
         }
 
         Ok(())
     }
 
-    fn update(&mut self) -> Result<()> {
-        if let Some(ref mut app) = self.bevy_app {
-            app.update();
+    fn update(app: &mut App) {
+        app.update();
 
-            let render_device = app.world().resource::<RenderDevice>();
-            render_device.wgpu_device().poll(wgpu::Maintain::Wait);
-        }
-
-        Ok(())
+        let render_device = app.world().resource::<RenderDevice>();
+        render_device.wgpu_device().poll(wgpu::Maintain::Wait);
     }
 
     fn copy_from_array(
-        td_cuda_array: *mut cudarc::runtime::sys::cudaArray,
+        cuda_array: *mut cudarc::runtime::sys::cudaArray,
         device_ptr: sys::CUdeviceptr,
         width: u32,
         height: u32,
         input_format: &PixelFormat,
-        vulkan_row_pitch: Option<usize>,
+        vulkan_row_pitch: usize,
         stream: cudarc::runtime::sys::cudaStream_t,
     ) -> Result<()> {
         unsafe {
             use cudarc::runtime::sys::*;
 
-            if td_cuda_array.is_null() {
+            if cuda_array.is_null() {
                 return Ok(());
             }
 
@@ -1307,14 +1232,13 @@ impl BevyTop {
             }
 
             let calculated_pitch = width * bytes_per_pixel as u32;
-            let dst_pitch = vulkan_row_pitch.unwrap_or(calculated_pitch as usize);
 
             let width_in_bytes = calculated_pitch;
 
             let copy_result = cudaMemcpy2DFromArrayAsync(
                 device_ptr as *mut std::ffi::c_void,
-                dst_pitch,
-                td_cuda_array as cudaArray_const_t,
+                vulkan_row_pitch,
+                cuda_array as cudaArray_const_t,
                 0,
                 0,
                 width_in_bytes as usize,
@@ -1334,13 +1258,13 @@ impl BevyTop {
         Ok(())
     }
 
-    fn copy_buffer_to_td_texture_static_ptr_async(
+    fn copy_to_array(
         device_ptr: sys::CUdeviceptr,
         td_cuda_array: *mut cudarc::runtime::sys::cudaArray,
         width: u32,
         height: u32,
         output_format: &PixelFormat,
-        vulkan_row_pitch: Option<usize>,
+        vulkan_row_pitch: usize,
         stream: cudarc::runtime::sys::cudaStream_t,
     ) -> Result<()> {
         unsafe {
@@ -1359,12 +1283,10 @@ impl BevyTop {
             }
 
             let calculated_pitch = width * bytes_per_pixel as u32;
-            let vulkan_pitch = vulkan_row_pitch.unwrap_or(calculated_pitch as usize);
-
-            let cuda_aligned_pitch = if vulkan_pitch % 512 != 0 {
-                ((vulkan_pitch + 511) / 512) * 512
+            let cuda_aligned_pitch = if vulkan_row_pitch % 512 != 0 {
+                ((vulkan_row_pitch + 511) / 512) * 512
             } else {
-                vulkan_pitch
+                vulkan_row_pitch
             };
 
             let src_pitch = cuda_aligned_pitch;
@@ -1394,7 +1316,7 @@ impl BevyTop {
         Ok(())
     }
 
-    fn init_bevy_app(&mut self) -> Result<()> {
+    fn init_bevy_app() -> App {
         let mut app = App::new();
 
         app.add_plugins(
@@ -1404,14 +1326,28 @@ impl BevyTop {
                     exit_condition: bevy::window::ExitCondition::DontExit,
                     close_when_requested: false,
                 })
-                .disable::<PipelinedRenderingPlugin>(),
         );
 
-        app.init_resource::<ExternalTextures>();
+        app.init_resource::<AppSettings>();
+        app.init_non_send_resource::<SharedTextureExternalMemory>();
         app.add_systems(Startup, setup_scene);
         app.add_systems(
+            First,
+            (
+                Self::import_inputs,
+                Self::import_outputs,
+                Self::update_input_texture_data,
+                Self::sync_textures,
+            )
+                .chain(),
+        );
+        app.add_systems(
             Update,
-            (update_camera_target, rotate_cubes, update_input_texture),
+            (
+                update_camera_target,
+                update_input_texture,
+                update_chromatic_aberration_settings,
+            ),
         );
 
         let render_app = app.sub_app_mut(RenderApp);
@@ -1420,38 +1356,12 @@ impl BevyTop {
         app.finish();
         app.cleanup();
 
-        self.bevy_app = Some(app);
-        Ok(())
+        app
     }
 
-    fn get_or_create_cuda_context(&mut self) -> Result<Arc<CudaContext>> {
-        if self.cuda_context.is_none() {
-            let context = CudaContext::new(0)
-                .map_err(|e| anyhow::anyhow!("Failed to create CUDA context: {:?}", e))?;
-            self.cuda_context = Some(context);
-        }
-        self.cuda_context
-            .clone()
-            .ok_or_else(|| anyhow::anyhow!("CUDA context is not initialized, but it should be"))
-    }
-
-    fn get_or_create_cuda_stream(&mut self) -> Result<cudarc::runtime::sys::cudaStream_t> {
-        if self.cuda_stream.is_none() {
-            unsafe {
-                use cudarc::runtime::sys::*;
-                let mut stream = std::ptr::null_mut();
-                let result = cudaStreamCreate(&mut stream);
-                if result == cudaError::cudaSuccess {
-                    self.cuda_stream = Some(stream);
-                } else {
-                    return Err(anyhow::anyhow!(
-                        "Failed to create CUDA stream: {:?}",
-                        result
-                    ));
-                }
-            }
-        }
-        Ok(self.cuda_stream.unwrap())
+    fn update_app_settings(params: &BevyTopParams, app: &mut App) {
+        let mut app_settings = app.world_mut().resource_mut::<AppSettings>();
+        app_settings.chromatic_aberration_intensity = params.chromatic_aberration_intensity as f32;
     }
 }
 
@@ -1671,151 +1581,108 @@ fn setup_scene(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut external_textures: ResMut<ExternalTextures>,
+    inputs: Query<&InputTextureImage>,
 ) {
-    let input_handle: Handle<Image> = Handle::default();
-    external_textures.input_handle = Some(input_handle.clone());
-
+    let Some(input_handle) = inputs.iter().next() else {
+        return;
+    };
     commands.spawn((
-        Mesh3d(meshes.add(Cuboid::new(3.0, 3.0, 3.0))),
+        Mesh3d(meshes.add(Plane3d::default().mesh().size(2.0, 2.0))),
         MeshMaterial3d(materials.add(StandardMaterial {
             base_color: Color::WHITE,
-            base_color_texture: Some(input_handle.clone()),
-            metallic: 0.1,
-            perceptual_roughness: 0.3,
-            reflectance: 0.8,
+            base_color_texture: Some((**input_handle).clone()),
+            unlit: true,
             ..default()
         })),
         Transform::from_xyz(0.0, 0.0, 0.0),
-        InputTexturedCube,
-        RotatingCube {
-            speed: Vec3::new(0.5, 0.8, 0.3),
-        },
+        InputTexturedQuad,
     ));
-
-    commands.spawn((
-        Mesh3d(meshes.add(Plane3d::default().mesh().size(12.0, 12.0))),
-        MeshMaterial3d(materials.add(StandardMaterial {
-            base_color: Color::srgb(0.2, 0.2, 0.3),
-            metallic: 0.9,
-            perceptual_roughness: 0.1,
-            reflectance: 0.9,
-            ..default()
-        })),
-        Transform::from_xyz(0.0, -2.5, 0.0),
-    ));
-
-    commands.spawn((
-        DirectionalLight {
-            shadows_enabled: true,
-            illuminance: 25000.0,
-            color: Color::srgb(1.0, 0.98, 0.9),
-            ..default()
-        },
-        Transform {
-            translation: Vec3::new(4.0, 6.0, 4.0),
-            rotation: Quat::from_rotation_x(-PI / 3.),
-            ..default()
-        },
-    ));
-
-    commands.spawn((
-        DirectionalLight {
-            shadows_enabled: false,
-            illuminance: 8000.0,
-            color: Color::srgb(0.8, 0.9, 1.0),
-            ..default()
-        },
-        Transform {
-            translation: Vec3::new(-3.0, 2.0, -2.0),
-            rotation: Quat::from_rotation_y(PI / 6.),
-            ..default()
-        },
-    ));
-
-    commands.insert_resource(AmbientLight {
-        color: Color::srgb(0.4, 0.4, 0.6),
-        brightness: 800.0,
-        affects_lightmapped_meshes: false,
-    });
 
     commands.spawn((
         Camera3d::default(),
         Camera {
-            clear_color: ClearColorConfig::Custom(Color::srgb(0.05, 0.05, 0.15)),
+            clear_color: ClearColorConfig::Custom(Color::BLACK),
             ..default()
         },
-        Transform::from_xyz(0.0, 2.0, 6.0)
-            .looking_at(Vec3::new(0.0, 0.0, 0.0), Vec3::Y)
+        Transform::from_xyz(0.0, 0.0, 1.0)
+            .looking_at(Vec3::ZERO, Vec3::Y)
             .with_scale(Vec3::new(1.0, -1.0, 1.0)),
-        OutputCamera,
+        ChromaticAberration::default(),
+        OutputCamera(0),
     ));
 }
 
 fn update_camera_target(
     mut camera_query: Query<&mut Camera, With<OutputCamera>>,
-    external_textures: Res<ExternalTextures>,
+    output_textures: Query<&ManualTextureViewHandle, With<OutputTexture>>,
 ) {
+    let Some(output_manual_view_handle) = output_textures.iter().next() else {
+        warn!("No output texture found for camera target update.");
+        return;
+    };
+
     for mut camera in camera_query.iter_mut() {
-        if let Some(output_handle) = external_textures.output_manual_view_handle {
-            camera.target = RenderTarget::TextureView(output_handle);
+        camera.target = RenderTarget::TextureView(*output_manual_view_handle);
+    }
+}
+
+fn update_chromatic_aberration_settings(
+    mut chromatic_aberration: Query<&mut ChromaticAberration>,
+    app_settings: Res<AppSettings>,
+) {
+    if app_settings.is_changed() {
+        let intensity = app_settings.chromatic_aberration_intensity;
+
+        // Pick a reasonable maximum sample size for the intensity to avoid an
+        // artifact whereby the individual samples appear instead of producing
+        // smooth streaks of color.
+        let max_samples = ((intensity - 0.02) / (0.20 - 0.02) * 56.0 + 8.0)
+            .clamp(8.0, 64.0)
+            .round() as u32;
+
+        for mut chromatic_aberration in &mut chromatic_aberration {
+            chromatic_aberration.intensity = intensity;
+            chromatic_aberration.max_samples = max_samples;
         }
     }
 }
 
-fn rotate_cubes(time: Res<Time>, mut query: Query<(&mut Transform, &RotatingCube)>) {
-    for (mut transform, rotating) in query.iter_mut() {
-        let rotation_delta = rotating.speed * time.delta_secs();
-        transform.rotate_x(rotation_delta.x);
-        transform.rotate_y(rotation_delta.y);
-        transform.rotate_z(rotation_delta.z);
-    }
-}
-
 fn update_input_texture(
-    external_textures: Res<ExternalTextures>,
+    inputs: Query<&InputTextureImage>,
     mut materials: ResMut<Assets<StandardMaterial>>,
-    mut cube_query: Query<&MeshMaterial3d<StandardMaterial>, With<InputTexturedCube>>,
+    mut quad_query: Query<&MeshMaterial3d<StandardMaterial>, With<InputTexturedQuad>>,
 ) {
-    if let Some(input_handle) = &external_textures.input_handle {
-        for material_handle in cube_query.iter_mut() {
-            if let Some(material) = materials.get_mut(&material_handle.0) {
-                material.base_color_texture = Some(input_handle.clone());
-            }
+    let Some(input_handle) = inputs.iter().next() else {
+        warn!("No input texture found for updating materials.");
+        return;
+    };
+
+    for material_handle in quad_query.iter_mut() {
+        if let Some(material) = materials.get_mut(&material_handle.0) {
+            material.base_color_texture = Some((**input_handle).clone());
         }
     }
 }
 
 fn extract_external_textures(
-    external_textures: Extract<Res<ExternalTextures>>,
-    manual_texture_views: Extract<Res<ManualTextureViews>>,
+    inputs: Extract<Query<(&InputTextureImage, &WgpuTexture, &WgpuTextureView)>>,
     default_sampler: Res<DefaultImageSampler>,
     mut gpu_images: ResMut<RenderAssets<GpuImage>>,
 ) {
-    match (
-        external_textures.input_texture.as_ref(),
-        external_textures.input_handle.as_ref(),
-        external_textures.input_manual_view_handle.as_ref(),
-    ) {
-        (Some(input_texture), Some(input_handle), Some(input_manual_view_handle)) => {
-            let texture_view = manual_texture_views
-                .get(input_manual_view_handle)
-                .expect("Input ManualTextureViewHandle not found");
-            let input_gpu_image = GpuImage {
-                texture: input_texture.clone(),
-                texture_view: texture_view.texture_view.clone(),
-                texture_format: texture_view.format,
-                sampler: (**default_sampler).clone(),
-                size: Extent3d {
-                    width: texture_view.size.x,
-                    height: texture_view.size.y,
-                    depth_or_array_layers: 1,
-                },
-                mip_level_count: 0,
-            };
-            gpu_images.insert(input_handle.id(), input_gpu_image);
-        }
-        _ => {}
+    for (input_handle, input_texture, input_texture_view) in &inputs {
+        let input_gpu_image = GpuImage {
+            texture: input_texture.0.clone(),
+            texture_view: input_texture_view.0.clone(),
+            texture_format: input_texture.0.format(),
+            sampler: (**default_sampler).clone(),
+            size: Extent3d {
+                width: input_texture.0.size().width,
+                height: input_texture.0.size().height,
+                depth_or_array_layers: 1,
+            },
+            mip_level_count: 0,
+        };
+        gpu_images.insert((**input_handle).id(), input_gpu_image);
     }
 }
 
