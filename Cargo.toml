@@ -21,7 +21,6 @@ members = [
     "plugins/top/bevy-top",
     "plugins/top/cpu-memory-top",
     "plugins/top/cuda",
-    "plugins/top/stable-diffusion",
     "plugins/top/stylegan-http",
     "td-rs-autocxx-build",
     "td-rs-base",
