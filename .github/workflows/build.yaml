@@ -18,7 +18,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: build
-          args: --workspace --exclude=python-chop --exclude=td-rs-derive-py
+          args: --workspace --exclude=python-chop --exclude=bevy-top --exclude=cuda --exclude=td-rs-derive-py
 #      - uses: actions-rs/cargo@v1
 #        with:
 #          command: xtask

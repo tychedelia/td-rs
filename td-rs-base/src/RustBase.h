@@ -31,4 +31,28 @@ const char* getBuildDynamicMenuInfoNames(TD::OP_BuildDynamicMenuInfo &info) {
     return info.name;
 }
 
+// CUDA helper functions for base types
+TD::OP_TextureDesc getCUDAArrayInfoTextureDesc(const TD::OP_CUDAArrayInfo &info) {
+    return info.textureDesc;
+}
+
+void* getCUDAArrayInfoArray(const TD::OP_CUDAArrayInfo &info) {
+    return info.cudaArray;
+}
+
+void* getCUDAAcquireInfoStream(const TD::OP_CUDAAcquireInfo &info) {
+    return info.stream;
+}
+
+TD::OP_CUDAAcquireInfo createCUDAAcquireInfo(void* stream) {
+    TD::OP_CUDAAcquireInfo info;
+    info.stream = static_cast<cudaStream_t>(stream);
+    return info;
+}
+
+// Helper function to get texture descriptor from TOP input
+TD::OP_TextureDesc getTOPInputTextureDesc(const TD::OP_TOPInput &input) {
+    return input.textureDesc;
+}
+
 #endif // TD_RS_RUSTBASE_H

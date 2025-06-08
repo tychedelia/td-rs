@@ -4,12 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-libc = "*"
-cxx = "1"
-monome-rs = "1.1"
 
 [build-dependencies]
-cxx-build = "1"
 
 [workspace]
 members = [
@@ -22,8 +18,9 @@ members = [
     "plugins/dat/filter",
     "plugins/dat/dynamic_menu",
     "plugins/sop/generator-sop",
+    "plugins/top/bevy-top",
     "plugins/top/cpu-memory-top",
-    "plugins/top/stable-diffusion",
+    "plugins/top/cuda",
     "plugins/top/stylegan-http",
     "td-rs-autocxx-build",
     "td-rs-base",

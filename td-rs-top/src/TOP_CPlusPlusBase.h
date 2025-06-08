@@ -238,8 +238,11 @@ public:
   // for another option potentially, avoiding a re-allocation.
   virtual void returnBuffer(OP_SmartRef<TOP_Buffer> *buf) = 0;
 
+  // Returns the CUDA device index the process is currently using. Returns -1 if
+  // this node is not using CUDA execution mode.
+  virtual int getCUDADeviceIndex(void *reserved) = 0;
+
 protected:
-  virtual void reserved0() = 0;
   virtual void reserved1() = 0;
   virtual void reserved2() = 0;
   virtual void reserved3() = 0;
@@ -352,7 +355,9 @@ private:
 /*** DO NOT EDIT THIS CLASS, MAKE A SUBCLASS OF IT INSTEAD ***/
 class TOP_CPlusPlusBase {
 protected:
-  TOP_CPlusPlusBase() { memset(reserved, 0, sizeof(reserved)); }
+  TOP_CPlusPlusBase() {
+    memset(reservedDataPadding, 0, sizeof(reservedDataPadding));
+  }
 
 public:
   virtual ~TOP_CPlusPlusBase() {}
@@ -437,7 +442,7 @@ public:
   virtual int32_t reservedFunc19() { return 0; }
   virtual int32_t reservedFunc20() { return 0; }
 
-  int32_t reserved[400];
+  int32_t reservedDataPadding[400];
 };
 
 #pragma pack(pop)

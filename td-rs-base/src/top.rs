@@ -1,8 +1,11 @@
-use crate::cxx::{OP_PixelFormat, OP_TOPInput};
+use crate::cxx::{OP_PixelFormat, OP_TOPInput, OP_TexDim};
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
 
-#[derive(Debug, Default, Eq, PartialEq)]
+#[cfg(feature = "cuda")]
+use crate::cxx::OP_CUDAArrayInfo;
+
+#[derive(Debug, Default, Eq, PartialEq, Clone)]
 pub enum TexDim {
     #[default]
     EInvalid,
@@ -12,7 +15,7 @@ pub enum TexDim {
     ECube,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct TextureDesc {
     pub width: usize,
     pub height: usize,
@@ -37,7 +40,7 @@ impl Default for TextureDesc {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq)]
 pub enum PixelFormat {
     #[default]
     Invalid,
@@ -118,32 +121,44 @@ impl From<&OP_PixelFormat> for PixelFormat {
 impl From<&PixelFormat> for OP_PixelFormat {
     fn from(pixel_format: &PixelFormat) -> Self {
         match pixel_format {
-            PixelFormat::Invalid => crate::cxx::OP_PixelFormat::Invalid,
-            PixelFormat::BGRA8Fixed => crate::cxx::OP_PixelFormat::BGRA8Fixed,
-            PixelFormat::RGBA8Fixed => crate::cxx::OP_PixelFormat::RGBA8Fixed,
-            PixelFormat::RGBA16Fixed => crate::cxx::OP_PixelFormat::RGBA16Fixed,
-            PixelFormat::RGBA16Float => crate::cxx::OP_PixelFormat::RGBA16Float,
-            PixelFormat::RGBA32Float => crate::cxx::OP_PixelFormat::RGBA32Float,
-            PixelFormat::Mono8Fixed => crate::cxx::OP_PixelFormat::Mono8Fixed,
-            PixelFormat::Mono16Fixed => crate::cxx::OP_PixelFormat::Mono16Fixed,
-            PixelFormat::Mono16Float => crate::cxx::OP_PixelFormat::Mono16Float,
-            PixelFormat::Mono32Float => crate::cxx::OP_PixelFormat::Mono32Float,
-            PixelFormat::RG8Fixed => crate::cxx::OP_PixelFormat::RG8Fixed,
-            PixelFormat::RG16Fixed => crate::cxx::OP_PixelFormat::RG16Fixed,
-            PixelFormat::RG16Float => crate::cxx::OP_PixelFormat::RG16Float,
-            PixelFormat::RG32Float => crate::cxx::OP_PixelFormat::RG32Float,
-            PixelFormat::A8Fixed => crate::cxx::OP_PixelFormat::A8Fixed,
-            PixelFormat::A16Fixed => crate::cxx::OP_PixelFormat::A16Fixed,
-            PixelFormat::A16Float => crate::cxx::OP_PixelFormat::A16Float,
-            PixelFormat::A32Float => crate::cxx::OP_PixelFormat::A32Float,
-            PixelFormat::MonoA8Fixed => crate::cxx::OP_PixelFormat::MonoA8Fixed,
-            PixelFormat::MonoA16Fixed => crate::cxx::OP_PixelFormat::MonoA16Fixed,
-            PixelFormat::MonoA16Float => crate::cxx::OP_PixelFormat::MonoA16Float,
-            PixelFormat::MonoA32Float => crate::cxx::OP_PixelFormat::MonoA32Float,
-            PixelFormat::SBGRA8Fixed => crate::cxx::OP_PixelFormat::SBGRA8Fixed,
-            PixelFormat::SRGBA8Fixed => crate::cxx::OP_PixelFormat::SRGBA8Fixed,
-            PixelFormat::RGB10A2Fixed => crate::cxx::OP_PixelFormat::RGB10A2Fixed,
-            PixelFormat::RGB11Float => crate::cxx::OP_PixelFormat::RGB11Float,
+            PixelFormat::Invalid => OP_PixelFormat::Invalid,
+            PixelFormat::BGRA8Fixed => OP_PixelFormat::BGRA8Fixed,
+            PixelFormat::RGBA8Fixed => OP_PixelFormat::RGBA8Fixed,
+            PixelFormat::RGBA16Fixed => OP_PixelFormat::RGBA16Fixed,
+            PixelFormat::RGBA16Float => OP_PixelFormat::RGBA16Float,
+            PixelFormat::RGBA32Float => OP_PixelFormat::RGBA32Float,
+            PixelFormat::Mono8Fixed => OP_PixelFormat::Mono8Fixed,
+            PixelFormat::Mono16Fixed => OP_PixelFormat::Mono16Fixed,
+            PixelFormat::Mono16Float => OP_PixelFormat::Mono16Float,
+            PixelFormat::Mono32Float => OP_PixelFormat::Mono32Float,
+            PixelFormat::RG8Fixed => OP_PixelFormat::RG8Fixed,
+            PixelFormat::RG16Fixed => OP_PixelFormat::RG16Fixed,
+            PixelFormat::RG16Float => OP_PixelFormat::RG16Float,
+            PixelFormat::RG32Float => OP_PixelFormat::RG32Float,
+            PixelFormat::A8Fixed => OP_PixelFormat::A8Fixed,
+            PixelFormat::A16Fixed => OP_PixelFormat::A16Fixed,
+            PixelFormat::A16Float => OP_PixelFormat::A16Float,
+            PixelFormat::A32Float => OP_PixelFormat::A32Float,
+            PixelFormat::MonoA8Fixed => OP_PixelFormat::MonoA8Fixed,
+            PixelFormat::MonoA16Fixed => OP_PixelFormat::MonoA16Fixed,
+            PixelFormat::MonoA16Float => OP_PixelFormat::MonoA16Float,
+            PixelFormat::MonoA32Float => OP_PixelFormat::MonoA32Float,
+            PixelFormat::SBGRA8Fixed => OP_PixelFormat::SBGRA8Fixed,
+            PixelFormat::SRGBA8Fixed => OP_PixelFormat::SRGBA8Fixed,
+            PixelFormat::RGB10A2Fixed => OP_PixelFormat::RGB10A2Fixed,
+            PixelFormat::RGB11Float => OP_PixelFormat::RGB11Float,
+        }
+    }
+}
+
+impl From<&TexDim> for OP_TexDim {
+    fn from(tex_dim: &TexDim) -> Self {
+        match tex_dim {
+            TexDim::EInvalid => OP_TexDim::eInvalid,
+            TexDim::E2D => OP_TexDim::e2D,
+            TexDim::E2DArray => OP_TexDim::e2DArray,
+            TexDim::E3D => OP_TexDim::e3D,
+            TexDim::ECube => OP_TexDim::eCube,
         }
     }
 }
@@ -161,6 +176,25 @@ pub struct TopInput {
 }
 
 impl TopInput {
+    pub fn texture_desc(&self) -> TextureDesc {
+        let desc = crate::cxx::getTOPInputTextureDesc(&self.input);
+        TextureDesc {
+            width: desc.width as usize,
+            height: desc.height as usize,
+            depth: desc.depth as usize,
+            tex_dim: match desc.texDim {
+                OP_TexDim::eInvalid => TexDim::EInvalid,
+                OP_TexDim::e2D => TexDim::E2D,
+                OP_TexDim::e2DArray => TexDim::E2DArray,
+                OP_TexDim::e3D => TexDim::E3D,
+                OP_TexDim::eCube => TexDim::ECube,
+            },
+            pixel_format: PixelFormat::from(&desc.pixelFormat),
+            aspect_x: desc.aspectX,
+            aspect_y: desc.aspectY,
+        }
+    }
+
     pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: false,
@@ -168,6 +202,25 @@ impl TopInput {
         };
         let download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)
+    }
+
+    #[cfg(feature = "cuda")]
+    pub fn get_cuda_array(
+        &self,
+        stream: cudarc::runtime::sys::cudaStream_t,
+    ) -> Result<CudaArrayInfo, anyhow::Error> {
+        use autocxx::moveit::moveit;
+
+        moveit! { let acquire_info = unsafe {
+            crate::cxx::createCUDAAcquireInfo(stream as *mut autocxx::c_void)
+        } }
+
+        let array_info = unsafe {
+            self.input
+                .getCUDAArray(acquire_info.as_ref().get_ref(), std::ptr::null_mut())
+        };
+
+        CudaArrayInfo::new(array_info)
     }
 }
 
@@ -199,11 +252,11 @@ impl TopDownloadResult {
             height: desc.height as usize,
             depth: desc.depth as usize,
             tex_dim: match desc.texDim {
-                crate::cxx::OP_TexDim::eInvalid => TexDim::EInvalid,
-                crate::cxx::OP_TexDim::e2D => TexDim::E2D,
-                crate::cxx::OP_TexDim::e2DArray => TexDim::E2DArray,
-                crate::cxx::OP_TexDim::e3D => TexDim::E3D,
-                crate::cxx::OP_TexDim::eCube => TexDim::ECube,
+                OP_TexDim::eInvalid => TexDim::EInvalid,
+                OP_TexDim::e2D => TexDim::E2D,
+                OP_TexDim::e2DArray => TexDim::E2DArray,
+                OP_TexDim::e3D => TexDim::E3D,
+                OP_TexDim::eCube => TexDim::ECube,
             },
             pixel_format: PixelFormat::from(&desc.pixelFormat),
             aspect_x: 0.0,
@@ -233,5 +286,53 @@ impl<'cook> GetInput<'cook, TopInput> for OperatorInputs<'cook, TopInput> {
         } else {
             Some(TopInput::ref_cast(unsafe { &*input }))
         }
+    }
+}
+
+#[cfg(feature = "cuda")]
+#[derive(Debug)]
+pub struct CudaArrayInfo {
+    pub(crate) info: *const OP_CUDAArrayInfo,
+}
+
+#[cfg(feature = "cuda")]
+unsafe impl Send for CudaArrayInfo {}
+#[cfg(feature = "cuda")]
+unsafe impl Sync for CudaArrayInfo {}
+
+#[cfg(feature = "cuda")]
+impl CudaArrayInfo {
+    pub fn new(info: *const OP_CUDAArrayInfo) -> Result<Self, anyhow::Error> {
+        if info.is_null() {
+            return Err(anyhow::anyhow!("Null CUDA array info pointer"));
+        }
+        Ok(Self { info })
+    }
+
+    pub fn texture_desc(&self) -> TextureDesc {
+        unsafe {
+            let cpp_desc = crate::cxx::getCUDAArrayInfoTextureDesc(self.info.as_ref().unwrap());
+            TextureDesc {
+                width: cpp_desc.width as usize,
+                height: cpp_desc.height as usize,
+                depth: cpp_desc.depth as usize,
+                tex_dim: match cpp_desc.texDim {
+                    OP_TexDim::eInvalid => TexDim::EInvalid,
+                    OP_TexDim::e2D => TexDim::E2D,
+                    OP_TexDim::e2DArray => TexDim::E2DArray,
+                    OP_TexDim::e3D => TexDim::E3D,
+                    OP_TexDim::eCube => TexDim::ECube,
+                },
+                pixel_format: (&cpp_desc.pixelFormat).into(),
+                aspect_x: cpp_desc.aspectX,
+                aspect_y: cpp_desc.aspectY,
+            }
+        }
+    }
+
+    #[cfg(feature = "cuda")]
+    pub unsafe fn cuda_array(&self) -> *mut cudarc::runtime::sys::cudaArray {
+        crate::cxx::getCUDAArrayInfoArray(self.info.as_ref().unwrap())
+            as *mut cudarc::runtime::sys::cudaArray
     }
 }
