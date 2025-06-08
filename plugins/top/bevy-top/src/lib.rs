@@ -246,8 +246,8 @@ impl TopNew for BevyTop {
 }
 
 impl OpInfo for BevyTop {
-    const OPERATOR_LABEL: &'static str = "Bevy TOP";
-    const OPERATOR_TYPE: &'static str = "Bevytop";
+    const OPERATOR_LABEL: &'static str = "Bevy";
+    const OPERATOR_TYPE: &'static str = "Bevy";
     const OPERATOR_ICON: &'static str = "BVY";
     const MIN_INPUTS: usize = 0;
     const MAX_INPUTS: usize = 1;
@@ -281,16 +281,14 @@ impl Top for BevyTop {
 
 impl BevyTop {
     fn can_reuse_texture(
-        existing: &Option<SharedTexture>,
+        existing: Option<&SharedTexture>,
         width: u32,
         height: u32,
         format: &PixelFormat,
     ) -> bool {
-        if let Some(texture) = existing {
+        existing.map_or(false, |texture| {
             texture.width == width && texture.height == height && texture.pixel_format == *format
-        } else {
-            false
-        }
+        })
     }
     fn execute_inner(
         &mut self,
@@ -301,29 +299,23 @@ impl BevyTop {
             self.init_bevy_app()?;
         }
 
-        let mut output_width = 512;
-        let mut output_height = 512;
-        let mut output_format = PixelFormat::BGRA8Fixed;
-
-        let input_cuda_info = if input.num_inputs() > 0 {
-            if let Some(td_input) = input.input(0) {
-                let input_desc = td_input.texture_desc();
-                let preferred_format = get_preferred_output_format(&input_desc.pixel_format);
-
-                output_width = input_desc.width;
-                output_height = input_desc.height;
-                output_format = preferred_format;
-
-                match td_input.get_cuda_array(std::ptr::null_mut()) {
-                    Ok(info) => Some(info),
-                    Err(_e) => None,
-                }
-            } else {
-                None
+        let mut inputs = vec![];
+        for i in 0..input.num_inputs() {
+            if let Some(input_desc) = input.input(i).map(|td_input| td_input.texture_desc()) {
+                inputs.push(input_desc);
             }
-        } else {
-            None
-        };
+        }
+
+        let input_cuda_info = input
+            .input(0)
+            .filter(|_| input.num_inputs() > 0)
+            .map(|td_input| td_input.get_cuda_array(std::ptr::null_mut()).ok())
+            .flatten();
+
+        let params = input.params();
+        let first_input_desc = input.input(0).map(|td_input| td_input.texture_desc());
+        let (output_width, output_height, output_format) =
+            Self::get_resolution_and_format(params, first_input_desc);
 
         let output_cuda_info = CudaOutputInfo {
             stream: std::ptr::null_mut(),
@@ -374,15 +366,195 @@ impl BevyTop {
         Ok(())
     }
 
+    fn get_resolution_and_format(
+        params: ParamInputs,
+        first_input_desc: Option<TextureDesc>,
+    ) -> (usize, usize, PixelFormat) {
+        let mut output_width = 512;
+        let mut output_height = 512;
+        let output_resolution = params.get_string("outputresolution");
+        let mut output_format = PixelFormat::BGRA8Fixed;
+
+        match output_resolution {
+            "useinput" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width;
+                    output_height = input_desc.height;
+                }
+            }
+            "eigth" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width / 8;
+                    output_height = input_desc.height / 8;
+                }
+            }
+            "quarter" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width / 4;
+                    output_height = input_desc.height / 4;
+                }
+            }
+            "half" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width / 2;
+                    output_height = input_desc.height / 2;
+                }
+            }
+            "2x" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width * 2;
+                    output_height = input_desc.height * 2;
+                }
+            }
+            "4x" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width * 4;
+                    output_height = input_desc.height * 4;
+                }
+            }
+            "8x" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_width = input_desc.width * 8;
+                    output_height = input_desc.height * 8;
+                }
+            }
+            "fit" => {
+                if let Some(input_desc) = &first_input_desc {
+                    let aspect_ratio = input_desc.width as f32 / input_desc.height as f32;
+                    if aspect_ratio > 1.0 {
+                        output_width = 512;
+                        output_height = (512.0 / aspect_ratio) as usize;
+                    } else {
+                        output_height = 512;
+                        output_width = (512.0 * aspect_ratio) as usize;
+                    }
+                }
+            }
+            "limit" => {
+                if let Some(input_desc) = &first_input_desc {
+                    let max_size = 512;
+                    if input_desc.width > max_size || input_desc.height > max_size {
+                        let aspect_ratio = input_desc.width as f32 / input_desc.height as f32;
+                        if aspect_ratio > 1.0 {
+                            output_width = max_size;
+                            output_height = (max_size as f32 / aspect_ratio) as usize;
+                        } else {
+                            output_height = max_size;
+                            output_width = (max_size as f32 * aspect_ratio) as usize;
+                        }
+                    } else {
+                        output_width = input_desc.width;
+                        output_height = input_desc.height;
+                    }
+                }
+            }
+            "custom" => {
+                let custom_width = params.get_int("resolution", 0);
+                let custom_height = params.get_int("resolution", 1);
+                if custom_width > 0 && custom_height > 0 {
+                    output_width = custom_width as usize;
+                    output_height = custom_height as usize;
+                }
+            }
+            "parpanel" => {}
+            _ => {}
+        };
+
+        let format = params.get_string("format");
+        match format {
+            "useinput" => {
+                if let Some(input_desc) = &first_input_desc {
+                    output_format = input_desc.pixel_format;
+                }
+            }
+            "rgba8fixed" => {
+                output_format = PixelFormat::RGBA8Fixed;
+            }
+            "bgra8fixed" => {
+                output_format = PixelFormat::BGRA8Fixed;
+            }
+            "srgba8fixed" => {
+                output_format = PixelFormat::SRGBA8Fixed;
+            }
+            "sbgra8fixed" => {
+                output_format = PixelFormat::SBGRA8Fixed;
+            }
+            "rgba16fixed" => {
+                output_format = PixelFormat::RGBA16Fixed;
+            }
+            "rgba16float" => {
+                output_format = PixelFormat::RGBA16Float;
+            }
+            "rgba32float" => {
+                output_format = PixelFormat::RGBA32Float;
+            }
+            "mono8fixed" => {
+                output_format = PixelFormat::Mono8Fixed;
+            }
+            "mono16fixed" => {
+                output_format = PixelFormat::Mono16Fixed;
+            }
+            "mono16float" => {
+                output_format = PixelFormat::Mono16Float;
+            }
+            "mono32float" => {
+                output_format = PixelFormat::Mono32Float;
+            }
+            "rg8fixed" => {
+                output_format = PixelFormat::RG8Fixed;
+            }
+            "rg16fixed" => {
+                output_format = PixelFormat::RG16Fixed;
+            }
+            "rg16float" => {
+                output_format = PixelFormat::RG16Float;
+            }
+            "rg32float" => {
+                output_format = PixelFormat::RG32Float;
+            }
+            "a8fixed" => {
+                output_format = PixelFormat::A8Fixed;
+            }
+            "a16fixed" => {
+                output_format = PixelFormat::A16Fixed;
+            }
+            "a16float" => {
+                output_format = PixelFormat::A16Float;
+            }
+            "a32float" => {
+                output_format = PixelFormat::A32Float;
+            }
+            "monoalpha8fixed" => {
+                output_format = PixelFormat::MonoA8Fixed;
+            }
+            "monoalpha16fixed" => {
+                output_format = PixelFormat::MonoA16Fixed;
+            }
+            "monoalpha16float" => {
+                output_format = PixelFormat::MonoA16Float;
+            }
+            "monoalpha32float" => {
+                output_format = PixelFormat::MonoA32Float;
+            }
+            "rgb10a2fixed" => {
+                output_format = PixelFormat::RGB10A2Fixed;
+            }
+            "rgba11float" => {
+                output_format = PixelFormat::RGB11Float;
+            }
+            _ => {}
+        }
+
+        (output_width, output_height, output_format)
+    }
+
     fn import_input(
         &mut self,
         cuda_array_info: Option<&td_rs_top::cuda::CudaArrayInfo>,
     ) -> Result<()> {
         let cuda_array_info = match cuda_array_info {
             Some(info) => info,
-            None => {
-                return Ok(());
-            }
+            None => return Ok(()),
         };
 
         let ctx = self.get_or_create_cuda_context()?;
@@ -397,16 +569,18 @@ impl BevyTop {
             let width = texture_desc.width as u32;
             let height = texture_desc.height as u32;
 
-            let need_new_texture = if let Some(ref textures) = self.textures {
-                !Self::can_reuse_texture(
-                    &textures.input_texture,
-                    width,
-                    height,
-                    &texture_desc.pixel_format,
-                )
-            } else {
-                true
-            };
+            let need_new_texture = self
+                .textures
+                .as_ref()
+                .map(|textures| {
+                    !Self::can_reuse_texture(
+                        textures.input_texture.as_ref(),
+                        width,
+                        height,
+                        &texture_desc.pixel_format,
+                    )
+                })
+                .unwrap_or(true);
 
             if need_new_texture {
                 let input_texture_result = unsafe {
@@ -436,12 +610,11 @@ impl BevyTop {
                         })
                 };
 
-                if let Some(input_texture) = input_texture_result {
-                    if let Some(ref mut textures) = self.textures {
-                        textures.input_texture = Some(input_texture);
-                    }
+                if let (Some(input_texture), Some(ref mut textures)) =
+                    (input_texture_result, &mut self.textures)
+                {
+                    textures.input_texture = Some(input_texture);
                 }
-            } else {
             }
 
             self.update_input_texture_data(&ctx, cuda_array_info)?;
@@ -462,16 +635,18 @@ impl BevyTop {
         let ctx = self.get_or_create_cuda_context()?;
 
         let output_desc = output_array_info.texture_desc();
-        let need_new_output = if let Some(ref textures) = self.textures {
-            !Self::can_reuse_texture(
-                &textures.output_texture,
-                output_desc.width as u32,
-                output_desc.height as u32,
-                &output_desc.pixel_format,
-            )
-        } else {
-            true
-        };
+        let need_new_output = self
+            .textures
+            .as_ref()
+            .map(|textures| {
+                !Self::can_reuse_texture(
+                    textures.output_texture.as_ref(),
+                    output_desc.width as u32,
+                    output_desc.height as u32,
+                    &output_desc.pixel_format,
+                )
+            })
+            .unwrap_or(true);
 
         if need_new_output {
             let output_texture_result = if let Some(ref app) = self.bevy_app {
@@ -508,12 +683,11 @@ impl BevyTop {
                 None
             };
 
-            if let Some(output_texture) = output_texture_result {
-                if let Some(ref mut textures) = self.textures {
-                    textures.output_texture = Some(output_texture);
-                }
+            if let (Some(output_texture), Some(ref mut textures)) =
+                (output_texture_result, &mut self.textures)
+            {
+                textures.output_texture = Some(output_texture);
             }
-        } else {
         }
 
         Ok(())
@@ -740,35 +914,30 @@ impl BevyTop {
         _ctx: &CudaContext,
         cuda_array_info: &td_rs_top::cuda::CudaArrayInfo,
     ) -> Result<()> {
-        let (device_ptr, width, height, actual_row_pitch) = {
-            let input_texture = if let Some(ref textures) = self.textures {
-                if let Some(ref input_texture) = textures.input_texture {
-                    input_texture
-                } else {
-                    return Ok(());
-                }
-            } else {
-                return Ok(());
-            };
+        let textures = self
+            .textures
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No textures available"))?;
 
-            let cuda_external_memory =
-                if let Some(ref external_memory) = input_texture.cuda_external_memory {
-                    external_memory
-                } else {
-                    return Err(anyhow::anyhow!("Input texture has no external memory!"));
-                };
+        let input_texture = textures
+            .input_texture
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("No input texture available"))?;
 
-            let device_ptr = cuda_external_memory.map_all_ref().map_err(|e| {
-                anyhow::anyhow!("Failed to map input external memory for update: {:?}", e)
-            })?;
+        let cuda_external_memory = input_texture
+            .cuda_external_memory
+            .as_ref()
+            .ok_or_else(|| anyhow::anyhow!("Input texture has no external memory!"))?;
 
-            (
-                device_ptr,
-                input_texture.width,
-                input_texture.height,
-                input_texture.actual_row_pitch,
-            )
-        };
+        let device_ptr = cuda_external_memory.map_all_ref().map_err(|e| {
+            anyhow::anyhow!("Failed to map input external memory for update: {:?}", e)
+        })?;
+
+        let (width, height, actual_row_pitch) = (
+            input_texture.width,
+            input_texture.height,
+            input_texture.actual_row_pitch,
+        );
 
         let td_cuda_array = unsafe { cuda_array_info.cuda_array() };
         let input_desc = cuda_array_info.texture_desc();
@@ -1049,23 +1218,22 @@ impl BevyTop {
             return Ok(());
         }
 
-        let export_info = if let Some(ref textures) = self.textures {
-            if let Some(ref output_texture) = textures.output_texture {
-                if let Some(ref cuda_external_memory) = output_texture.cuda_external_memory {
-                    Some((
-                        cuda_external_memory,
-                        output_texture.width,
-                        output_texture.height,
-                    ))
-                } else {
-                    None
-                }
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        let export_info = self
+            .textures
+            .as_ref()
+            .and_then(|textures| textures.output_texture.as_ref())
+            .and_then(|output_texture| {
+                output_texture
+                    .cuda_external_memory
+                    .as_ref()
+                    .map(|cuda_external_memory| {
+                        (
+                            cuda_external_memory,
+                            output_texture.width,
+                            output_texture.height,
+                        )
+                    })
+            });
 
         if let Some((cuda_external_memory, width, height)) = export_info {
             let device_ptr = cuda_external_memory
@@ -1074,21 +1242,15 @@ impl BevyTop {
 
             let output_desc = output_array_info.texture_desc();
 
-            let output_row_pitch = if let Some(ref textures) = self.textures {
-                if let Some(ref output_texture) = textures.output_texture {
-                    output_texture.actual_row_pitch
-                } else {
-                    None
-                }
-            } else {
-                None
-            };
+            let output_row_pitch = self
+                .textures
+                .as_ref()
+                .and_then(|textures| textures.output_texture.as_ref())
+                .and_then(|output_texture| output_texture.actual_row_pitch);
 
-            let stream = if let Ok(stream) = self.get_or_create_cuda_stream() {
-                stream
-            } else {
-                std::ptr::null_mut()
-            };
+            let stream = self
+                .get_or_create_cuda_stream()
+                .unwrap_or(std::ptr::null_mut());
 
             Self::copy_buffer_to_td_texture_static_ptr_async(
                 device_ptr,
@@ -1107,7 +1269,6 @@ impl BevyTop {
                     if sync_result == cudaError::cudaSuccess {}
                 }
             }
-        } else {
         }
 
         Ok(())
