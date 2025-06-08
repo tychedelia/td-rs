@@ -1,7 +1,7 @@
 [package]
 name = "cuda"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 [package.metadata.td-rs]
 type = "top"
@@ -13,5 +13,5 @@ crate-type = ["staticlib"]
 [dependencies]
 td-rs-top = { path = "../../../td-rs-top", features = ["cuda"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
-cudarc = { version = "0.16.4", features = ["runtime", "nvrtc", "driver", "cuda-11080", "dynamic-linking"], default-features = false }
+cudarc = { version = "0.16.4", features = ["runtime", "nvrtc", "driver", "cuda-12080", "dynamic-linking"], default-features = false }
 anyhow = "1.0"

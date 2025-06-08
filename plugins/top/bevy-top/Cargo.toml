@@ -15,6 +15,6 @@ td-rs-top = { path = "../../../td-rs-top", features = ["cuda"] }
 td-rs-derive = { path = "../../../td-rs-derive" }
 bevy = "0.16"
 ash = "0.38"
-cudarc = { version = "0.16.4", features = ["runtime", "nvrtc", "driver", "cuda-11080", "dynamic-linking"], default-features = false }
+cudarc = { version = "0.16.4", features = ["runtime", "nvrtc", "driver", "cuda-12080", "dynamic-linking"], default-features = false }
 anyhow = "1.0"
 wgpu = "24.0"

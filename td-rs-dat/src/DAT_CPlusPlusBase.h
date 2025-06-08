@@ -111,7 +111,7 @@ public:
   // If the type of out data is Table, set the number of rows and columns.
   virtual void setTableSize(const int32_t rows, const int32_t cols) = 0;
 
-  virtual void getTableSize(int32_t *rows, int32_t *cols) const = 0;
+  virtual void getTableSize(int32_t *rows, int32_t *cols) = 0;
 
   // If the type of out data is set to Text,
   // Set the whole text by calling this function. str must be UTF-8 encoded.

@@ -19,7 +19,7 @@ tracing-base = { package = "tracing", version = "0.1", optional = true}
 tracing-subscriber = { version = "0.3", optional = true }
 tokio-core = { package = "tokio", version = "1", optional = true }
 anyhow = "1.0"
-cudarc = { version = "0.16.4", optional = true, features = ["runtime", "nvrtc", "driver", "cuda-11080", "dynamic-linking"], default-features = false }
+cudarc = { version = "0.16.4", optional = true, features = ["runtime", "nvrtc", "driver", "cuda-12080", "dynamic-linking"], default-features = false }
 
 [build-dependencies]
 td-rs-autocxx-build = { path = "../td-rs-autocxx-build" }

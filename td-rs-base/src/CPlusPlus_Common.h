@@ -51,7 +51,6 @@ typedef struct CUstream_st *cudaStream_t;
 class TOP_CPlusPlus;
 
 namespace TD {
-
 class CHOP_PluginInfo;
 class CHOP_CPlusPlusBase;
 class DAT_PluginInfo;
@@ -105,7 +104,6 @@ enum class OP_PixelFormat : int32_t {
   RGB10A2Fixed = 700,
   // 11-bit float, positive values only. B is actually 10 bits
   RGB11Float,
-
 };
 
 typedef OP_PixelFormat OP_CPUMemPixelType;
@@ -125,6 +123,7 @@ class OP_TOPInputDownloadOptionsOpenGL;
 class PY_GetInfo {
 public:
   PY_GetInfo() { memset(this, 0, sizeof(PY_GetInfo)); }
+
   // If this is set to true then the node will cook if it needs to before your
   // class instance is returned. This should be set to true if the python code
   // requires the node's state to be up-to-date before doing it's work.
@@ -177,14 +176,19 @@ public:
 protected:
   // Increase the reference count to this instance.
   virtual void acquire() = 0;
+
   // Decrease the reference count to this instance. When the reference count
   // reaches 0 the class will be deleted.
   virtual void release() = 0;
 
   virtual void reserved0() = 0;
+
   virtual void reserved1() = 0;
+
   virtual void reserved2() = 0;
+
   virtual void reserved3() = 0;
+
   virtual void reserved4() = 0;
 
   template <class T> friend class OP_SmartRef;
@@ -339,7 +343,11 @@ public:
   // OP, not as a C++ OP.
   const char *pythonCallbacksDAT = nullptr;
 
-  int32_t reserved[88];
+  // If you want to specify a website URL to direct to when the Operator Help
+  // button is pressed set this to that URL
+  OP_String *opHelpURL;
+
+  int32_t reserved[85];
 };
 
 // This class is used to provide direct access to the instance of a Custom OP
@@ -373,6 +381,7 @@ public:
 class OP_Context {
 public:
   OP_Context() { memset(reserved, 0, sizeof(reserved)); }
+
   virtual ~OP_Context() {}
 
   // By convention all callbacks in TouchDesigner have the first argument as
@@ -401,6 +410,7 @@ public:
   // these functions. This is needed to ensure the order of operations between
   // Vulkan and CUDA is properly managed.
   virtual bool beginCUDAOperations(void *reserved1) = 0;
+
   virtual void endCUDAOperations(void *reserved1) = 0;
 
   int32_t reserved[50];
@@ -408,19 +418,33 @@ public:
 protected:
   // Reserved for later use
   virtual void *reservedFunc0() = 0;
+
   virtual void *reservedFunc1() = 0;
+
   virtual void *reservedFunc2() = 0;
+
   virtual void *reservedFunc3() = 0;
+
   virtual void *reservedFunc4() = 0;
+
   virtual void *reservedFunc5() = 0;
+
   virtual void *reservedFunc6() = 0;
+
   virtual void *reservedFunc7() = 0;
+
   virtual void *reservedFunc8() = 0;
+
   virtual void *reservedFunc9() = 0;
+
   virtual void *reservedFunc10() = 0;
+
   virtual void *reservedFunc11() = 0;
+
   virtual void *reservedFunc12() = 0;
+
   virtual void *reservedFunc13() = 0;
+
   virtual void *reservedFunc14() = 0;
 };
 
@@ -490,7 +514,8 @@ public:
   // The number of times this node has cooked
   int64_t totalCooks;
 
-  // See documentation for OPCustomOPInstance
+  // See comments that preceed the declaration of the OP_CustomOPInstance class
+  // for more information
   const OP_CustomOPInstance<DAT_CPlusPlusBase> *customOP;
 
   int32_t reserved[16];
@@ -611,16 +636,21 @@ public:
   // The number of times this node has cooked
   int64_t totalCooks;
 
-  // See documentation for OPCustomOPInstance
+  // See comments that preceed the declaration of the OP_CustomOPInstance class
+  // for more information
   const OP_CustomOPInstance<TOP_CPlusPlusBase> *customOP;
 
   int32_t reserved[12];
 
 protected:
   virtual void *reserved0() = 0;
+
   virtual void *reserved1() = 0;
+
   virtual void *reserved2() = 0;
+
   virtual void *reserved3() = 0;
+
   virtual void *reserved4() = 0;
 };
 
@@ -666,7 +696,8 @@ public:
   // The number of times this node has cooked
   int64_t totalCooks;
 
-  // See documentation for OPCustomOPInstance
+  // See comments that preceed the declaration of the OP_CustomOPInstance class
+  // for more information
   const OP_CustomOPInstance<CHOP_CPlusPlusBase> *customOP;
 
   int32_t reserved[16];
@@ -1241,7 +1272,8 @@ public:
   // The number of times this node has cooked
   int64_t totalCooks;
 
-  // See documentation for OPCustomOPInstance
+  // See comments that preceed the declaration of the OP_CustomOPInstance class
+  // for more information
   const OP_CustomOPInstance<SOP_CPlusPlusBase> *customOP;
 
   int32_t reserved[95];
@@ -1302,6 +1334,7 @@ private:
 public:
   // Only valid for C++ CHOP operators
   virtual const OP_CHOPInput *getInputCHOP(int32_t index) const = 0;
+
   // getInputSOP() declared later on in the class
   // getInputDAT() declared later on in the class
 
@@ -1317,7 +1350,9 @@ private:
 
 public:
   virtual const OP_CHOPInput *getParCHOP(const char *name) const = 0;
+
   virtual const OP_ObjectInput *getParObject(const char *name) const = 0;
+
   // getParSOP() declared later on in the class
 
   // these work on any type of parameter and can be interchanged
@@ -1330,8 +1365,10 @@ public:
   // for multiple values: returns True on success/false otherwise
   virtual bool getParDouble2(const char *name, double &v0,
                              double &v1) const = 0;
+
   virtual bool getParDouble3(const char *name, double &v0, double &v1,
                              double &v2) const = 0;
+
   virtual bool getParDouble4(const char *name, double &v0, double &v1,
                              double &v2, double &v3) const = 0;
 
@@ -1340,8 +1377,10 @@ public:
 
   // for multiple values: returns True on success/false otherwise
   virtual bool getParInt2(const char *name, int32_t &v0, int32_t &v1) const = 0;
+
   virtual bool getParInt3(const char *name, int32_t &v0, int32_t &v1,
                           int32_t &v2) const = 0;
+
   virtual bool getParInt4(const char *name, int32_t &v0, int32_t &v1,
                           int32_t &v2, int32_t &v3) const = 0;
 
@@ -1377,6 +1416,7 @@ private:
 
 public:
   virtual const OP_CHOPInput *getCHOP(const char *path) const = 0;
+
   virtual const OP_ObjectInput *getObject(const char *path) const = 0;
 
 private:
@@ -1388,8 +1428,10 @@ private:
 
 public:
   virtual const OP_SOPInput *getParSOP(const char *name) const = 0;
+
   // only valid for C++ SOP operators
   virtual const OP_SOPInput *getInputSOP(int32_t index) const = 0;
+
   virtual const OP_SOPInput *getSOP(const char *path) const = 0;
 
   // only valid for C++ DAT operators
@@ -1408,7 +1450,9 @@ public:
   virtual const OP_TimeInfo *getTimeInfo() const = 0;
 
   virtual const OP_TOPInput *getTOP(const char *path) const = 0;
+
   virtual const OP_TOPInput *getInputTOP(int32_t index) const = 0;
+
   virtual const OP_TOPInput *getParTOP(const char *name) const = 0;
 };
 
@@ -1532,34 +1576,46 @@ public:
 };
 
 class OP_ParameterManager {
-
 public:
   // Returns OP_ParAppendResult::Success on success
   virtual OP_ParAppendResult appendFloat(const OP_NumericParameter &np,
                                          int32_t size = 1) = 0;
+
   virtual OP_ParAppendResult appendInt(const OP_NumericParameter &np,
                                        int32_t size = 1) = 0;
 
   virtual OP_ParAppendResult appendXY(const OP_NumericParameter &np) = 0;
+
   virtual OP_ParAppendResult appendXYZ(const OP_NumericParameter &np) = 0;
 
+  // appendXYZW() added further down
+
   virtual OP_ParAppendResult appendUV(const OP_NumericParameter &np) = 0;
+
   virtual OP_ParAppendResult appendUVW(const OP_NumericParameter &np) = 0;
 
   virtual OP_ParAppendResult appendRGB(const OP_NumericParameter &np) = 0;
+
   virtual OP_ParAppendResult appendRGBA(const OP_NumericParameter &np) = 0;
 
   virtual OP_ParAppendResult appendToggle(const OP_NumericParameter &np) = 0;
+
   virtual OP_ParAppendResult appendPulse(const OP_NumericParameter &np) = 0;
 
   virtual OP_ParAppendResult appendString(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendFile(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendFolder(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendDAT(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendCHOP(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendTOP(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendObject(const OP_StringParameter &sp) = 0;
+
   // appendSOP() located further down in the class
 
   // Any char* values passed are copied immediately by the append parameter
@@ -1582,12 +1638,17 @@ public:
   virtual OP_ParAppendResult appendPython(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendOP(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendCOMP(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendMAT(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult appendPanelCOMP(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendHeader(const OP_StringParameter &np) = 0;
+
   virtual OP_ParAppendResult appendMomentary(const OP_NumericParameter &np) = 0;
+
   virtual OP_ParAppendResult appendWH(const OP_NumericParameter &np) = 0;
 
   // The buildDynamicMenu() function will be called in your class instance when
@@ -1595,8 +1656,11 @@ public:
   // parameters or external state (such as available devices).
   virtual OP_ParAppendResult
   appendDynamicStringMenu(const OP_StringParameter &sp) = 0;
+
   virtual OP_ParAppendResult
   appendDynamicMenu(const OP_NumericParameter &np) = 0;
+
+  virtual OP_ParAppendResult appendXYZW(const OP_NumericParameter &np) = 0;
 };
 
 #pragma pack(pop)
@@ -1785,21 +1849,32 @@ static_assert(offsetof(PY_Struct, context) ==
 // These are the definitions for the C-functions that are used to
 // load the library and create instances of the object you define
 typedef void(__cdecl *FILLCHOPPLUGININFO)(TD::CHOP_PluginInfo *info);
+
 typedef TD::CHOP_CPlusPlusBase *(__cdecl *CREATECHOPINSTANCE)(
     const TD::OP_NodeInfo *);
+
 typedef void(__cdecl *DESTROYCHOPINSTANCE)(TD::CHOP_CPlusPlusBase *);
+
 typedef void(__cdecl *FILLDATPLUGININFO)(TD::DAT_PluginInfo *info);
+
 typedef TD::DAT_CPlusPlusBase *(__cdecl *CREATEDATINSTANCE)(
     const TD::OP_NodeInfo *);
+
 typedef void(__cdecl *DESTROYDATINSTANCE)(TD::DAT_CPlusPlusBase *);
+
 typedef void(__cdecl *FILLTOPPLUGININFO)(TD::TOP_PluginInfo *info);
+
 typedef TD::TOP_CPlusPlusBase *(__cdecl *CREATETOPINSTANCE)(
     const TD::OP_NodeInfo *, TD::TOP_Context *);
+
 typedef void(__cdecl *DESTROYTOPINSTANCE)(TD::TOP_CPlusPlusBase *,
                                           TD::TOP_Context *);
+
 typedef void(__cdecl *FILLSOPPLUGININFO)(TD::SOP_PluginInfo *info);
+
 typedef TD::SOP_CPlusPlusBase *(__cdecl *CREATESOPINSTANCE)(
     const TD::OP_NodeInfo *);
+
 typedef void(__cdecl *DESTROYSOPINSTANCE)(TD::SOP_CPlusPlusBase *);
 
 #endif

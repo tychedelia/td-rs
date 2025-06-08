@@ -4,12 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-libc = "*"
-cxx = "1"
-monome-rs = "1.1"
 
 [build-dependencies]
-cxx-build = "1"
 
 [workspace]
 members = [

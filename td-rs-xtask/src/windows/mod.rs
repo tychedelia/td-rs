@@ -11,7 +11,7 @@ use std::process::{Command, Stdio};
 pub(crate) fn install_plugin(
     config: &Config,
     plugin: &str,
-    plugin_type: PluginType,
+    _plugin_type: PluginType,
 ) -> anyhow::Result<()> {
     let plugin_target_path = plugin_target_path(plugin);
     let td_plugin_folder = &config.windows.plugin_folder;
@@ -63,10 +63,10 @@ pub(crate) fn build_plugin(
     let (cuda_import_props, cuda_import_targets, cuda_include_dirs, cuda_lib_dirs, cuda_libs) =
         if is_cuda_enabled {
             (
-                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 11.8.props\" />",
-                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 11.8.targets\" />",
+                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 12.8.props\" />",
+                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 12.8.targets\" />",
                 "$(CudaToolkitIncludeDir)",
-                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v11.8\\lib\\x64",
+                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.8\\lib\\x64",
                 "cuda.lib;cudart.lib;nvrtc.lib",
             )
         } else {
@@ -107,7 +107,7 @@ pub(crate) fn build_plugin(
     Ok(())
 }
 
-fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
+fn move_plugin(plugin: &str, _plugin_type: &PluginType) -> anyhow::Result<()> {
     let dll_name = "RustOp";
 
     let plugin_build_path = format!("./Release/{dll_name}.dll");
