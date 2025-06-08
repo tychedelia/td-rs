@@ -11,7 +11,7 @@ use std::process::{Command, Stdio};
 pub(crate) fn install_plugin(
     config: &Config,
     plugin: &str,
-    plugin_type: PluginType,
+    _plugin_type: PluginType,
 ) -> anyhow::Result<()> {
     let plugin_target_path = plugin_target_path(plugin);
     let td_plugin_folder = &config.windows.plugin_folder;
@@ -57,6 +57,22 @@ pub(crate) fn build_plugin(
     let short_title = plugin_type.to_short_name().to_title_case();
     let short_upper = plugin_type.to_short_name().to_uppercase();
     let op_path = plugin_type.to_plugin_name();
+    let is_cuda_enabled = crate::metadata::is_cuda_enabled(plugin, &plugin_type);
+
+    // Configure CUDA settings
+    let (cuda_import_props, cuda_import_targets, cuda_include_dirs, cuda_lib_dirs, cuda_libs) =
+        if is_cuda_enabled {
+            (
+                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 12.8.props\" />",
+                "<Import Project=\"$(VCTargetsPath)\\BuildCustomizations\\CUDA 12.8.targets\" />",
+                "$(CudaToolkitIncludeDir)",
+                "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.8\\lib\\x64",
+                "cuda.lib;cudart.lib;nvrtc.lib",
+            )
+        } else {
+            ("", "", "", "", "")
+        };
+
     let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))?
         .replace(
             "{{ OP_LIB_NAME }}",
@@ -73,7 +89,12 @@ pub(crate) fn build_plugin(
         .replace(
             "{{ PLUGIN_CPP_PATH }}",
             &format!("{}/src/Rust{}Plugin.cpp", op_path, short_title),
-        );
+        )
+        .replace("{{ CUDA_IMPORT_PROPS }}", cuda_import_props)
+        .replace("{{ CUDA_IMPORT_TARGETS }}", cuda_import_targets)
+        .replace("{{ CUDA_INCLUDE_DIRS }}", cuda_include_dirs)
+        .replace("{{ CUDA_LIB_DIRS }}", cuda_lib_dirs)
+        .replace("{{ CUDA_LIBS }}", cuda_libs);
     std::fs::write(format!("./{solution_name}.vcxproj"), vcxproj)?;
 
     let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
@@ -86,7 +107,7 @@ pub(crate) fn build_plugin(
     Ok(())
 }
 
-fn move_plugin(plugin: &str, plugin_type: &PluginType) -> anyhow::Result<()> {
+fn move_plugin(plugin: &str, _plugin_type: &PluginType) -> anyhow::Result<()> {
     let dll_name = "RustOp";
 
     let plugin_build_path = format!("./Release/{dll_name}.dll");

@@ -1,11 +1,19 @@
 pub mod cxx;
 
+#[cfg(feature = "cuda")]
+pub mod cuda;
+
 pub use ::cxx::UniquePtr;
 
+pub use autocxx::prelude::*;
 use std::pin::Pin;
 use td_rs_base::chop::ChopInput;
 pub use td_rs_base::top::*;
 pub use td_rs_base::*;
+
+#[cfg(feature = "cuda")]
+pub use cuda::*;
+use td_rs_base::cxx::{OP_PixelFormat, OP_TexDim};
 
 pub mod prelude;
 
@@ -18,6 +26,7 @@ impl<'cook> TopOutput<'cook> {
         Self { output }
     }
 
+    /// Upload a CPU buffer for CPU execution mode
     pub fn upload_buffer(&mut self, buffer: &mut TopBuffer, info: &UploadInfo) {
         let info = crate::cxx::TOP_UploadInfo {
             bufferOffset: info.buffer_offset as u64,
@@ -27,13 +36,7 @@ impl<'cook> TopOutput<'cook> {
                 depth: info.texture_desc.depth as u32,
                 height: info.texture_desc.height as u32,
                 width: info.texture_desc.width as u32,
-                texDim: match info.texture_desc.tex_dim {
-                    TexDim::EInvalid => cxx::OP_TexDim::eInvalid,
-                    TexDim::E2D => cxx::OP_TexDim::e2D,
-                    TexDim::E2DArray => cxx::OP_TexDim::e2DArray,
-                    TexDim::E3D => cxx::OP_TexDim::e3D,
-                    TexDim::ECube => cxx::OP_TexDim::eCube,
-                },
+                texDim: OP_TexDim::from(&info.texture_desc.tex_dim),
                 pixelFormat: (&info.texture_desc.pixel_format).into(),
                 reserved: Default::default(),
             },
@@ -52,6 +55,37 @@ impl<'cook> TopOutput<'cook> {
                 .as_mut()
                 .uploadBuffer(buf.into_raw(), &info, std::ptr::null_mut())
         };
+    }
+
+    /// Create a CUDA array for CUDA execution mode
+    #[cfg(feature = "cuda")]
+    pub fn create_cuda_array(
+        &mut self,
+        info: &crate::cuda::CudaOutputInfo,
+    ) -> Result<crate::cuda::CudaArrayInfo, anyhow::Error> {
+        use crate::cxx;
+
+        // Use C++ helper to construct TOP_CUDAOutputInfo from primitive parameters
+        moveit! { let mut cuda_info = unsafe { cxx::createCUDAOutputInfo(
+            info.stream as *mut cxx::c_void,
+            info.texture_desc.width as u32,
+            info.texture_desc.height as u32,
+            info.texture_desc.depth as u32,
+            OP_TexDim::from(&info.texture_desc.tex_dim) as i32,
+            OP_PixelFormat::from(&info.texture_desc.pixel_format) as i32,
+            info.texture_desc.aspect_x,
+            info.texture_desc.aspect_y,
+            info.color_buffer_index
+        ) } };
+
+        let array_info = unsafe {
+            self.output
+                .as_mut()
+                .createCUDAArray(cuda_info.as_ref().get_ref(), std::ptr::null_mut())
+        };
+
+        // Convert to our safe wrapper
+        td_rs_base::top::CudaArrayInfo::new(array_info)
     }
 }
 
@@ -94,6 +128,18 @@ impl TopContext {
                 .createOutputBuffer(size as u64, flags, std::ptr::null_mut())
         };
         TopBuffer::new(buf)
+    }
+
+    /// Begin CUDA operations - makes CUDA array pointers valid
+    #[cfg(feature = "cuda")]
+    pub fn begin_cuda_operations(&mut self) -> bool {
+        unsafe { cxx::beginCUDAOperations(self.context.as_mut().get_unchecked_mut()) }
+    }
+
+    /// End CUDA operations - invalidates CUDA array pointers
+    #[cfg(feature = "cuda")]
+    pub fn end_cuda_operations(&mut self) {
+        unsafe { cxx::endCUDAOperations(self.context.as_mut().get_unchecked_mut()) }
     }
 }
 
@@ -186,7 +232,7 @@ macro_rules! top_plugin {
             unsafe {
                 td_rs_top::op_info::<$plugin_ty>(op_info);
                 match <$plugin_ty>::EXECUTE_MODE {
-                    td_rs_top::ExecuteMode::Cuda => panic!("Cuda is not supported yet"),
+                    td_rs_top::ExecuteMode::Cuda => cxx::TOP_ExecuteMode::CUDA,
                     td_rs_top::ExecuteMode::Cpu => cxx::TOP_ExecuteMode::CPUMem,
                 }
             }

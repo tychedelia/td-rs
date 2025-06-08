@@ -28,6 +28,8 @@ pub static RUNTIME: std::sync::LazyLock<tokio_core::runtime::Runtime> =
     });
 
 pub mod chop;
+#[cfg(feature = "cuda")]
+pub mod cuda;
 pub mod cxx;
 pub mod dat;
 pub mod param;

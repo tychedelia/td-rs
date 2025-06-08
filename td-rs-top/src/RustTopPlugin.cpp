@@ -55,3 +55,52 @@ void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer) {
     }
 }
 
+// CUDA helper functions (TOP-specific only)
+
+TD::OP_TextureDesc getCUDAOutputInfoTextureDesc(const TD::TOP_CUDAOutputInfo &info) {
+    return info.textureDesc;
+}
+
+void* getCUDAOutputInfoStream(const TD::TOP_CUDAOutputInfo &info) {
+    return info.stream;
+}
+
+uint32_t getCUDAOutputInfoColorBufferIndex(const TD::TOP_CUDAOutputInfo &info) {
+    return info.colorBufferIndex;
+}
+
+// Helper to create TOP_CUDAOutputInfo from primitive parameters
+TD::TOP_CUDAOutputInfo createCUDAOutputInfo(void* stream, 
+                                           uint32_t width, uint32_t height, uint32_t depth,
+                                           int32_t texDim, int32_t pixelFormat,
+                                           float aspectX, float aspectY,
+                                           uint32_t colorBufferIndex) {
+    TD::TOP_CUDAOutputInfo info;
+    info.stream = static_cast<cudaStream_t>(stream);
+    
+    info.textureDesc.width = width;
+    info.textureDesc.height = height;
+    info.textureDesc.depth = depth;
+    info.textureDesc.texDim = static_cast<TD::OP_TexDim>(texDim);
+    info.textureDesc.pixelFormat = static_cast<TD::OP_PixelFormat>(pixelFormat);
+    info.textureDesc.aspectX = aspectX;
+    info.textureDesc.aspectY = aspectY;
+    
+    info.colorBufferIndex = colorBufferIndex;
+    
+    return info;
+}
+
+
+// Helper for CUDA context operations
+bool beginCUDAOperations(TD::TOP_Context* context) {
+    if (!context) return false;
+    return context->beginCUDAOperations(nullptr);
+}
+
+void endCUDAOperations(TD::TOP_Context* context) {
+    if (context) {
+        context->endCUDAOperations(nullptr);
+    }
+}
+

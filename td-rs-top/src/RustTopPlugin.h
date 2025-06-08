@@ -12,6 +12,21 @@ TD::TOP_BufferFlags getBufferFlags(const TD::OP_SmartRef<TD::TOP_Buffer> &buffer
 
 void releaseBuffer(TD::OP_SmartRef<TD::TOP_Buffer> &buffer);
 
+// CUDA helper functions (TOP-specific)
+TD::OP_TextureDesc getCUDAOutputInfoTextureDesc(const TD::TOP_CUDAOutputInfo &info);
+void* getCUDAOutputInfoStream(const TD::TOP_CUDAOutputInfo &info);
+uint32_t getCUDAOutputInfoColorBufferIndex(const TD::TOP_CUDAOutputInfo &info);
+TD::TOP_CUDAOutputInfo createCUDAOutputInfo(void* stream,
+                                           uint32_t width, uint32_t height, uint32_t depth,
+                                           int32_t texDim, int32_t pixelFormat,
+                                           float aspectX, float aspectY,
+                                           uint32_t colorBufferIndex);
+
+
+// Helper for CUDA context operations
+bool beginCUDAOperations(TD::TOP_Context* context);
+void endCUDAOperations(TD::TOP_Context* context);
+
 using namespace TD;
 
 class TopPlugin : public TOP_CPlusPlusBase {
