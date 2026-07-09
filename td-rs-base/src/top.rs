@@ -76,7 +76,8 @@ pub enum PixelFormat {
     MonoA16Float,
     MonoA32Float,
 
-    // sRGB. use SBGRA if possible since that's what most GPUs use
+    // sRGB. Removed upstream in favor of the OP_ColorSpace workflow; these
+    // map to the UnusedReserved1/2 slots (same numeric values).
     SBGRA8Fixed,
     SRGBA8Fixed,
 
@@ -110,8 +111,8 @@ impl From<&OP_PixelFormat> for PixelFormat {
             OP_PixelFormat::MonoA16Fixed => PixelFormat::MonoA16Fixed,
             OP_PixelFormat::MonoA16Float => PixelFormat::MonoA16Float,
             OP_PixelFormat::MonoA32Float => PixelFormat::MonoA32Float,
-            OP_PixelFormat::SBGRA8Fixed => PixelFormat::SBGRA8Fixed,
-            OP_PixelFormat::SRGBA8Fixed => PixelFormat::SRGBA8Fixed,
+            OP_PixelFormat::UnusedReserved1 => PixelFormat::SBGRA8Fixed,
+            OP_PixelFormat::UnusedReserved2 => PixelFormat::SRGBA8Fixed,
             OP_PixelFormat::RGB10A2Fixed => PixelFormat::RGB10A2Fixed,
             OP_PixelFormat::RGB11Float => PixelFormat::RGB11Float,
         }
@@ -143,8 +144,8 @@ impl From<&PixelFormat> for OP_PixelFormat {
             PixelFormat::MonoA16Fixed => OP_PixelFormat::MonoA16Fixed,
             PixelFormat::MonoA16Float => OP_PixelFormat::MonoA16Float,
             PixelFormat::MonoA32Float => OP_PixelFormat::MonoA32Float,
-            PixelFormat::SBGRA8Fixed => OP_PixelFormat::SBGRA8Fixed,
-            PixelFormat::SRGBA8Fixed => OP_PixelFormat::SRGBA8Fixed,
+            PixelFormat::SBGRA8Fixed => OP_PixelFormat::UnusedReserved1,
+            PixelFormat::SRGBA8Fixed => OP_PixelFormat::UnusedReserved2,
             PixelFormat::RGB10A2Fixed => OP_PixelFormat::RGB10A2Fixed,
             PixelFormat::RGB11Float => OP_PixelFormat::RGB11Float,
         }
@@ -197,8 +198,11 @@ impl TopInput {
 
     pub fn download_texture(&self, opts: DownloadOptions) -> TopDownloadResult {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
-            verticalFlip: false,
+            verticalFlip: opts.vertical_flip,
             pixelFormat: (&opts.pixel_format).into(),
+            colorSpace: crate::cxx::OP_ColorSpace::DefaultForWorkingColorSpace,
+            referenceWhite: crate::cxx::OP_ReferenceWhite::DefaultForColorSpace,
+            reserved: [0; 30],
         };
         let download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };
         TopDownloadResult::new(download)

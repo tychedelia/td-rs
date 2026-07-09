@@ -37,20 +37,10 @@ data/function
 #ifndef __TOP_CPlusPlusBase__
 #define __TOP_CPlusPlusBase__
 
-#include "CPlusPlus_Common.h"
 #include "assert.h"
+#include "CPlusPlus_Common.h"
 
-#ifndef VK_HEADER_VERSION
-typedef struct objectVkDevice_T *VkDevice;
-#endif
-
-#ifndef _WIN32
-#ifdef __OBJC__
-@class NSOpenGLContext;
-#else
-class NSOpenGLContext;
-#endif
-#endif
+class TOP_CPlusPlus;
 
 namespace TD {
 class TOP_CPlusPlusBase;
@@ -95,8 +85,10 @@ enum class TOP_FirstPixel : int32_t {
 // from the samples folder in a newer TouchDesigner installation.
 // You may need to upgrade your plugin code in that case, to match
 // the new API requirements
-const int TOPCPlusPlusAPIVersion = 11;
+const int TOPCPlusPlusAPIVersion = 12 | (OP_CommonAPIVersion << 16);
 
+// This is a hack: reverted to the all-public POD layout (byte-identical)
+// since upstream's private members break autocxx
 class TOP_PluginInfo {
 public:
   // Must be set to TOPCPlusPlusAPIVersion in FillTOPPluginInfo
@@ -106,55 +98,12 @@ public:
   // See the documention for TOP_ExecuteMode for more information
   TOP_ExecuteMode executeMode = TOP_ExecuteMode::CPUMem;
 
-  int32_t reserved[100];
+  int32_t reserved[100] = {};
 
   // Information used to describe this plugin as a custom OP.
   OP_CustomOPInfo customOPInfo;
 
-  int32_t reserved2[20];
-};
-
-enum class DepthFormat : int32_t {
-  None,
-  Fixed, // Will be 16-bit or 24-bit fix, depending on the GPU.
-  Float, // Will be 32-bit float generally.
-};
-
-// TouchDesigner will select the best pixel format based on the options you give
-// Not all possible combinations of channels/bit depth are possible,
-// so you get the best choice supported by your card
-
-class TOP_OutputFormat {
-public:
-  int32_t width = 0;
-  int32_t height = 0;
-
-  // The aspect ratio of the TOP's output. If left as 0s, then it'll use the
-  // width/height as the aspect ratio.
-  float aspectX = 0.0f;
-  float aspectY = 0.0f;
-
-  // The pixel format of the data and texture
-  OP_PixelFormat pixelFormat;
-
-  // The anti-alias level.
-  // 1 means no anti-alaising
-  // 2 means '2x', etc., up to 32 right now
-  // Only used when executeMode == TOP_ExecuteMode::OpenGL_FBO
-  int32_t antiAlias = 1;
-
-  // If you want to use multiple render targets, you can set this
-  // greater than one
-  // Only used when executeMode == TOP_ExecuteMode::
-  int32_t numColorBuffers = 1;
-
-  DepthFormat depthFormat = DepthFormat::None;
-
-  // Set to true if the depth buffer should include stencil bits.
-  // Only used when executeMode == TOP_ExecuteMode::Vulkan
-  bool stencilBuffer = false;
-
-  int32_t reserved[20];
+  int32_t reserved2[20] = {};
 };
 
 class TOP_GeneralInfo {
@@ -184,7 +133,6 @@ public:
   // if using 'Input' or 'Half' options for example, it uses the first input
   // by default. You can use a different input by assigning a value
   // to inputSizeIndex.
-  // This member is ignored if getOutputFormat() returns true.
   // DEFAULT: 0
   int32_t inputSizeIndex;
 
@@ -235,7 +183,9 @@ public:
   // If you don't need a buffer anymore, but want it to be available for a
   // future create* call (avoiding an allocation) You can return it using this
   // function instead of calling release() on it. This allows it to be re-used
-  // for another option potentially, avoiding a re-allocation.
+  // for another option potentially, avoiding a re-allocation. Note: It is your
+  // responsibility to ensure there are nothing still holding onto this
+  // reference elsewhere, otherwise it may be used in multiples spots at once.
   virtual void returnBuffer(OP_SmartRef<TOP_Buffer> *buf) = 0;
 
   // Returns the CUDA device index the process is currently using. Returns -1 if
@@ -266,7 +216,6 @@ protected:
         When the TOP cooks the functions will be called in this order
 
         getGeneralInfo()
-        getOutputFormat()
 
         execute()
         getNumInfoCHOPChans()
@@ -303,7 +252,12 @@ public:
   // resolutions, pixel formats and texDims from each other.
   uint32_t colorBufferIndex = 0;
 
-  uint32_t reserved[25];
+  OP_ColorSpace colorSpace = OP_ColorSpace::DefaultForWorkingColorSpace;
+
+  // Renamed locally: upstream typos this as `referenceWnite`
+  OP_ReferenceWhite referenceWhite = OP_ReferenceWhite::DefaultForColorSpace;
+
+  uint32_t reserved[23];
 };
 
 class TOP_CUDAOutputInfo {
@@ -335,12 +289,20 @@ public:
   virtual void uploadBuffer(OP_SmartRef<TOP_Buffer> *buf,
                             const TOP_UploadInfo &info, void *reserved) = 0;
 
-  // Only usable in TOP_ExecuteMode::CUDA
+  // Only usable in TOP_ExecuteMode::CUDA.
+  // Creates a cudaArray which is the write destination for the texture as
+  // defined by the passed TOP_CUDAOutputInfo. Fill in this memory with the
+  // texture data, and it will be used as the output for this TOP.
   virtual const OP_CUDAArrayInfo *
   createCUDAArray(const TOP_CUDAOutputInfo &info, void *reserved) = 0;
 
+  // Based on the Common page parameters of the node, this will give you the
+  // output width/height format that has been selected. Usually you should use
+  // this as the OP_TextureDesc for the content you create, but it can safely be
+  // ignored in cases where it makes sense.
+  virtual void getSuggestedOutputDesc(OP_TextureDesc *desc, void *reserved) = 0;
+
 private:
-  virtual void reserved0() = 0;
   virtual void reserved1() = 0;
   virtual void reserved2() = 0;
   virtual void reserved3() = 0;
@@ -447,7 +409,8 @@ public:
 
 #pragma pack(pop)
 
-static_assert(offsetof(TOP_PluginInfo, apiVersion) == 0, "Incorrect Alignment");
+static_assert(offsetof(TOP_PluginInfo, apiVersion) == 0,
+              "Incorrect Alignment");
 static_assert(offsetof(TOP_PluginInfo, executeMode) == 4,
               "Incorrect Alignment");
 static_assert(offsetof(TOP_PluginInfo, customOPInfo) == 408,
@@ -461,22 +424,6 @@ static_assert(offsetof(TOP_GeneralInfo, cookEveryFrameIfAsked) == 1,
 static_assert(offsetof(TOP_GeneralInfo, inputSizeIndex) == 4,
               "Incorrect Aligment");
 static_assert(sizeof(TOP_GeneralInfo) == 88, "Incorrect Size");
-
-static_assert(offsetof(TOP_OutputFormat, width) == 0, "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, height) == 4, "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, aspectX) == 8, "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, aspectY) == 12, "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, pixelFormat) == 16,
-              "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, antiAlias) == 20,
-              "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, numColorBuffers) == 24,
-              "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, depthFormat) == 28,
-              "Incorrect Aligment");
-static_assert(offsetof(TOP_OutputFormat, stencilBuffer) == 32,
-              "Incorrect Aligment");
-static_assert(sizeof(TOP_OutputFormat) == 116, "Incorrect Size");
 
 static_assert(offsetof(TOP_UploadInfo, bufferOffset) == 0,
               "Incorrect Alignment");

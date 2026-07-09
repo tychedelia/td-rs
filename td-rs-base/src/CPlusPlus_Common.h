@@ -49,8 +49,33 @@ struct CUstream_st;
 typedef struct CUstream_st *cudaStream_t;
 
 class TOP_CPlusPlus;
+class POP_CPlusPlus;
 
 namespace TD {
+
+const int OP_CommonAPIVersion = 1;
+
+inline int32_t extractFamilyAPIVersion(int32_t version) {
+  return version & 0xFFFF;
+}
+
+inline int32_t extractCommonAPIVersion(int32_t version) {
+  return (version >> 16) & 0xFFFF;
+}
+
+inline bool checkAPIVersionSupported(int32_t version, int32_t minVersion,
+                                     int32_t maxVersion) {
+  if (extractFamilyAPIVersion(version) < extractFamilyAPIVersion(minVersion) ||
+      extractFamilyAPIVersion(version) > extractFamilyAPIVersion(maxVersion)) {
+    return false;
+  }
+  if (extractCommonAPIVersion(version) < extractCommonAPIVersion(minVersion) ||
+      extractCommonAPIVersion(version) > extractCommonAPIVersion(maxVersion)) {
+    return false;
+  }
+  return true;
+}
+
 class CHOP_PluginInfo;
 class CHOP_CPlusPlusBase;
 class DAT_PluginInfo;
@@ -58,8 +83,11 @@ class DAT_CPlusPlusBase;
 class TOP_PluginInfo;
 class TOP_CPlusPlusBase;
 class TOP_Context;
+class POP_Context;
 class SOP_PluginInfo;
 class SOP_CPlusPlusBase;
+class POP_PluginInfo;
+class POP_CPlusPlusBase;
 
 #pragma pack(push, 8)
 
@@ -97,14 +125,143 @@ enum class OP_PixelFormat : int32_t {
   MonoA16Float,
   MonoA32Float,
 
-  // sRGB. use SBGRA if possible since that's what most GPUs use
-  SBGRA8Fixed = 600,
-  SRGBA8Fixed,
+  // Previously sRGB textures, but not supported this way anymore. Use the
+  // OP_ColorSpace workflow instead.
+  UnusedReserved1 = 600,
+  UnusedReserved2 = 601,
 
   RGB10A2Fixed = 700,
   // 11-bit float, positive values only. B is actually 10 bits
   RGB11Float,
 };
+
+inline bool isFloatFormat(OP_PixelFormat f) {
+  switch (f) {
+  default:
+  case OP_PixelFormat::Invalid:
+  case OP_PixelFormat::BGRA8Fixed:
+  case OP_PixelFormat::RGBA8Fixed:
+  case OP_PixelFormat::RGBA16Fixed:
+  case OP_PixelFormat::Mono8Fixed:
+  case OP_PixelFormat::Mono16Fixed:
+  case OP_PixelFormat::RG8Fixed:
+  case OP_PixelFormat::RG16Fixed:
+  case OP_PixelFormat::A8Fixed:
+  case OP_PixelFormat::A16Fixed:
+  case OP_PixelFormat::MonoA8Fixed:
+  case OP_PixelFormat::MonoA16Fixed:
+  case OP_PixelFormat::RGB10A2Fixed:
+    return false;
+  case OP_PixelFormat::Mono16Float:
+  case OP_PixelFormat::Mono32Float:
+  case OP_PixelFormat::RG16Float:
+  case OP_PixelFormat::RG32Float:
+  case OP_PixelFormat::A16Float:
+  case OP_PixelFormat::A32Float:
+  case OP_PixelFormat::MonoA16Float:
+  case OP_PixelFormat::MonoA32Float:
+  case OP_PixelFormat::RGBA16Float:
+  case OP_PixelFormat::RGBA32Float:
+  case OP_PixelFormat::RGB11Float:
+    return true;
+  }
+}
+
+inline bool isBGRFormat(OP_PixelFormat f) {
+  switch (f) {
+  default:
+  case OP_PixelFormat::Invalid:
+  case OP_PixelFormat::RGBA8Fixed:
+  case OP_PixelFormat::RGBA16Fixed:
+  case OP_PixelFormat::Mono8Fixed:
+  case OP_PixelFormat::Mono16Fixed:
+  case OP_PixelFormat::RG8Fixed:
+  case OP_PixelFormat::RG16Fixed:
+  case OP_PixelFormat::A8Fixed:
+  case OP_PixelFormat::A16Fixed:
+  case OP_PixelFormat::MonoA8Fixed:
+  case OP_PixelFormat::MonoA16Fixed:
+  case OP_PixelFormat::RGB10A2Fixed:
+  case OP_PixelFormat::Mono16Float:
+  case OP_PixelFormat::Mono32Float:
+  case OP_PixelFormat::RG16Float:
+  case OP_PixelFormat::RG32Float:
+  case OP_PixelFormat::A16Float:
+  case OP_PixelFormat::A32Float:
+  case OP_PixelFormat::MonoA16Float:
+  case OP_PixelFormat::MonoA32Float:
+  case OP_PixelFormat::RGBA16Float:
+  case OP_PixelFormat::RGBA32Float:
+  case OP_PixelFormat::RGB11Float:
+    return false;
+  case OP_PixelFormat::BGRA8Fixed:
+    return true;
+  }
+}
+
+inline bool isMonoAlphaFormat(OP_PixelFormat f) {
+  switch (f) {
+  default:
+  case OP_PixelFormat::Invalid:
+  case OP_PixelFormat::RGBA8Fixed:
+  case OP_PixelFormat::RGBA16Fixed:
+  case OP_PixelFormat::Mono8Fixed:
+  case OP_PixelFormat::Mono16Fixed:
+  case OP_PixelFormat::RG8Fixed:
+  case OP_PixelFormat::RG16Fixed:
+  case OP_PixelFormat::A8Fixed:
+  case OP_PixelFormat::A16Fixed:
+  case OP_PixelFormat::RGB10A2Fixed:
+  case OP_PixelFormat::Mono16Float:
+  case OP_PixelFormat::Mono32Float:
+  case OP_PixelFormat::RG16Float:
+  case OP_PixelFormat::RG32Float:
+  case OP_PixelFormat::A16Float:
+  case OP_PixelFormat::A32Float:
+  case OP_PixelFormat::RGBA16Float:
+  case OP_PixelFormat::RGBA32Float:
+  case OP_PixelFormat::RGB11Float:
+  case OP_PixelFormat::BGRA8Fixed:
+    return false;
+  case OP_PixelFormat::MonoA8Fixed:
+  case OP_PixelFormat::MonoA16Fixed:
+  case OP_PixelFormat::MonoA16Float:
+  case OP_PixelFormat::MonoA32Float:
+    return true;
+  }
+}
+
+inline bool isAlphaFormat(OP_PixelFormat f) {
+  switch (f) {
+  default:
+  case OP_PixelFormat::Invalid:
+  case OP_PixelFormat::RGBA8Fixed:
+  case OP_PixelFormat::RGBA16Fixed:
+  case OP_PixelFormat::Mono8Fixed:
+  case OP_PixelFormat::Mono16Fixed:
+  case OP_PixelFormat::RG8Fixed:
+  case OP_PixelFormat::RG16Fixed:
+  case OP_PixelFormat::RGB10A2Fixed:
+  case OP_PixelFormat::Mono16Float:
+  case OP_PixelFormat::Mono32Float:
+  case OP_PixelFormat::RG16Float:
+  case OP_PixelFormat::RG32Float:
+  case OP_PixelFormat::RGBA16Float:
+  case OP_PixelFormat::RGBA32Float:
+  case OP_PixelFormat::RGB11Float:
+  case OP_PixelFormat::BGRA8Fixed:
+  case OP_PixelFormat::MonoA8Fixed:
+  case OP_PixelFormat::MonoA16Fixed:
+  case OP_PixelFormat::MonoA16Float:
+  case OP_PixelFormat::MonoA32Float:
+    return false;
+  case OP_PixelFormat::A8Fixed:
+  case OP_PixelFormat::A16Fixed:
+  case OP_PixelFormat::A16Float:
+  case OP_PixelFormat::A32Float:
+    return true;
+  }
+}
 
 typedef OP_PixelFormat OP_CPUMemPixelType;
 
@@ -116,6 +273,100 @@ enum class OP_TexDim : int32_t {
   eCube,
 };
 
+enum class OP_WorkingColorSpace : int32_t {
+  // There is no working color space, colors are passed around as-is without any
+  // conversion.
+  Passthrough,
+
+  // All colors provided and held in textures will be in ACEScg gamut (ACES AP1)
+  // with linear transfer function.
+  ACEScg,
+
+  // For the below 3 color spaces, RGBA/BGRA 8-bit textures will use a sRGB
+  // transfer to store the data, so accessing the data in shaders etc gives a
+  // linearlized version of it. Otherwise it will be linear. All colors provided
+  // will be in sRGB gamut with linear transfer function (sRGB for 8-bit
+  // textures). This is the same as Rec.709
+  SRGBLinear,
+  // All colors provided will be in Rec.2020 gamut with linear transfer function
+  // (sRGB for 8-bit textures)..
+  Rec2020Linear,
+  // All colors provided will be in DCI-P3 gamut with linear transfer function
+  // (sRGB for 8-bit textures)..
+  DCIP3Linear,
+
+  // All colors provided will be in ACES2065_1 with linear transfer function.
+  ACES2065_1
+};
+
+inline void getWorkingColorSpacePrimaries(OP_WorkingColorSpace wcs, float *rx,
+                                          float *ry, float *gx, float *gy,
+                                          float *bx, float *by, float *wx,
+                                          float *wy) {
+  switch (wcs) {
+  case OP_WorkingColorSpace::SRGBLinear:
+    *rx = 0.64f;
+    *ry = 0.33f;
+    *gx = 0.3f;
+    *gy = 0.6f;
+    *bx = 0.15f;
+    *by = 0.06f;
+    *wx = 0.3127f;
+    *wy = 0.3290f;
+    break;
+  case OP_WorkingColorSpace::Rec2020Linear:
+    *rx = 0.708f;
+    *ry = 0.292f;
+    *gx = 0.170f;
+    *gy = 0.797f;
+    *bx = 0.131f;
+    *by = 0.046f;
+    *wx = 0.3127f;
+    *wy = 0.3290f;
+    break;
+  case OP_WorkingColorSpace::ACES2065_1:
+    *rx = 0.7347f;
+    *ry = 0.2653f;
+    *gx = 0.0f;
+    *gy = 1.0f;
+    *bx = 0.0001f;
+    *by = -0.077f;
+    *wx = 0.32168f;
+    *wy = 0.33767f;
+    break;
+  case OP_WorkingColorSpace::ACEScg:
+    *rx = 0.713f;
+    *ry = 0.293f;
+    *gx = 0.165f;
+    *gy = 0.830f;
+    *bx = 0.128f;
+    *by = 0.044f;
+    *wx = 0.32168f;
+    *wy = 0.33767f;
+    break;
+  case OP_WorkingColorSpace::DCIP3Linear:
+    *rx = 0.680f;
+    *ry = 0.320f;
+    *gx = 0.265f;
+    *gy = 0.690f;
+    *bx = 0.150f;
+    *by = 0.060f;
+    *wx = 0.314f;
+    *wy = 0.351f;
+    break;
+  default:
+    *rx = 0.0f;
+    *ry = 0.0f;
+    *gx = 0.0f;
+    *gy = 0.0f;
+    *bx = 0.0f;
+    *by = 0.0f;
+    *wx = 0.0f;
+    *wy = 0.0f;
+    break;
+  }
+}
+
 class OP_String;
 class OP_TOPInputOpenGL;
 class OP_TOPInputDownloadOptionsOpenGL;
@@ -123,13 +374,12 @@ class OP_TOPInputDownloadOptionsOpenGL;
 class PY_GetInfo {
 public:
   PY_GetInfo() { memset(this, 0, sizeof(PY_GetInfo)); }
-
   // If this is set to true then the node will cook if it needs to before your
   // class instance is returned. This should be set to true if the python code
   // requires the node's state to be up-to-date before doing it's work.
   bool autoCook;
 
-  int32_t reserved[50];
+  int32_t reserved[50] = {};
 };
 
 class PY_Context {
@@ -146,7 +396,7 @@ public:
   // to re-cook you should call this at the end of your python code.
   virtual void makeNodeDirty(void *reserved = nullptr) = 0;
 
-  int32_t reserved[50];
+  int32_t reserved[50] = {};
 };
 
 #define OP_STRUCT_HEADER_ENTRIES 256
@@ -176,19 +426,14 @@ public:
 protected:
   // Increase the reference count to this instance.
   virtual void acquire() = 0;
-
   // Decrease the reference count to this instance. When the reference count
   // reaches 0 the class will be deleted.
   virtual void release() = 0;
 
   virtual void reserved0() = 0;
-
   virtual void reserved1() = 0;
-
   virtual void reserved2() = 0;
-
   virtual void reserved3() = 0;
-
   virtual void reserved4() = 0;
 
   template <class T> friend class OP_SmartRef;
@@ -198,12 +443,6 @@ template <class T> class OP_SmartRef {
 public:
   OP_SmartRef() : myTarget(nullptr) {}
 
-  OP_SmartRef(T *t) {
-    if (t)
-      t->acquire();
-    myTarget = t;
-  }
-
   OP_SmartRef(const OP_SmartRef<T> &t) : myTarget(nullptr) { operator=(t); }
 
   OP_SmartRef(OP_SmartRef<T> &&t) : myTarget(nullptr) {
@@ -211,6 +450,12 @@ public:
   }
 
   ~OP_SmartRef() { release(); }
+
+  // Takes ownership, the caller should *not* call release() on the object.
+  void takeOwnership(T *t) {
+    release();
+    myTarget = t;
+  }
 
   void operator=(const OP_SmartRef<T> &t) {
     if (this == &t || myTarget == t.myTarget)
@@ -248,6 +493,7 @@ private:
   T *myTarget;
 
   friend class ::TOP_CPlusPlus;
+  friend class ::POP_CPlusPlus;
 };
 
 // Used to describe this Plugin so it can be used as a custom OP.
@@ -345,9 +591,9 @@ public:
 
   // If you want to specify a website URL to direct to when the Operator Help
   // button is pressed set this to that URL
-  OP_String *opHelpURL;
+  OP_String *opHelpURL = nullptr;
 
-  int32_t reserved[85];
+  int32_t reserved[85] = {};
 };
 
 // This class is used to provide direct access to the instance of a Custom OP
@@ -381,7 +627,6 @@ public:
 class OP_Context {
 public:
   OP_Context() { memset(reserved, 0, sizeof(reserved)); }
-
   virtual ~OP_Context() {}
 
   // By convention all callbacks in TouchDesigner have the first argument as
@@ -410,7 +655,6 @@ public:
   // these functions. This is needed to ensure the order of operations between
   // Vulkan and CUDA is properly managed.
   virtual bool beginCUDAOperations(void *reserved1) = 0;
-
   virtual void endCUDAOperations(void *reserved1) = 0;
 
   int32_t reserved[50];
@@ -418,33 +662,19 @@ public:
 protected:
   // Reserved for later use
   virtual void *reservedFunc0() = 0;
-
   virtual void *reservedFunc1() = 0;
-
   virtual void *reservedFunc2() = 0;
-
   virtual void *reservedFunc3() = 0;
-
   virtual void *reservedFunc4() = 0;
-
   virtual void *reservedFunc5() = 0;
-
   virtual void *reservedFunc6() = 0;
-
   virtual void *reservedFunc7() = 0;
-
   virtual void *reservedFunc8() = 0;
-
   virtual void *reservedFunc9() = 0;
-
   virtual void *reservedFunc10() = 0;
-
   virtual void *reservedFunc11() = 0;
-
   virtual void *reservedFunc12() = 0;
-
   virtual void *reservedFunc13() = 0;
-
   virtual void *reservedFunc14() = 0;
 };
 
@@ -461,10 +691,10 @@ public:
   // It's possible this will be 0 the first few times the operator cooks,
   // incase it cooks while TouchDesigner is still loading up
 #ifdef _WIN32
-    // HWND
-    // This is a hack to avoid including windows.h in this header file
-    // which autocxx doesn't know how to handle
-    int64_t mainWindowHandle;
+  // HWND
+  // This is a hack to avoid including windows.h in this header file
+  // which autocxx doesn't know how to handle
+  int64_t mainWindowHandle;
 #endif
 
   // The path to where the plugin's binary is located on this machine.
@@ -485,10 +715,14 @@ public:
   int64_t processHInstance;
 #endif
 
+  // If the project is set to have a working color space, this will be set.
+  // Otherwise it will be OP_WorkingColorSpace::Passthrough.
+  OP_WorkingColorSpace workingColorSpace;
+
 #ifdef _WIN32
-  int32_t reserved[12];
+  int32_t reserved[11] = {};
 #else
-  int32_t reserved[14];
+  int32_t reserved[13] = {};
 #endif
 };
 
@@ -518,25 +752,97 @@ public:
   // for more information
   const OP_CustomOPInstance<DAT_CPlusPlusBase> *customOP;
 
-  int32_t reserved[16];
+  int32_t reserved[16] = {};
+};
+
+enum class OP_ColorSpace : uint32_t {
+  // The data is in whatever color space the project's Working Color Space.
+  // The Working Color Space can be obtained from OP_NodeInfo.workingColorSpace
+  // member. Note the special treatment for when 4-channel 8-bit textures some
+  // color spaces though.
+  //
+  // ACEScg
+  // All data in ACEScg (AP1) gamut with linear transfer.
+  //
+  // SRGBLinear, Rec2020Linear, DCIP3Linear
+  // When the working color space is one of the above, and the OP_PixelFormat is
+  // RGBA8Fixed or BGRA8Fixed, the data will have an sRGB transfer, to maintain
+  // the extra detail for the darker colors. Note that this is a non-standard
+  // transfer for DCIP3, which is usually just gamma 2.6. But GPUs can do sRGB
+  // natively so we use that. All other formats are the native gamut with a
+  // linear transfer, including other 8-bit formats such as RG8Fixed.
+  DefaultForWorkingColorSpace = 0,
+
+  // When there is no working color space or if the color space is unknown, this
+  // will be set as the color space. If you have data you are providing that you
+  // don't want converted to the working color space, use this color space.
+  Passthrough,
+
+  // sRGB gamut with sRGB transfer function.
+  SRGB,
+  // sRGB gamut with linear transfer function.
+  SRGBLinear,
+  // ACES AP0 gamut with linear transfer function.
+  ACES2065_1,
+  // ACES AP1 gamut with linear transfer function.
+  ACEScg,
+  // ACES AP1 gamut with a log transfer function.
+  ACESproxy,
+  // These all have non-linear transfer functions, as specified by their specs
+  Rec601PAL,
+  Rec601NTSC,
+  Rec709,
+  Rec2020,
+  DCIP3,
+  DCIP3D60,
+  DisplayP3D65,
+  Rec2020ST2084PQ,
+  Rec2020HLG,
+  // Linear transfers versions of the above
+  DisplayP3D65Linear,
+  DCIP3Linear,
+  Rec2020Linear,
+};
+
+enum class OP_ReferenceWhite : uint32_t {
+  DefaultForColorSpace = 0,
+
+  SDR,
+  HDR,
+  UI,
 };
 
 class OP_TOPInputDownloadOptions {
 public:
-  OP_TOPInputDownloadOptions() {
-    verticalFlip = false;
-    pixelFormat = OP_PixelFormat::Invalid;
-  }
-
   // Set this to true if you want the image vertically flipped in the
   // downloaded data
-  bool verticalFlip;
+  bool verticalFlip = false;
 
   // Set this to how you want the pixel data to be give to you in CPU memory.
   // Leave this as Invalid if you want to download the texture in it's GPU
   // native format. Only 2D textures can be converted to other formats.
   // 3D/Cube/2DArray all must have this set as Invalid.
-  OP_PixelFormat pixelFormat;
+  OP_PixelFormat pixelFormat = OP_PixelFormat::Invalid;
+
+  // Only has an effect when the Working Color Space is not passthrough.
+  // Can be set to something other than OP_ColorSpace::WorkingColorSpace
+  // if the data should be converted to a specific color space before it's
+  // downloaded.
+  OP_ColorSpace colorSpace = OP_ColorSpace::DefaultForWorkingColorSpace;
+
+  // Only has an effect when the Working Color Space is not passthrough.
+  OP_ReferenceWhite referenceWhite = OP_ReferenceWhite::DefaultForColorSpace;
+
+  // This is a hack: upstream declares this private, which breaks autocxx
+  int32_t reserved[30] = {};
+};
+
+// This is seperate from TOP_InputDownloadOptions to avoid break backwards
+// compatibility with
+class OP_TOPExtraInputDownloadOptions {
+public:
+private:
+  int32_t reserved[30] = {};
 };
 
 class OP_TextureDesc {
@@ -545,7 +851,7 @@ public:
 
   uint32_t width = 0;
   uint32_t height = 0;
-  // Depth for 3D and 2D_ARRAY textures, 1 for other texture types
+  // Depth for e3D and e2DArray textures, 1 for other texture types
   uint32_t depth = 1;
 
   OP_TexDim texDim = OP_TexDim::eInvalid;
@@ -581,7 +887,11 @@ public:
 
   OP_TextureDesc textureDesc;
 
-  int32_t reserved[32];
+  // When there is a working color space, this will be set to the color space of
+  // the data.
+  OP_ColorSpace colorSpace;
+
+  int32_t reserved[31];
 };
 
 class OP_CUDAArrayInfo {
@@ -624,7 +934,9 @@ public:
   // TOP_ExecuteMode::CUDA. Will error/return nullptr in other cases. Should
   // only be called from within execute(), and the returned pointer will remain
   // valids until execute() returns. Returns a OP_CUDArrayInfo* that can be used
-  // to get the cudaArray* pointer for the texture memory for this TOP.
+  // to get the cudaArray* pointer for the texture memory for this TOP. This
+  // call should be done before beginCUDAOperations(), but the returned object
+  // should not be used until beginCUDAOperations() has been called afterwards.
   virtual const OP_CUDAArrayInfo *getCUDAArray(const OP_CUDAAcquireInfo &info,
                                                void *reserved2) const = 0;
 
@@ -640,18 +952,392 @@ public:
   // for more information
   const OP_CustomOPInstance<TOP_CPlusPlusBase> *customOP;
 
-  int32_t reserved[12];
+  int32_t reserved[12] = {};
 
 protected:
   virtual void *reserved0() = 0;
-
   virtual void *reserved1() = 0;
-
   virtual void *reserved2() = 0;
-
   virtual void *reserved3() = 0;
-
   virtual void *reserved4() = 0;
+};
+
+enum class POP_AttributeClass : uint32_t { Vertex = 0, Point, Primitive };
+
+enum class POP_AttributeType : uint32_t {
+  Float = 0,
+  Double,
+  Int32,
+  UInt32,
+};
+
+enum class POP_AttributeQualifier : uint32_t {
+  None,
+  // Treat this attribute as a direction.
+  // Needed for attributes such as Normals to be transformed correctly.
+  Direction,
+
+  // Treat a matrix attribute as a transform matrix.
+  TransformMatrix,
+
+  // Treat this attribute as a Color
+  Color,
+};
+
+class POP_AttributeInfo {
+public:
+  const char *name = "";
+  uint32_t numComponents = 4;
+  // Set this above 1 to make a matrix.
+  // numComponents will be the number of rows
+  uint32_t numColumns = 1;
+
+  // Controls if the attribute is an array attribute instead of just a single
+  // attribute be element.
+  // 0 means not an array, >= 1 means an array of that size.
+  uint32_t arraySize = 0;
+
+  POP_AttributeType type = POP_AttributeType::Float;
+  POP_AttributeQualifier qualifier = POP_AttributeQualifier::None;
+  POP_AttributeClass attribClass = POP_AttributeClass::Point;
+
+private:
+  int32_t reserved[30] = {};
+};
+
+class POP_PointInfo {
+public:
+  // The number of point attribute elements that have been provided in the
+  // buffers
+  uint32_t numPoints = 0;
+
+private:
+  int32_t reserved[20] = {};
+};
+
+class POP_TopologyInfo {
+public:
+  // 3 vertex triangles
+  // *StartIndex is the location in the index buffer that the primitives of this
+  // type start at
+  uint32_t trianglesStartIndex = 0;
+  // The number of triangles (not the number of vertices/indices)
+  uint32_t trianglesCount = 0;
+
+  // 4 vertex quads
+  uint32_t quadsStartIndex = 0;
+  uint32_t quadsCount = 0;
+
+  // Line strips that can be made up of any number of points.
+  // Each line strip must be terminated with an entry in the
+  // index buffer that is 0xFFFFFFFF,
+  uint32_t lineStripsStartIndex = 0;
+  uint32_t lineStripsCount = 0;
+  // This must include the restart indices as well
+  uint32_t lineStripsNumVertices = 0;
+
+  // 2 vertex lines
+  uint32_t linesStartIndex = 0;
+  uint32_t linesCount = 0;
+
+  // 1 vertex points
+  uint32_t pointPrimitivesStartIndex = 0;
+  uint32_t pointPrimitivesCount = 0;
+
+  uint32_t getNumPrimitives() const {
+    return trianglesCount + quadsCount + lineStripsCount + linesCount +
+           pointPrimitivesCount;
+  }
+
+  uint32_t getNumVerticies() const {
+    return trianglesCount * 3 + quadsCount * 4 + lineStripsNumVertices +
+           linesCount * 2 + pointPrimitivesCount;
+  }
+
+private:
+  int32_t reserved[20] = {};
+};
+
+class POP_GridInfo {
+public:
+  // Because we are using a 'flexible array member' at the end of this class
+  // to hold the gridDimensions, you should allocate your buffer using
+  // this function, instead of using sizeof(POP_GridInfo)
+  static uint64_t getRequiredSize(uint32_t numDims) {
+    // Avoid underflow
+    if (numDims == 0)
+      numDims = 1;
+    return sizeof(POP_GridInfo) + sizeof(uint32_t) * (numDims - 1);
+  }
+  // This can be optionally passed an array of uint32_t that denote the
+  // dimension size of N-dimensionalal grid metadata. Some POPs make use of this
+  // data to interpret grids of points.
+  uint32_t gridDimensionsCount = 0;
+
+  int32_t reserved[20] = {};
+
+  // This class should be allocated using createBuffer() or malloc(), using the
+  // size which is obtained from getRequiredSize(). This allows us to read into
+  // this array with values larger than 1 without an memory overflow.
+  uint32_t gridDimensions[1];
+};
+
+enum class POP_BufferLocation : uint32_t {
+  CPU = 0,
+
+#ifdef _WIN32
+  CUDA = 20,
+  // Return the buffer where it currently resides. If it's currently on the CPU
+  // it will return it there, if it's currently on the GPU then it will return
+  // it as a CUDA buffer. This is only valid when getting buffers, not for
+  // creating them.
+  CPUOrCUDA = 21,
+#endif
+};
+
+enum class POP_BufferMode : uint32_t {
+  // You should write to the buffer sequentially.
+  // Avoid random access writes, or any reads as it may have
+  // a high impact on performance.
+  SequentialWrite = 0,
+
+  // Freely read/write the memory
+  ReadWrite,
+};
+
+enum class POP_BufferUsage : uint32_t {
+  Attribute = 0,
+  IndexBuffer,
+  PointInfoBuffer,
+  TopologyInfoBuffer,
+  LineStripsInfoBuffer,
+  GridInfoBuffer,
+};
+
+class POP_BufferInfo {
+public:
+  uint64_t size = 0;
+  POP_BufferMode mode = POP_BufferMode::SequentialWrite;
+  POP_BufferUsage usage = POP_BufferUsage::Attribute;
+  POP_BufferLocation location = POP_BufferLocation::CPU;
+
+  // If the location is CUDA, then this should be set to the cudaStream_t that
+  // will used the buffer
+  cudaStream_t stream = 0;
+
+private:
+  int32_t reserved[18] = {};
+};
+
+class POP_Buffer : public OP_RefCount {
+protected:
+  POP_Buffer() {}
+  virtual ~POP_Buffer() {}
+
+public:
+  POP_BufferInfo info;
+
+  // When this buffer is retrieved from an input, getData() will stall until the
+  // GPU->CPU download has completed. You can use this to have another thread
+  // stall waiting for the data to be ready before processing. Or you can hold
+  // onto the POP_Buffer until a later time (to avoid the stall) and consume the
+  // data on the next cook.
+  virtual void *getData(void *reserved) = 0;
+
+private:
+  int32_t reserved[50] = {};
+};
+
+class POP_GetBufferInfo {
+public:
+  // Specifies where you want the data to be located when returned. If the data
+  // is not currently where it is requested, it will be transfered to that
+  // location.
+  //
+  // Note that when requesting CUDA memory, it must be done before
+  // beginCUDAOperations() is called, and only inside of a POP.
+  POP_BufferLocation location = POP_BufferLocation::CPU;
+
+  // This should be set to the cudaStream_t that will be used for operations
+  // that will use the buffer.
+  cudaStream_t stream = 0;
+
+private:
+  int32_t reserved[20] = {};
+};
+
+// When Point and/or Topology is only known on the GPU, we can't know the actual
+// values on the CPU. This Info is used to keep track of the upper bounds of
+// possible points and/or primitives.
+class POP_MaxInfo {
+public:
+  // Point attributes (not point primitives, that is 'pointPrims').
+  uint32_t points = 0;
+
+  // The maximum number of each prim type that may be defined in the topology.
+  // The actual number must be less than or equal to this maximum.
+  uint32_t triangles = 0;
+  uint32_t quads = 0;
+
+  // The maximum number of line strips that may be defined in the topology
+  uint32_t lineStrips = 0;
+  // The maximum number of vertices any single line strip may have.
+  uint32_t lineStripVertices = 0;
+
+  uint32_t lines = 0;
+  uint32_t pointPrims = 0;
+
+private:
+  int32_t reserved[30] = {};
+};
+
+class POP_InfoBuffers {
+public:
+  // The data format of this should be POP_PointInfo
+  OP_SmartRef<POP_Buffer> pointInfo;
+
+  // The data format of this should be POP_TopologyInfo
+  OP_SmartRef<POP_Buffer> topoInfo;
+
+  // If the topology info is provided in a buffer that resides on the GPU (such
+  // as CUDA) Then you must also provide some maximum information. This will be
+  // ignored if the topoInfo is on the CPU.
+  POP_MaxInfo maxInfo;
+
+  // This must be a buffer with pairs of uint32_t values, one pair for each line
+  // strip that is being given. The values are { lineStripStartIndex,
+  // lineStripNumVertices } where: lineStripStartIndex: Is the 0-based location
+  // in the index buffer where this line strip starts.
+  //						0 means the index where the line
+  // strips first appear in the index buffer.
+  // So the number of triangle/quad indices that appear before it don't matter.
+  // lineStripNumVertices: the number of vertices in the line strip, including
+  // the restart index. E.g A 5 vertex line strip followed by a 10 vertex line
+  // strip would have the entries: It's acceptable to have gaps where indices
+  // inthe buffer are skipped, such as in cases where a line strip has some
+  // vertices deleted. [0, 5], [5, 10]
+  OP_SmartRef<POP_Buffer> lineStripsInfo;
+
+  // This must be a buffer of uint32_t with the same number of entries as
+  // POP_TopologyInfo.lineStripsNumVertices Each entry should be the line strip
+  // primitive index that index buffer entry matches up with. Restart index
+  // entries should be incldued as well. E.g A 3 point line strip followed by a
+  // 4 point line strip would be [0, 0, 0, 0, 1, 1, 1, 1, 1]
+  OP_SmartRef<POP_Buffer> lineStripsPrimIndices;
+
+  // The data format of this should be POP_GridInfo. This should always be
+  // provided via a buffer on the CPU.
+  OP_SmartRef<POP_Buffer> gridInfo;
+
+private:
+  int32_t reserved[200] = {};
+};
+
+class POP_Attribute {
+protected:
+  POP_Attribute() {}
+  virtual ~POP_Attribute() {}
+
+public:
+  POP_AttributeInfo info;
+
+  virtual OP_SmartRef<POP_Buffer> getBuffer(const POP_GetBufferInfo &info,
+                                            void *reserved) const = 0;
+
+private:
+  int32_t reserved[20] = {};
+};
+
+enum class POP_IndexType : uint32_t {
+  UInt32 = 0,
+};
+
+class POP_IndexBufferInfo {
+public:
+  POP_IndexType type = POP_IndexType::UInt32;
+
+private:
+  int reserved[20] = {};
+};
+
+class POP_IndexBuffer {
+protected:
+  POP_IndexBuffer() {}
+  virtual ~POP_IndexBuffer() {}
+
+public:
+  POP_IndexBufferInfo info;
+
+  // Get the actual index buffer, an array of uint32_t values.
+  virtual OP_SmartRef<POP_Buffer> getBuffer(const POP_GetBufferInfo &info,
+                                            void *reserved) const = 0;
+
+private:
+  int32_t reserved[20] = {};
+};
+
+class OP_POPInput {
+protected:
+  virtual ~OP_POPInput() {}
+
+public:
+  const char *opPath;
+  uint32_t opId;
+
+  // The number of times this node has cooked
+  int64_t totalCooks;
+
+  // See comments that preceed the declaration of the OP_CustomOPInstance class
+  // for more information
+  const OP_CustomOPInstance<POP_CPlusPlusBase> *customOP;
+
+  // Gets the number of attributes in that particular attribute class
+  virtual uint32_t getNumAttributes(POP_AttributeClass) const = 0;
+  // These calls are fast, so you can safely loop over them multiple times to
+  // query attributes. The same pointer is returned from multiple calls with the
+  // same arguments. Returns nullptr if the attribute doesn't exist
+  virtual const POP_Attribute *getAttribute(POP_AttributeClass, uint32_t index,
+                                            void *reserved) const = 0;
+  virtual const POP_Attribute *
+  getAttribute(POP_AttributeClass, const char *name, void *reserved) const = 0;
+  virtual const POP_IndexBuffer *getIndexBuffer(void *reserved) const = 0;
+
+  // Get the TopologyInfo. This may be coming from the GPU or the CPU, depending
+  // on the source POP. Cast the resulting data to POP_TopologyInfo
+  virtual OP_SmartRef<POP_Buffer> getTopologyInfo(const POP_GetBufferInfo &info,
+                                                  void *reserved) const = 0;
+  // Get the TopologyInfo. This may be coming from the GPU or the CPU, depending
+  // on the source POP. Cast the resulting data to POP_PointInfo
+  virtual OP_SmartRef<POP_Buffer> getPointInfo(const POP_GetBufferInfo &info,
+                                               void *reserved) const = 0;
+
+  // See documentation in POP_InfoBuffers for the format of this buffer
+  virtual OP_SmartRef<POP_Buffer>
+  getLineStripsInfo(const POP_GetBufferInfo &info, void *reserved) const = 0;
+
+  // See documentation in POP_InfoBuffers for the format of this buffer
+  virtual OP_SmartRef<POP_Buffer>
+  getLineStripsPrimIndices(const POP_GetBufferInfo &info,
+                           void *reserved) const = 0;
+
+  // See documentation in POP_GridInfo for the format of this buffer.
+  // Note that this data will always be returned on the CPU. We return an empty
+  // buffer if it's requested to be as CUDA memory.
+  virtual OP_SmartRef<POP_Buffer> getGridInfo(const POP_GetBufferInfo &info,
+                                              void *reserved) const = 0;
+
+  virtual void getMaxInfo(POP_MaxInfo *maxInfo, void *reserved) const = 0;
+
+  // Helper function to get all of the Info buffers in one call, if you know you
+  // need them all. Note that some of the info buffers are always on the CPU, so
+  // you must ask for the data as POP_BufferLocation::CPU or
+  // POP_BufferLocation::CPUOrCUDA. Will return false if this fails.
+  virtual bool getAllInfoBuffers(POP_InfoBuffers *buffers,
+                                 const POP_GetBufferInfo &info,
+                                 void *reserved) const = 0;
+
+protected:
+  int32_t reserved[12];
 };
 
 class OP_String {
@@ -718,7 +1404,8 @@ public:
   int32_t reserved[18];
 };
 
-// The type of data the attribute holds
+// The type of data the attribute holds.
+// For SOPs only
 enum class AttribType : int32_t {
   // One or more floats
   Float = 0,
@@ -727,6 +1414,8 @@ enum class AttribType : int32_t {
   Int,
 };
 
+// The type of data the attribute holds.
+// For SOPs only
 enum class AttribSet : int32_t {
   Invalid = -1,
   Point = 0,
@@ -735,7 +1424,8 @@ enum class AttribSet : int32_t {
 };
 
 // The type of the primitives, currently only Polygon type
-// is supported
+// is supported.
+// For SOPs only
 enum class PrimitiveType : int32_t {
   Invalid = -1,
   Polygon = 0,
@@ -1052,6 +1742,10 @@ public:
   float maxZ;
 };
 
+// SOP_PrimitiveInfo, all the required data for each primitive
+// this info can be queried by calling getPrimitive() which accepts
+// a valid index of a primitive as an input argument
+
 class SOP_NormalInfo {
 public:
   SOP_NormalInfo() {
@@ -1334,9 +2028,9 @@ private:
 public:
   // Only valid for C++ CHOP operators
   virtual const OP_CHOPInput *getInputCHOP(int32_t index) const = 0;
-
   // getInputSOP() declared later on in the class
   // getInputDAT() declared later on in the class
+  // getInputPOP() declared later on in the class
 
   // these are defined by parameters.
   // may return nullptr when invalid input
@@ -1350,10 +2044,9 @@ private:
 
 public:
   virtual const OP_CHOPInput *getParCHOP(const char *name) const = 0;
-
   virtual const OP_ObjectInput *getParObject(const char *name) const = 0;
-
   // getParSOP() declared later on in the class
+  // getParPOP() declared later on in the class
 
   // these work on any type of parameter and can be interchanged
   // for menu types, int returns the menu selection index, string returns the
@@ -1363,12 +2056,11 @@ public:
   virtual double getParDouble(const char *name, int32_t index = 0) const = 0;
 
   // for multiple values: returns True on success/false otherwise
+  // Note, use getParRGB and getParRGBA for RGB and RGBA parameters.
   virtual bool getParDouble2(const char *name, double &v0,
                              double &v1) const = 0;
-
   virtual bool getParDouble3(const char *name, double &v0, double &v1,
                              double &v2) const = 0;
-
   virtual bool getParDouble4(const char *name, double &v0, double &v1,
                              double &v2, double &v3) const = 0;
 
@@ -1377,10 +2069,8 @@ public:
 
   // for multiple values: returns True on success/false otherwise
   virtual bool getParInt2(const char *name, int32_t &v0, int32_t &v1) const = 0;
-
   virtual bool getParInt3(const char *name, int32_t &v0, int32_t &v1,
                           int32_t &v2) const = 0;
-
   virtual bool getParInt4(const char *name, int32_t &v0, int32_t &v1,
                           int32_t &v2, int32_t &v3) const = 0;
 
@@ -1416,7 +2106,6 @@ private:
 
 public:
   virtual const OP_CHOPInput *getCHOP(const char *path) const = 0;
-
   virtual const OP_ObjectInput *getObject(const char *path) const = 0;
 
 private:
@@ -1428,10 +2117,8 @@ private:
 
 public:
   virtual const OP_SOPInput *getParSOP(const char *name) const = 0;
-
   // only valid for C++ SOP operators
   virtual const OP_SOPInput *getInputSOP(int32_t index) const = 0;
-
   virtual const OP_SOPInput *getSOP(const char *path) const = 0;
 
   // only valid for C++ DAT operators
@@ -1450,10 +2137,16 @@ public:
   virtual const OP_TimeInfo *getTimeInfo() const = 0;
 
   virtual const OP_TOPInput *getTOP(const char *path) const = 0;
-
   virtual const OP_TOPInput *getInputTOP(int32_t index) const = 0;
-
   virtual const OP_TOPInput *getParTOP(const char *name) const = 0;
+
+  virtual const OP_POPInput *getInputPOP(int32_t index) const = 0;
+  virtual const OP_POPInput *getParPOP(const char *name) const = 0;
+
+  virtual bool getParRGB(const char *name, double &r, double &g,
+                         double &b) const = 0;
+  virtual bool getParRGBA(const char *name, double &r, double &g, double &b,
+                          double &a) const = 0;
 };
 
 class OP_InfoCHOPChan {
@@ -1576,46 +2269,37 @@ public:
 };
 
 class OP_ParameterManager {
+
 public:
   // Returns OP_ParAppendResult::Success on success
   virtual OP_ParAppendResult appendFloat(const OP_NumericParameter &np,
                                          int32_t size = 1) = 0;
-
   virtual OP_ParAppendResult appendInt(const OP_NumericParameter &np,
                                        int32_t size = 1) = 0;
 
   virtual OP_ParAppendResult appendXY(const OP_NumericParameter &np) = 0;
-
   virtual OP_ParAppendResult appendXYZ(const OP_NumericParameter &np) = 0;
-
   // appendXYZW() added further down
 
   virtual OP_ParAppendResult appendUV(const OP_NumericParameter &np) = 0;
-
   virtual OP_ParAppendResult appendUVW(const OP_NumericParameter &np) = 0;
 
+  // These should be evaluted with getParRGB and getParRGBA, so you get the
+  // values in the working color space (if any).
   virtual OP_ParAppendResult appendRGB(const OP_NumericParameter &np) = 0;
-
   virtual OP_ParAppendResult appendRGBA(const OP_NumericParameter &np) = 0;
 
   virtual OP_ParAppendResult appendToggle(const OP_NumericParameter &np) = 0;
-
   virtual OP_ParAppendResult appendPulse(const OP_NumericParameter &np) = 0;
 
   virtual OP_ParAppendResult appendString(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendFile(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendFolder(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendDAT(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendCHOP(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendTOP(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendObject(const OP_StringParameter &sp) = 0;
-
   // appendSOP() located further down in the class
 
   // Any char* values passed are copied immediately by the append parameter
@@ -1638,17 +2322,12 @@ public:
   virtual OP_ParAppendResult appendPython(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendOP(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendCOMP(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendMAT(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult appendPanelCOMP(const OP_StringParameter &sp) = 0;
 
   virtual OP_ParAppendResult appendHeader(const OP_StringParameter &np) = 0;
-
   virtual OP_ParAppendResult appendMomentary(const OP_NumericParameter &np) = 0;
-
   virtual OP_ParAppendResult appendWH(const OP_NumericParameter &np) = 0;
 
   // The buildDynamicMenu() function will be called in your class instance when
@@ -1656,7 +2335,6 @@ public:
   // parameters or external state (such as available devices).
   virtual OP_ParAppendResult
   appendDynamicStringMenu(const OP_StringParameter &sp) = 0;
-
   virtual OP_ParAppendResult
   appendDynamicMenu(const OP_NumericParameter &np) = 0;
 
@@ -1665,6 +2343,7 @@ public:
 
 #pragma pack(pop)
 
+#ifndef __CUDACC__
 static_assert(offsetof(OP_CustomOPInfo, opType) == 0, "Incorrect Alignment");
 static_assert(offsetof(OP_CustomOPInfo, opLabel) == 8, "Incorrect Alignment");
 static_assert(offsetof(OP_CustomOPInfo, opIcon) == 16, "Incorrect Alignment");
@@ -1701,11 +2380,6 @@ static_assert(offsetof(OP_DATInput, cellData) == 24, "Incorrect Alignment");
 static_assert(offsetof(OP_DATInput, totalCooks) == 32, "Incorrect Alignment");
 static_assert(sizeof(OP_DATInput) == 112, "Incorrect Size");
 
-static_assert(offsetof(OP_TOPInput, opPath) == 8, "Incorrect Alignment");
-static_assert(offsetof(OP_TOPInput, opId) == 16, "Incorrect Alignment");
-static_assert(offsetof(OP_TOPInput, textureDesc) == 20, "Incorrect Alignment");
-static_assert(offsetof(OP_TOPInput, totalCooks) == 156 + 20,
-              "Incorrect Alignment");
 static_assert(sizeof(OP_TOPInput) == 156 + 28 + 56, "Incorrect Size");
 
 static_assert(offsetof(OP_CHOPInput, opPath) == 0, "Incorrect Alignment");
@@ -1844,37 +2518,44 @@ static_assert(sizeof(PY_Context) == 208, "Incorrect Size");
 static_assert(offsetof(PY_Struct, context) ==
                   OP_STRUCT_HEADER_ENTRIES * sizeof(int32_t),
               "Incorrect Alignment");
+
+static_assert(offsetof(POP_BufferInfo, size) == 0, "Incorrect Alignment");
+static_assert(offsetof(POP_BufferInfo, mode) == 8, "Incorrect Alignment");
+static_assert(offsetof(POP_BufferInfo, usage) == 12, "Incorrect Alignment");
+static_assert(offsetof(POP_BufferInfo, location) == 16, "Incorrect Alignment");
+static_assert(offsetof(POP_BufferInfo, stream) == 24, "Incorrect Alignment");
+static_assert(sizeof(POP_BufferInfo) == 104, "Incorrect Size");
+
+static_assert(sizeof(OP_TOPDownloadResult) == sizeof(OP_RefCount) +
+                                                  sizeof(OP_TextureDesc) + 12 +
+                                                  32 * sizeof(int32_t),
+              "Incorrect Size");
+
+#endif // CUDACC
 }; // namespace TD
 
 // These are the definitions for the C-functions that are used to
 // load the library and create instances of the object you define
 typedef void(__cdecl *FILLCHOPPLUGININFO)(TD::CHOP_PluginInfo *info);
-
 typedef TD::CHOP_CPlusPlusBase *(__cdecl *CREATECHOPINSTANCE)(
     const TD::OP_NodeInfo *);
-
 typedef void(__cdecl *DESTROYCHOPINSTANCE)(TD::CHOP_CPlusPlusBase *);
-
 typedef void(__cdecl *FILLDATPLUGININFO)(TD::DAT_PluginInfo *info);
-
 typedef TD::DAT_CPlusPlusBase *(__cdecl *CREATEDATINSTANCE)(
     const TD::OP_NodeInfo *);
-
 typedef void(__cdecl *DESTROYDATINSTANCE)(TD::DAT_CPlusPlusBase *);
-
 typedef void(__cdecl *FILLTOPPLUGININFO)(TD::TOP_PluginInfo *info);
-
 typedef TD::TOP_CPlusPlusBase *(__cdecl *CREATETOPINSTANCE)(
     const TD::OP_NodeInfo *, TD::TOP_Context *);
-
 typedef void(__cdecl *DESTROYTOPINSTANCE)(TD::TOP_CPlusPlusBase *,
                                           TD::TOP_Context *);
-
 typedef void(__cdecl *FILLSOPPLUGININFO)(TD::SOP_PluginInfo *info);
-
 typedef TD::SOP_CPlusPlusBase *(__cdecl *CREATESOPINSTANCE)(
     const TD::OP_NodeInfo *);
-
 typedef void(__cdecl *DESTROYSOPINSTANCE)(TD::SOP_CPlusPlusBase *);
+typedef void(__cdecl *FILLPOPPLUGININFO)(TD::POP_PluginInfo *info);
+typedef TD::POP_CPlusPlusBase *(__cdecl *CREATEPOPINSTANCE)(
+    const TD::OP_NodeInfo *, TD::POP_Context *);
+typedef void(__cdecl *DESTROYPOPINSTANCE)(TD::POP_CPlusPlusBase *);
 
 #endif

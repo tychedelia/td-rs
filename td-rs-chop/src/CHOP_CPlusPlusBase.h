@@ -37,6 +37,8 @@
 
 #include "CPlusPlus_Common.h"
 
+class CHOP_CPlusPlus;
+
 namespace TD {
 #pragma pack(push, 8)
 
@@ -49,8 +51,10 @@ class CHOP_CPlusPlusBase;
 // from the samples folder in a newer TouchDesigner installation.
 // You may need to upgrade your plugin code in that case, to match
 // the new API requirements
-const int CHOPCPlusPlusAPIVersion = 9;
+const int CHOPCPlusPlusAPIVersion = 10 | (OP_CommonAPIVersion << 16);
 
+// This is a hack: reverted to the all-public POD layout (byte-identical)
+// since upstream's private members break autocxx
 class CHOP_PluginInfo {
 public:
   // Must be set to CHOPCPlusPlusAPIVersion in FillCHOPPluginInfo

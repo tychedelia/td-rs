@@ -36,8 +36,10 @@
 #ifndef __DAT_CPlusPlusBase__
 #define __DAT_CPlusPlusBase__
 
-#include "CPlusPlus_Common.h"
 #include <assert.h>
+#include "CPlusPlus_Common.h"
+
+class DAT_CPlusPlus;
 
 namespace TD {
 
@@ -50,18 +52,21 @@ namespace TD {
 // from the samples folder in a newer TouchDesigner installation.
 // You may need to upgrade your plugin code in that case, to match
 // the new API requirements
-const int DATCPlusPlusAPIVersion = 3;
+const int DATCPlusPlusAPIVersion = 4 | (OP_CommonAPIVersion << 16);
 
+// This is a hack: reverted to the all-public POD layout (byte-identical)
+// since upstream's private members break autocxx
 class DAT_PluginInfo {
 public:
+  // Must be set to DATCPlusPlusAPIVersion in FillDATPluginInfo
   int32_t apiVersion = 0;
 
-  int32_t reserved[100];
+  int32_t reserved[100] = {};
 
   // Information used to describe this plugin as a custom OP.
   OP_CustomOPInfo customOPInfo;
 
-  int32_t reserved2[20];
+  int32_t reserved2[20] = {};
 };
 
 class DAT_GeneralInfo {
@@ -111,6 +116,7 @@ public:
   // If the type of out data is Table, set the number of rows and columns.
   virtual void setTableSize(const int32_t rows, const int32_t cols) = 0;
 
+  // This is a hack: `const` added for autocxx (upstream declares non-const)
   virtual void getTableSize(int32_t *rows, int32_t *cols) const = 0;
 
   // If the type of out data is set to Text,
@@ -147,14 +153,17 @@ public:
   // The memory the pointer points to is valid until the next call to
   // a function that changes the tabel (setCell*, setTableSize etc.)
   // or the end of the ::execute function.
+  // This is a hack: `const` added for autocxx (upstream declares non-const)
   virtual const char *getCellString(int32_t row, int32_t col) const = 0;
 
   // Get the int32_t cell data with a row and column index,
   // returns false if it cannot find the cell, or invalid argument
+  // This is a hack: `const` added for autocxx (upstream declares non-const)
   virtual bool getCellInt(int32_t row, int32_t col, int32_t *res) const = 0;
 
   // Get the double cell data with a row and column index,
   // returns false if it cannot find the cell, or invalid argument
+  // This is a hack: `const` added for autocxx (upstream declares non-const)
   virtual bool getCellDouble(int32_t row, int32_t col, double *res) const = 0;
 
 private:
@@ -263,7 +272,8 @@ private:
 
 #pragma pack(pop)
 
-static_assert(offsetof(DAT_PluginInfo, apiVersion) == 0, "Incorrect Alignment");
+static_assert(offsetof(DAT_PluginInfo, apiVersion) == 0,
+              "Incorrect Alignment");
 static_assert(offsetof(DAT_PluginInfo, customOPInfo) == 408,
               "Incorrect Alignment");
 static_assert(sizeof(DAT_PluginInfo) == 944, "Incorrect Size");

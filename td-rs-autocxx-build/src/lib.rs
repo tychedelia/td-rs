@@ -52,6 +52,9 @@ pub fn build(output: &str, include_base: bool) -> miette::Result<()> {
     }
 
     b.compile(output);
-    println!("cargo:rerun-if-changed=src/cxx.rs");
+    println!("cargo:rerun-if-changed=src");
+    if include_base {
+        println!("cargo:rerun-if-changed=../td-rs-base/src");
+    }
     Ok(())
 }

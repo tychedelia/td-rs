@@ -45,6 +45,8 @@ impl<'cook> TopOutput<'cook> {
                 FirstPixel::TopLeft => cxx::TOP_FirstPixel::TopLeft,
             },
             colorBufferIndex: info.color_buffer_index as u32,
+            colorSpace: td_rs_base::cxx::OP_ColorSpace::DefaultForWorkingColorSpace,
+            referenceWhite: td_rs_base::cxx::OP_ReferenceWhite::DefaultForColorSpace,
             reserved: Default::default(),
         };
 
