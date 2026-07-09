@@ -633,6 +633,11 @@
 					<string>-I$(PYTHON_INCLUDE_DIR)</string>
 					<string>$(EXTRA_CFLAGS)</string>
 				</array>
+				<key>OTHER_LDFLAGS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>$(EXTRA_LDFLAGS)</string>
+				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia</string>
 				<key>PRODUCT_NAME</key>
@@ -679,6 +684,11 @@
 					<string>-I$(PROJECT_DIR)/td-rs-base/src</string>
 					<string>-I$(PYTHON_INCLUDE_DIR)</string>
 					<string>$(EXTRA_CFLAGS)</string>
+				</array>
+				<key>OTHER_LDFLAGS</key>
+				<array>
+					<string>$(inherited)</string>
+					<string>$(EXTRA_LDFLAGS)</string>
 				</array>
 				<key>PRODUCT_BUNDLE_IDENTIFIER</key>
 				<string>io.github.tychedelia</string>

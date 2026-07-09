@@ -120,6 +120,20 @@ pub fn is_python_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
         .is_some()
 }
 
+pub fn macos_frameworks(plugin: &str) -> Vec<String> {
+    let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
+    pkg.metadata
+        .get("td-rs")
+        .and_then(|td| td.get("macos-frameworks"))
+        .and_then(|f| f.as_array())
+        .map(|f| {
+            f.iter()
+                .filter_map(|v| v.as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 pub fn is_cuda_enabled(plugin: &str, plugin_type: &PluginType) -> bool {
     let pkg = crate::metadata::fetch_cargo_workspace_package(plugin).unwrap();
     let parent_dep = pkg

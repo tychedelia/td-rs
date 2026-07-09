@@ -1,4 +1,4 @@
-use crate::cxx::{OP_PixelFormat, OP_TOPInput, OP_TexDim};
+use crate::cxx::{OP_ColorSpace, OP_PixelFormat, OP_ReferenceWhite, OP_TOPInput, OP_TexDim};
 use crate::{GetInput, OperatorInputs};
 use ref_cast::RefCast;
 
@@ -76,11 +76,6 @@ pub enum PixelFormat {
     MonoA16Float,
     MonoA32Float,
 
-    // sRGB. Removed upstream in favor of the OP_ColorSpace workflow; these
-    // map to the UnusedReserved1/2 slots (same numeric values).
-    SBGRA8Fixed,
-    SRGBA8Fixed,
-
     RGB10A2Fixed,
     // 11-bit float, positive values only. B is actually 10 bits
     RGB11Float,
@@ -111,8 +106,11 @@ impl From<&OP_PixelFormat> for PixelFormat {
             OP_PixelFormat::MonoA16Fixed => PixelFormat::MonoA16Fixed,
             OP_PixelFormat::MonoA16Float => PixelFormat::MonoA16Float,
             OP_PixelFormat::MonoA32Float => PixelFormat::MonoA32Float,
-            OP_PixelFormat::UnusedReserved1 => PixelFormat::SBGRA8Fixed,
-            OP_PixelFormat::UnusedReserved2 => PixelFormat::SRGBA8Fixed,
+            // Formerly the sRGB formats, removed upstream in favor of the
+            // OP_ColorSpace workflow.
+            OP_PixelFormat::UnusedReserved1 | OP_PixelFormat::UnusedReserved2 => {
+                PixelFormat::Invalid
+            }
             OP_PixelFormat::RGB10A2Fixed => PixelFormat::RGB10A2Fixed,
             OP_PixelFormat::RGB11Float => PixelFormat::RGB11Float,
         }
@@ -144,8 +142,6 @@ impl From<&PixelFormat> for OP_PixelFormat {
             PixelFormat::MonoA16Fixed => OP_PixelFormat::MonoA16Fixed,
             PixelFormat::MonoA16Float => OP_PixelFormat::MonoA16Float,
             PixelFormat::MonoA32Float => OP_PixelFormat::MonoA32Float,
-            PixelFormat::SBGRA8Fixed => OP_PixelFormat::UnusedReserved1,
-            PixelFormat::SRGBA8Fixed => OP_PixelFormat::UnusedReserved2,
             PixelFormat::RGB10A2Fixed => OP_PixelFormat::RGB10A2Fixed,
             PixelFormat::RGB11Float => OP_PixelFormat::RGB11Float,
         }
@@ -164,10 +160,112 @@ impl From<&TexDim> for OP_TexDim {
     }
 }
 
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq)]
+pub enum ColorSpace {
+    #[default]
+    DefaultForWorkingColorSpace,
+    Passthrough,
+    SRGB,
+    SRGBLinear,
+    ACES2065_1,
+    ACEScg,
+    ACESproxy,
+    Rec601PAL,
+    Rec601NTSC,
+    Rec709,
+    Rec2020,
+    DCIP3,
+    DCIP3D60,
+    DisplayP3D65,
+    Rec2020ST2084PQ,
+    Rec2020HLG,
+    DisplayP3D65Linear,
+    DCIP3Linear,
+    Rec2020Linear,
+}
+
+impl From<&ColorSpace> for OP_ColorSpace {
+    fn from(color_space: &ColorSpace) -> Self {
+        match color_space {
+            ColorSpace::DefaultForWorkingColorSpace => {
+                OP_ColorSpace::DefaultForWorkingColorSpace
+            }
+            ColorSpace::Passthrough => OP_ColorSpace::Passthrough,
+            ColorSpace::SRGB => OP_ColorSpace::SRGB,
+            ColorSpace::SRGBLinear => OP_ColorSpace::SRGBLinear,
+            ColorSpace::ACES2065_1 => OP_ColorSpace::ACES2065_1,
+            ColorSpace::ACEScg => OP_ColorSpace::ACEScg,
+            ColorSpace::ACESproxy => OP_ColorSpace::ACESproxy,
+            ColorSpace::Rec601PAL => OP_ColorSpace::Rec601PAL,
+            ColorSpace::Rec601NTSC => OP_ColorSpace::Rec601NTSC,
+            ColorSpace::Rec709 => OP_ColorSpace::Rec709,
+            ColorSpace::Rec2020 => OP_ColorSpace::Rec2020,
+            ColorSpace::DCIP3 => OP_ColorSpace::DCIP3,
+            ColorSpace::DCIP3D60 => OP_ColorSpace::DCIP3D60,
+            ColorSpace::DisplayP3D65 => OP_ColorSpace::DisplayP3D65,
+            ColorSpace::Rec2020ST2084PQ => OP_ColorSpace::Rec2020ST2084PQ,
+            ColorSpace::Rec2020HLG => OP_ColorSpace::Rec2020HLG,
+            ColorSpace::DisplayP3D65Linear => OP_ColorSpace::DisplayP3D65Linear,
+            ColorSpace::DCIP3Linear => OP_ColorSpace::DCIP3Linear,
+            ColorSpace::Rec2020Linear => OP_ColorSpace::Rec2020Linear,
+        }
+    }
+}
+
+impl From<&OP_ColorSpace> for ColorSpace {
+    fn from(color_space: &OP_ColorSpace) -> Self {
+        match color_space {
+            OP_ColorSpace::DefaultForWorkingColorSpace => {
+                ColorSpace::DefaultForWorkingColorSpace
+            }
+            OP_ColorSpace::Passthrough => ColorSpace::Passthrough,
+            OP_ColorSpace::SRGB => ColorSpace::SRGB,
+            OP_ColorSpace::SRGBLinear => ColorSpace::SRGBLinear,
+            OP_ColorSpace::ACES2065_1 => ColorSpace::ACES2065_1,
+            OP_ColorSpace::ACEScg => ColorSpace::ACEScg,
+            OP_ColorSpace::ACESproxy => ColorSpace::ACESproxy,
+            OP_ColorSpace::Rec601PAL => ColorSpace::Rec601PAL,
+            OP_ColorSpace::Rec601NTSC => ColorSpace::Rec601NTSC,
+            OP_ColorSpace::Rec709 => ColorSpace::Rec709,
+            OP_ColorSpace::Rec2020 => ColorSpace::Rec2020,
+            OP_ColorSpace::DCIP3 => ColorSpace::DCIP3,
+            OP_ColorSpace::DCIP3D60 => ColorSpace::DCIP3D60,
+            OP_ColorSpace::DisplayP3D65 => ColorSpace::DisplayP3D65,
+            OP_ColorSpace::Rec2020ST2084PQ => ColorSpace::Rec2020ST2084PQ,
+            OP_ColorSpace::Rec2020HLG => ColorSpace::Rec2020HLG,
+            OP_ColorSpace::DisplayP3D65Linear => ColorSpace::DisplayP3D65Linear,
+            OP_ColorSpace::DCIP3Linear => ColorSpace::DCIP3Linear,
+            OP_ColorSpace::Rec2020Linear => ColorSpace::Rec2020Linear,
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, Eq, PartialEq)]
+pub enum ReferenceWhite {
+    #[default]
+    DefaultForColorSpace,
+    SDR,
+    HDR,
+    UI,
+}
+
+impl From<&ReferenceWhite> for OP_ReferenceWhite {
+    fn from(reference_white: &ReferenceWhite) -> Self {
+        match reference_white {
+            ReferenceWhite::DefaultForColorSpace => OP_ReferenceWhite::DefaultForColorSpace,
+            ReferenceWhite::SDR => OP_ReferenceWhite::SDR,
+            ReferenceWhite::HDR => OP_ReferenceWhite::HDR,
+            ReferenceWhite::UI => OP_ReferenceWhite::UI,
+        }
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct DownloadOptions {
     pub vertical_flip: bool,
     pub pixel_format: PixelFormat,
+    pub color_space: ColorSpace,
+    pub reference_white: ReferenceWhite,
 }
 
 #[repr(transparent)]
@@ -200,8 +298,8 @@ impl TopInput {
         let opts = crate::cxx::OP_TOPInputDownloadOptions {
             verticalFlip: opts.vertical_flip,
             pixelFormat: (&opts.pixel_format).into(),
-            colorSpace: crate::cxx::OP_ColorSpace::DefaultForWorkingColorSpace,
-            referenceWhite: crate::cxx::OP_ReferenceWhite::DefaultForColorSpace,
+            colorSpace: (&opts.color_space).into(),
+            referenceWhite: (&opts.reference_white).into(),
             reserved: [0; 30],
         };
         let download = unsafe { self.input.downloadTexture(&opts, std::ptr::null_mut()) };

@@ -45,13 +45,14 @@ pub(crate) fn build_plugin(
     )?;
 
     let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
+    let frameworks = crate::metadata::macos_frameworks(plugin);
     let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
     write_xcodeproj(target, plugin, &plugin_type, &path)?;
     println!("Building xcode project");
-    build_xcode(config, plugin, is_python_enabled)?;
+    build_xcode(config, plugin, is_python_enabled, &frameworks)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
     move_plugin(plugin, &path)?;
     Ok(())
@@ -81,7 +82,17 @@ fn pbxproj_path(plugin: &str) -> PathBuf {
     path
 }
 
-fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow::Result<()> {
+fn build_xcode(
+    config: &Config,
+    plugin: &str,
+    is_python_enabled: bool,
+    frameworks: &[String],
+) -> anyhow::Result<()> {
+    let extra_ldflags = frameworks
+        .iter()
+        .map(|f| format!("-framework {f}"))
+        .collect::<Vec<_>>()
+        .join(" ");
     let mut cmd = Command::new("xcodebuild")
         .arg("-project")
         .arg(format!("./{plugin}.xcodeproj"))
@@ -91,6 +102,7 @@ fn build_xcode(config: &Config, plugin: &str, is_python_enabled: bool) -> anyhow
             "PYTHON_INCLUDE_DIR={}",
             config.macos.python_include_dir
         ))
+        .arg(format!("EXTRA_LDFLAGS={extra_ldflags}"))
         .arg(if is_python_enabled {
             "EXTRA_CFLAGS=-DPYTHON_ENABLED"
         } else {

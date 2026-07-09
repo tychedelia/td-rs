@@ -1,43 +1,52 @@
+#[cfg(windows)]
 use anyhow::Result;
+#[cfg(windows)]
 use ash::{khr, vk, Device, Instance};
+#[cfg(windows)]
 use bevy::ecs::entity::EntityHashMap;
-use bevy::reflect::List;
-use bevy::render::camera::{
-    ManualTextureView, ManualTextureViewHandle, ManualTextureViews, RenderTarget,
-};
+#[cfg(windows)]
+use bevy::render::camera::{ManualTextureView, ManualTextureViews};
+use bevy::render::camera::{ManualTextureViewHandle, RenderTarget};
+#[cfg(not(windows))]
 use bevy::render::pipelined_rendering::PipelinedRenderingPlugin;
-use bevy::render::render_resource::{Texture, TextureDescriptor, TextureFormat, TextureView};
+#[cfg(windows)]
+use bevy::render::render_resource::{Texture, TextureDescriptor, TextureView};
+use bevy::render::render_resource::TextureFormat;
+#[cfg(windows)]
 use bevy::render::texture::DefaultImageSampler;
+#[cfg(windows)]
 use bevy::render::Extract;
+#[cfg(windows)]
+use bevy::render::{render_asset::RenderAssets, texture::GpuImage, ExtractSchedule, RenderApp};
 use bevy::{
-    core_pipeline::post_process::ChromaticAberration,
-    prelude::*,
-    render::{
-        render_asset::RenderAssets, renderer::RenderDevice, texture::GpuImage, ExtractSchedule,
-        RenderApp,
-    },
+    core_pipeline::post_process::ChromaticAberration, prelude::*, render::renderer::RenderDevice,
     window::WindowPlugin,
 };
+#[cfg(windows)]
 use cudarc::driver::{sys, CudaContext};
+#[cfg(windows)]
 use cudarc::runtime::sys::CUstream_st;
 use std::collections::HashMap;
-use std::f32::consts::PI;
+#[cfg(windows)]
 use std::fs::File;
+#[cfg(windows)]
 use std::mem::ManuallyDrop;
+#[cfg(windows)]
 use std::os::windows::io::{AsRawHandle, FromRawHandle, RawHandle};
 use std::sync::{Arc, Mutex};
 use td_rs_derive::Params;
 use td_rs_top::*;
+#[cfg(windows)]
 use wgpu::{Extent3d, TextureDimension, TextureUsages};
+
+#[cfg(not(windows))]
+mod cpu;
 
 fn get_bytes_per_pixel(format: &PixelFormat) -> usize {
     match format {
         PixelFormat::Invalid => 0,
 
-        PixelFormat::BGRA8Fixed
-        | PixelFormat::RGBA8Fixed
-        | PixelFormat::SBGRA8Fixed
-        | PixelFormat::SRGBA8Fixed => 4,
+        PixelFormat::BGRA8Fixed | PixelFormat::RGBA8Fixed => 4,
         PixelFormat::MonoA8Fixed | PixelFormat::RG8Fixed => 2,
         PixelFormat::Mono8Fixed | PixelFormat::A8Fixed => 1,
 
@@ -64,8 +73,6 @@ fn get_preferred_output_format(input_format: &PixelFormat) -> PixelFormat {
     match input_format {
         PixelFormat::RGBA8Fixed => PixelFormat::BGRA8Fixed,
         PixelFormat::BGRA8Fixed => PixelFormat::BGRA8Fixed,
-        PixelFormat::SRGBA8Fixed => PixelFormat::SBGRA8Fixed,
-        PixelFormat::SBGRA8Fixed => PixelFormat::SBGRA8Fixed,
 
         PixelFormat::RGBA16Fixed => PixelFormat::RGBA16Fixed,
         PixelFormat::RGBA16Float => PixelFormat::RGBA16Float,
@@ -86,12 +93,11 @@ fn get_preferred_output_format(input_format: &PixelFormat) -> PixelFormat {
     }
 }
 
+#[cfg(windows)]
 fn pixel_format_to_vulkan_format(format: &PixelFormat) -> vk::Format {
     match format {
         PixelFormat::BGRA8Fixed => vk::Format::B8G8R8A8_UNORM,
         PixelFormat::RGBA8Fixed => vk::Format::R8G8B8A8_UNORM,
-        PixelFormat::SBGRA8Fixed => vk::Format::B8G8R8A8_SRGB,
-        PixelFormat::SRGBA8Fixed => vk::Format::R8G8B8A8_SRGB,
 
         PixelFormat::RGBA16Fixed => vk::Format::R16G16B16A16_UNORM,
         PixelFormat::RGBA16Float => vk::Format::R16G16B16A16_SFLOAT,
@@ -128,8 +134,6 @@ fn pixel_format_to_wgpu_format(format: &PixelFormat) -> TextureFormat {
     match format {
         PixelFormat::BGRA8Fixed => TextureFormat::Bgra8Unorm,
         PixelFormat::RGBA8Fixed => TextureFormat::Rgba8Unorm,
-        PixelFormat::SBGRA8Fixed => TextureFormat::Bgra8UnormSrgb,
-        PixelFormat::SRGBA8Fixed => TextureFormat::Rgba8UnormSrgb,
 
         PixelFormat::RGBA16Fixed => TextureFormat::Rgba16Unorm,
         PixelFormat::RGBA16Float => TextureFormat::Rgba16Float,
@@ -190,8 +194,11 @@ pub struct BevyTop {
     app: Option<App>,
     inputs_entities: HashMap<usize, Entity>,
     output_entities: HashMap<usize, Entity>,
+    #[cfg(not(windows))]
+    cpu_output: Option<cpu::CpuOutputTarget>,
 }
 
+#[cfg(windows)]
 #[derive(Component)]
 struct SharedTexture {
     vulkan_memory: vk::DeviceMemory,
@@ -204,9 +211,11 @@ struct SharedTexture {
     row_pitch: usize,
 }
 
+#[cfg(windows)]
 #[derive(Default, Deref, DerefMut)]
 pub struct SharedTextureExternalMemory(EntityHashMap<ExternalMemory>);
 
+#[cfg(windows)]
 impl Drop for SharedTexture {
     fn drop(&mut self) {
         unsafe {
@@ -228,9 +237,11 @@ struct InputTextureImage(Handle<Image>);
 #[derive(Component)]
 struct OutputTexture(usize);
 
+#[cfg(windows)]
 #[derive(Component, Deref)]
 pub struct WgpuTexture(Texture);
 
+#[cfg(windows)]
 #[derive(Component, Deref)]
 pub struct WgpuTextureView(TextureView);
 
@@ -243,12 +254,15 @@ struct OutputCamera(usize);
 #[derive(Component)]
 struct InputTexturedQuad;
 
+#[cfg(windows)]
 #[derive(Component, Deref)]
 pub struct CudaArray(CudaArrayInfo);
 
+#[cfg(windows)]
 #[derive(Resource)]
 pub struct CudaCtx(Arc<CudaContext>);
 
+#[cfg(windows)]
 #[derive(Deref)]
 pub struct CudaStream(*mut CUstream_st);
 
@@ -279,6 +293,8 @@ impl TopNew for BevyTop {
             app: None,
             inputs_entities: HashMap::default(),
             output_entities: HashMap::default(),
+            #[cfg(not(windows))]
+            cpu_output: None,
         }
     }
 }
@@ -292,7 +308,10 @@ impl OpInfo for BevyTop {
 }
 
 impl TopInfo for BevyTop {
+    #[cfg(windows)]
     const EXECUTE_MODE: ExecuteMode = ExecuteMode::Cuda;
+    #[cfg(not(windows))]
+    const EXECUTE_MODE: ExecuteMode = ExecuteMode::Cpu;
 }
 
 impl Op for BevyTop {
@@ -310,7 +329,11 @@ impl Top for BevyTop {
     }
 
     fn execute(&mut self, mut output: TopOutput, input: &OperatorInputs<TopInput>) {
-        match self.execute_inner(&mut output, input) {
+        #[cfg(windows)]
+        let result = self.execute_cuda(&mut output, input);
+        #[cfg(not(windows))]
+        let result = self.execute_cpu(&mut output, input);
+        match result {
             Err(e) => self.set_error(&format!("Bevy TOP execution failed: {}", e)),
             _ => {}
         }
@@ -318,7 +341,8 @@ impl Top for BevyTop {
 }
 
 impl BevyTop {
-    fn execute_inner(
+    #[cfg(windows)]
+    fn execute_cuda(
         &mut self,
         output: &mut TopOutput,
         top_input: &OperatorInputs<TopInput>,
@@ -544,12 +568,6 @@ impl BevyTop {
             "bgra8fixed" => {
                 output_format = PixelFormat::BGRA8Fixed;
             }
-            "srgba8fixed" => {
-                output_format = PixelFormat::SRGBA8Fixed;
-            }
-            "sbgra8fixed" => {
-                output_format = PixelFormat::SBGRA8Fixed;
-            }
             "rgba16fixed" => {
                 output_format = PixelFormat::RGBA16Fixed;
             }
@@ -619,6 +637,7 @@ impl BevyTop {
         (output_width, output_height, output_format)
     }
 
+    #[cfg(windows)]
     fn import_inputs(
         mut commands: Commands,
         arrays: Query<(Entity, &CudaArray, &TextureKey), With<InputTexture>>,
@@ -666,6 +685,7 @@ impl BevyTop {
         Ok(())
     }
 
+    #[cfg(windows)]
     fn import_outputs(
         mut commands: Commands,
         arrays: Query<(Entity, &CudaArray, &TextureKey), With<OutputTexture>>,
@@ -715,6 +735,7 @@ impl BevyTop {
         Ok(())
     }
 
+    #[cfg(windows)]
     fn create_output_external_memory(
         ctx: &CudaContext,
         instance: &Instance,
@@ -823,6 +844,7 @@ impl BevyTop {
         Ok((output_texture, cuda_external_memory))
     }
 
+    #[cfg(windows)]
     fn create_input_external_memory(
         ctx: &CudaContext,
         instance: &Instance,
@@ -928,6 +950,7 @@ impl BevyTop {
         Ok((input_texture, cuda_external_memory))
     }
 
+    #[cfg(windows)]
     fn update_input_texture_data(
         input_textures: Query<(Entity, &SharedTexture, &CudaArray), With<InputTexture>>,
         cuda_stream: NonSend<CudaStream>,
@@ -979,6 +1002,7 @@ impl BevyTop {
         Ok(())
     }
 
+    #[cfg(windows)]
     fn sync_textures(
         mut commands: Commands,
         input_textures: Query<
@@ -1123,6 +1147,7 @@ impl BevyTop {
         Ok(())
     }
 
+    #[cfg(windows)]
     fn image_as_hal(
         vulkan_image: vk::Image,
         width: u32,
@@ -1158,6 +1183,7 @@ impl BevyTop {
         Ok(hal_texture)
     }
 
+    #[cfg(windows)]
     fn export_output(world: &mut World) -> bevy::prelude::Result {
         let mut outputs = world.query::<(Entity, &CudaArray, &SharedTexture, &OutputTexture)>();
         let cuda_stream = world.non_send_resource::<CudaStream>();
@@ -1210,6 +1236,7 @@ impl BevyTop {
         render_device.wgpu_device().poll(wgpu::Maintain::Wait);
     }
 
+    #[cfg(windows)]
     fn copy_from_array(
         cuda_array: *mut cudarc::runtime::sys::cudaArray,
         device_ptr: sys::CUdeviceptr,
@@ -1258,6 +1285,7 @@ impl BevyTop {
         Ok(())
     }
 
+    #[cfg(windows)]
     fn copy_to_array(
         device_ptr: sys::CUdeviceptr,
         td_cuda_array: *mut cudarc::runtime::sys::cudaArray,
@@ -1319,28 +1347,19 @@ impl BevyTop {
     fn init_bevy_app() -> App {
         let mut app = App::new();
 
-        app.add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: None,
-                    exit_condition: bevy::window::ExitCondition::DontExit,
-                    close_when_requested: false,
-                })
-        );
+        let default_plugins = DefaultPlugins.set(WindowPlugin {
+            primary_window: None,
+            exit_condition: bevy::window::ExitCondition::DontExit,
+            close_when_requested: false,
+        });
+        // Without CUDA interop we read the output back synchronously after
+        // app.update(), so rendering must not be pipelined onto another frame.
+        #[cfg(not(windows))]
+        let default_plugins = default_plugins.build().disable::<PipelinedRenderingPlugin>();
+        app.add_plugins(default_plugins);
 
         app.init_resource::<AppSettings>();
-        app.init_non_send_resource::<SharedTextureExternalMemory>();
         app.add_systems(Startup, setup_scene);
-        app.add_systems(
-            First,
-            (
-                Self::import_inputs,
-                Self::import_outputs,
-                Self::update_input_texture_data,
-                Self::sync_textures,
-            )
-                .chain(),
-        );
         app.add_systems(
             Update,
             (
@@ -1350,8 +1369,22 @@ impl BevyTop {
             ),
         );
 
-        let render_app = app.sub_app_mut(RenderApp);
-        render_app.add_systems(ExtractSchedule, extract_external_textures);
+        #[cfg(windows)]
+        {
+            app.init_non_send_resource::<SharedTextureExternalMemory>();
+            app.add_systems(
+                First,
+                (
+                    Self::import_inputs,
+                    Self::import_outputs,
+                    Self::update_input_texture_data,
+                    Self::sync_textures,
+                )
+                    .chain(),
+            );
+            let render_app = app.sub_app_mut(RenderApp);
+            render_app.add_systems(ExtractSchedule, extract_external_textures);
+        }
 
         app.finish();
         app.cleanup();
@@ -1365,6 +1398,7 @@ impl BevyTop {
     }
 }
 
+#[cfg(windows)]
 fn find_memory_type_for_external(
     instance: &Instance,
     physical_device: vk::PhysicalDevice,
@@ -1419,6 +1453,7 @@ fn find_memory_type_for_external(
     ))
 }
 
+#[cfg(windows)]
 unsafe fn import_external_memory_dedicated(
     cuda_context: &CudaContext,
     file: File,
@@ -1467,6 +1502,7 @@ unsafe fn import_external_memory_dedicated(
     })
 }
 
+#[cfg(windows)]
 #[derive(Debug)]
 pub struct ExternalMemory {
     external_memory: sys::CUexternalMemory,
@@ -1474,6 +1510,7 @@ pub struct ExternalMemory {
     _file: ManuallyDrop<File>,
 }
 
+#[cfg(windows)]
 impl ExternalMemory {
     pub fn map_all(self) -> Result<MappedBuffer, anyhow::Error> {
         let size = self.size as usize;
@@ -1557,6 +1594,7 @@ impl ExternalMemory {
     }
 }
 
+#[cfg(windows)]
 impl Drop for ExternalMemory {
     fn drop(&mut self) {
         unsafe {
@@ -1566,6 +1604,7 @@ impl Drop for ExternalMemory {
     }
 }
 
+#[cfg(windows)]
 #[derive(Debug)]
 pub struct MappedBuffer {
     pub device_ptr: sys::CUdeviceptr,
@@ -1573,6 +1612,7 @@ pub struct MappedBuffer {
     external_memory: ExternalMemory,
 }
 
+#[cfg(windows)]
 impl Drop for MappedBuffer {
     fn drop(&mut self) {}
 }
@@ -1664,6 +1704,7 @@ fn update_input_texture(
     }
 }
 
+#[cfg(windows)]
 fn extract_external_textures(
     inputs: Extract<Query<(&InputTextureImage, &WgpuTexture, &WgpuTextureView)>>,
     default_sampler: Res<DefaultImageSampler>,

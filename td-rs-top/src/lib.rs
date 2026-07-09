@@ -45,8 +45,8 @@ impl<'cook> TopOutput<'cook> {
                 FirstPixel::TopLeft => cxx::TOP_FirstPixel::TopLeft,
             },
             colorBufferIndex: info.color_buffer_index as u32,
-            colorSpace: td_rs_base::cxx::OP_ColorSpace::DefaultForWorkingColorSpace,
-            referenceWhite: td_rs_base::cxx::OP_ReferenceWhite::DefaultForColorSpace,
+            colorSpace: (&info.color_space).into(),
+            referenceWhite: (&info.reference_white).into(),
             reserved: Default::default(),
         };
 
@@ -202,6 +202,8 @@ pub struct UploadInfo {
     pub texture_desc: TextureDesc,
     pub first_pixel: FirstPixel,
     pub color_buffer_index: usize,
+    pub color_space: ColorSpace,
+    pub reference_white: ReferenceWhite,
 }
 
 pub trait Top: Op {

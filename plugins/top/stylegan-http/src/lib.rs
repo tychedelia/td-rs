@@ -255,6 +255,7 @@ impl Top for StyleganHttpTop {
                 },
                 first_pixel: FirstPixel::TopLeft,
                 color_buffer_index: 0,
+                ..Default::default()
             };
 
             output.upload_buffer(&mut buf, &info);

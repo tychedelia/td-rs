@@ -89,6 +89,7 @@ impl CpuMemoryTop {
             },
             first_pixel: Default::default(),
             color_buffer_index,
+            ..Default::default()
         };
 
         let layer_bytes =
