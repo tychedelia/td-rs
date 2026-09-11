@@ -4,13 +4,15 @@ use std::process::{Command, Stdio};
 pub fn native_static_libs(plugin: &str, target: &str) -> anyhow::Result<Vec<String>> {
     let out = Command::new("cargo")
         .arg("rustc")
+        .arg("--color")
+        .arg("never")
         .args(crate::cargo_workspace_args())
         .args(["-p", plugin, "--release", &format!("--target={target}"), "--", "--print=native-static-libs"])
         .stdout(Stdio::inherit())
         .stderr(Stdio::piped())
         .output()
         .context("could not run cargo rustc to list native static libs")?;
-    let stderr = String::from_utf8_lossy(&out.stderr);
+    let stderr = strip_ansi(&String::from_utf8_lossy(&out.stderr));
     let mut libs: Vec<String> = Vec::new();
     for line in stderr.lines() {
         if let Some(rest) = line.split("native-static-libs:").nth(1) {
@@ -47,4 +49,36 @@ pub fn msbuild_libs(libs: &[String]) -> String {
         .cloned()
         .collect::<Vec<_>>()
         .join(";")
+}
+
+/// Remove ANSI SGR/CSI escape sequences (`ESC [ ... <letter>`).
+fn strip_ansi(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let mut chars = s.chars().peekable();
+    while let Some(c) = chars.next() {
+        if c == '\x1b' && chars.peek() == Some(&'[') {
+            chars.next();
+            // parameter bytes 0x30..=0x3F, intermediates 0x20..=0x2F, final 0x40..=0x7E
+            while let Some(&n) = chars.peek() {
+                chars.next();
+                if ('\x40'..='\x7e').contains(&n) {
+                    break;
+                }
+            }
+        } else {
+            out.push(c);
+        }
+    }
+    out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn coloured_notes_parse_to_clean_tokens() {
+        let s = "\x1b[1m\x1b[36mnote\x1b[0m: native-static-libs: -lc++ -framework CoreAudio -lm\x1b[0m\n";
+        assert_eq!(strip_ansi(s), "note: native-static-libs: -lc++ -framework CoreAudio -lm\n");
+    }
 }
