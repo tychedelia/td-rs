@@ -10,7 +10,14 @@ pub struct WindowsConfig {
 #[derive(serde::Deserialize, Debug)]
 pub struct MacOsConfig {
     pub(crate) python_include_dir: String,
+    #[serde(default = "default_python_framework_dir")]
+    pub(crate) python_framework_dir: String,
     pub(crate) plugin_folder: String,
+}
+
+#[cfg(target_os = "macos")]
+fn default_python_framework_dir() -> String {
+    "/Applications/TouchDesigner.app/Contents/Frameworks".to_string()
 }
 
 #[derive(serde::Deserialize, Debug)]
@@ -28,7 +35,25 @@ pub(crate) fn read_config() -> Config {
     process_config(config)
 }
 
+fn env_override(target: &mut String, var: &str) {
+    if let Ok(v) = std::env::var(var) {
+        if !v.is_empty() {
+            *target = v;
+        }
+    }
+}
+
 fn process_config(mut config: Config) -> Config {
+    #[cfg(target_os = "windows")]
+    {
+        env_override(&mut config.windows.python_include_dir, "TD_RS_PYTHON_INCLUDE_DIR");
+        env_override(&mut config.windows.python_lib_dir, "TD_RS_PYTHON_LIB_DIR");
+    }
+    #[cfg(target_os = "macos")]
+    {
+        env_override(&mut config.macos.python_framework_dir, "TD_RS_PYTHON_FRAMEWORK_DIR");
+        env_override(&mut config.macos.python_include_dir, "TD_RS_PYTHON_INCLUDE_DIR");
+    }
     // special handling for $HOME in path
     #[cfg(target_os = "windows")]
     if config.windows.plugin_folder.contains("$HOME") {

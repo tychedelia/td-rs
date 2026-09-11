@@ -85,7 +85,7 @@
 			<key>name</key>
 			<string>Python.framework</string>
 			<key>path</key>
-			<string>/Applications/TouchDesigner.app/Contents/Frameworks/Python.framework</string>
+			<string>{{ PYTHON_FRAMEWORK_DIR }}/Python.framework</string>
 			<key>sourceTree</key>
 			<string>&lt;absolute&gt;</string>
 		</dict>
@@ -280,8 +280,7 @@
 			<key>files</key>
 			<array>
 				<string>6A7F74C22D40EA7500969072</string>
-				<string>6AD906B52AE10A9400997BA1</string>
-				<string>6AD906B52AE10A9400997BA2</string>
+{{ PYTHON_FRAMEWORK_BUILD_FILE }}				<string>6AD906B52AE10A9400997BA2</string>
 				<string>9E4ACB8C299AC54200A2B1CE</string>
 				<string>9ED7E4E02999F4C9001F2445</string>
 			</array>
@@ -613,7 +612,7 @@
 				<key>DEAD_CODE_STRIPPING</key>
 				<string>YES</string>
 				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<string>/Applications/TouchDesigner.app/Contents/Frameworks</string>
+				<string>{{ PYTHON_FRAMEWORK_DIR }}</string>
 				<key>INFOPLIST_FILE</key>
 				<string>$(SRCROOT)/Info.plist</string>
 				<key>INSTALL_PATH</key>
@@ -665,7 +664,7 @@
 				<key>DEAD_CODE_STRIPPING</key>
 				<string>YES</string>
 				<key>FRAMEWORK_SEARCH_PATHS</key>
-				<string>/Applications/TouchDesigner.app/Contents/Frameworks</string>
+				<string>{{ PYTHON_FRAMEWORK_DIR }}</string>
 				<key>INFOPLIST_FILE</key>
 				<string>$(SRCROOT)/Info.plist</string>
 				<key>INSTALL_PATH</key>

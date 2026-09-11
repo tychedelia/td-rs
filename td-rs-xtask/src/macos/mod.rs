@@ -57,7 +57,7 @@ pub(crate) fn build_plugin(
     let path = pbxproj_path(plugin);
 
     println!("Writing xcode project to {:?}", path);
-    write_xcodeproj(target, plugin, &plugin_type, &path)?;
+    write_xcodeproj(target, plugin, &plugin_type, &path, &config.macos.python_framework_dir, is_python_enabled)?;
     println!("Building xcode project");
     build_xcode(config, plugin, is_python_enabled, &frameworks)?;
     println!("Moving plugin to {:?}", PLUGIN_HOME);
@@ -132,6 +132,8 @@ fn write_xcodeproj(
     plugin: &str,
     plugin_type: &PluginType,
     path: &PathBuf,
+    python_framework_dir: &str,
+    is_python_enabled: bool,
 ) -> anyhow::Result<()> {
     std::fs::create_dir_all(path.parent().unwrap())
         .context("Could not create xcode project directory")?;
@@ -141,6 +143,11 @@ fn write_xcodeproj(
 
     let project = std::fs::read_to_string("td-rs-xtask/xcode/project.pbxproj")
         .expect("Could not read xcode project")
+        .replace("{{ PYTHON_FRAMEWORK_DIR }}", python_framework_dir)
+        .replace(
+            "{{ PYTHON_FRAMEWORK_BUILD_FILE }}",
+            if is_python_enabled { "\t\t\t\t<string>6AD906B52AE10A9400997BA1</string>\n" } else { "" },
+        )
         .replace("{{ LIB_NAME }}", &format!("lib{plugin}.a"))
         .replace(
             "{{ LIB_PATH }}",

@@ -74,6 +74,14 @@ You can use [bacon](https://dystroy.org/bacon) to watch for changes and build + 
 - `cargo xtask build $PLUGIN` - Build the plugin for the current platform.
 - `cargo xtask install $PLUGIN` - Install a built plugin to the TouchDesigner plugins directory.
 - `cargo xtask list-plugins` - List all available plugins.
+- Python: only a plugin that enables the `python` feature links Python. It links against whatever
+  `td-rs.toml` points at (TouchDesigner's embedded CPython 3.11 by default), overridable per machine
+  with `TD_RS_PYTHON_FRAMEWORK_DIR` / `TD_RS_PYTHON_INCLUDE_DIR` (macOS) and
+  `TD_RS_PYTHON_INCLUDE_DIR` / `TD_RS_PYTHON_LIB_DIR` (Windows). Any CPython 3.11 satisfies the
+  build — at runtime the plugin resolves against the Python TouchDesigner has loaded — so a CI
+  machine without TouchDesigner uses a stock 3.11: on Windows `actions/setup-python` and its
+  `include` + `libs` dirs; on macOS a *framework* build (python.org installer or Homebrew's
+  `python@3.11`, whose `Frameworks/` dir holds `Python.framework`).
 - `cargo xtask build $PLUGIN --path <dir>` - Build a plugin crate that lives outside this repository
   (a staticlib with its own `[workspace]` and td-rs as a path dependency). It is compiled into this
   repo's `target/` and packaged exactly like a workspace plugin; `install` takes `--path` too.
