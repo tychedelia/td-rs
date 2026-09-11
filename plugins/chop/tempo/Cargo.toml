@@ -1,0 +1,15 @@
+[package]
+name = "tempo-chop"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "chop"
+
+[lib]
+name = "tempo_chop"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-chop = { path = "../../../td-rs-chop" }
+laser-td-tempo = { path = "../../../../laser/td/tempo-chop" }

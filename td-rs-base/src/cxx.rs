@@ -12,6 +12,7 @@ include_cpp! {
     generate_pod!("TD::OP_NumericParameter")
     generate_pod!("TD::OP_StringParameter")
     generate!("TD::OP_Inputs")
+    generate!("TD::OP_POPInput")
     generate_pod!("TD::OP_InfoDATSize")
     generate_pod!("TD::OP_InfoCHOPChan")
     generate_pod!("TD::Vector")

@@ -1,4 +1,5 @@
 mod config;
+mod link;
 #[cfg(target_os = "macos")]
 mod macos;
 mod metadata;

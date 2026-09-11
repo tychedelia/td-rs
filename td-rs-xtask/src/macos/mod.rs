@@ -20,6 +20,11 @@ pub(crate) fn install_plugin(
         "Installing plugin {:?} to {}",
         plugin_target_path, td_plugin_folder
     );
+    // overwriting in place leaves stale code-signed pages cached: dlopen dies with CODESIGNING "Invalid Page"
+    let installed = Path::new(td_plugin_folder).join(format!("{plugin}.plugin"));
+    if installed.exists() {
+        fs_extra::dir::remove(&installed).context("Could not remove installed plugin")?;
+    }
     fs_extra::dir::copy(
         &plugin_target_path,
         td_plugin_folder,
@@ -45,7 +50,9 @@ pub(crate) fn build_plugin(
     )?;
 
     let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
-    let frameworks = crate::metadata::macos_frameworks(plugin);
+    let mut frameworks = crate::metadata::macos_frameworks(plugin);
+    let native = crate::link::native_static_libs(plugin, target)?;
+    frameworks.extend(native);
     let plugin = &plugin.replace('-', "_");
     let path = pbxproj_path(plugin);
 
@@ -88,11 +95,15 @@ fn build_xcode(
     is_python_enabled: bool,
     frameworks: &[String],
 ) -> anyhow::Result<()> {
-    let extra_ldflags = frameworks
-        .iter()
-        .map(|f| format!("-framework {f}"))
-        .collect::<Vec<_>>()
-        .join(" ");
+    let mut seen = std::collections::HashSet::new();
+    let mut tokens: Vec<String> = Vec::new();
+    for f in frameworks {
+        let tok = if f.starts_with('-') { f.clone() } else { format!("-framework {f}") };
+        if seen.insert(tok.clone()) {
+            tokens.push(tok);
+        }
+    }
+    let extra_ldflags = crate::link::ldflags(&tokens);
     let mut cmd = Command::new("xcodebuild")
         .arg("-project")
         .arg(format!("./{plugin}.xcodeproj"))

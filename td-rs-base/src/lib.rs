@@ -33,6 +33,7 @@ pub mod cuda;
 pub mod cxx;
 pub mod dat;
 pub mod param;
+pub mod pop;
 #[cfg(feature = "python")]
 pub mod py;
 pub mod sop;
@@ -318,6 +319,38 @@ impl<'cook> ParamInputs<'cook> {
             self.inputs
                 .getParInt(ffi::CString::new(name).unwrap().into_raw(), 0)
                 != 0
+        }
+    }
+
+    pub fn get_rgb(&self, name: &str) -> (f64, f64, f64) {
+        unsafe {
+            let mut r = 0.0;
+            let mut g = 0.0;
+            let mut b = 0.0;
+            self.inputs.getParRGB(
+                ffi::CString::new(name).unwrap().into_raw(),
+                Pin::new(&mut r),
+                Pin::new(&mut g),
+                Pin::new(&mut b),
+            );
+            (r, g, b)
+        }
+    }
+
+    pub fn get_rgba(&self, name: &str) -> (f64, f64, f64, f64) {
+        unsafe {
+            let mut r = 0.0;
+            let mut g = 0.0;
+            let mut b = 0.0;
+            let mut a = 0.0;
+            self.inputs.getParRGBA(
+                ffi::CString::new(name).unwrap().into_raw(),
+                Pin::new(&mut r),
+                Pin::new(&mut g),
+                Pin::new(&mut b),
+                Pin::new(&mut a),
+            );
+            (r, g, b, a)
         }
     }
 

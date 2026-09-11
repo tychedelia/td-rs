@@ -21,6 +21,14 @@ impl ChopInput {
         self.input.numSamples as usize
     }
 
+    pub fn sample_rate(&self) -> f32 {
+        self.input.sampleRate as f32
+    }
+
+    pub fn start_index(&self) -> f64 {
+        self.input.startIndex
+    }
+
     /// Get a channel.
     pub fn channel(&self, index: usize) -> &[f32] {
         if index >= self.num_channels() {

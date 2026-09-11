@@ -366,8 +366,11 @@ macro_rules! impl_param_int {
     ( $t:ty ) => {
         impl Param for $t {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+                let declared = options.default;
                 let mut param: NumericParameter = options.into();
-                param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                if declared == 0.0 {
+                    param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                }
                 parameter_manager.append_int(param);
             }
 
@@ -395,8 +398,11 @@ macro_rules! impl_param_float {
     ( $t:ty ) => {
         impl Param for $t {
             fn register(&self, options: ParamOptions, parameter_manager: &mut ParameterManager) {
+                let declared = options.default;
                 let mut param: NumericParameter = options.into();
-                param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                if declared == 0.0 {
+                    param.default_values = [*self as f64, 0.0, 0.0, 0.0];
+                }
                 parameter_manager.append_float(param);
             }
 
@@ -489,6 +495,7 @@ impl Param for rgb::RGBA16 {
 }
 
 /// A parameter wrapping a `PathBuf` that will be registered as a folder parameter.
+#[derive(Default, Clone, Debug)]
 pub struct FolderParam(PathBuf);
 
 impl Deref for FolderParam {
@@ -708,7 +715,7 @@ impl Param for Color {
     }
 
     fn update(&mut self, name: &str, inputs: &ParamInputs) {
-        let [r, g, b, a] = inputs.get_double_arr::<4>(name);
+        let (r, g, b, a) = inputs.get_rgba(name);
         *self = (r, g, b, a).into();
     }
 }

@@ -1,10 +1,4 @@
 //! CPU readback path for platforms without CUDA interop (e.g. macOS).
-//!
-//! Inputs are downloaded from TouchDesigner into CPU memory and uploaded to
-//! Bevy as regular `Image` assets. The camera renders into a wgpu texture we
-//! register as a `ManualTextureView`, and after each update the texture is
-//! copied into a mappable buffer and handed back to TouchDesigner via
-//! `upload_buffer`.
 
 use anyhow::{anyhow, Result};
 use bevy::asset::RenderAssetUsages;
@@ -22,7 +16,6 @@ use crate::{
     OutputTexture, PreferredOutput,
 };
 
-// Offset so the output view handle never collides with input view handles.
 const OUTPUT_VIEW_HANDLE: ManualTextureViewHandle = ManualTextureViewHandle(1000);
 
 pub struct CpuOutputTarget {
@@ -48,10 +41,7 @@ impl BevyTop {
 
         Self::update_app_settings(&self.params, app);
 
-        let (output_width, output_height, output_format) = Self::get_resolution_and_format(
-            top_input.params(),
-            top_input.input(0).map(|x| x.texture_desc()),
-        );
+        let (output_width, output_height, output_format) = Self::resolve_output_desc(output);
         app.world_mut().insert_resource(PreferredOutput {
             format: output_format,
             resolution: UVec2::new(output_width as u32, output_height as u32),
@@ -72,8 +62,6 @@ impl BevyTop {
         Self::readback_and_upload(app, &self.cpu_output, &self.context, output)
     }
 
-    /// Download each input texture to CPU memory and publish it as a Bevy
-    /// `Image` asset.
     fn upload_inputs(
         app: &mut App,
         inputs_entities: &mut HashMap<usize, Entity>,
@@ -101,8 +89,6 @@ impl BevyTop {
                 ));
             }
 
-            // TD's 8-bit data carries an sRGB transfer under the color space
-            // workflow, so tag the image sRGB for correct sampling.
             let image = Image::new(
                 Extent3d {
                     width: desc.width as u32,
@@ -139,8 +125,6 @@ impl BevyTop {
         Ok(())
     }
 
-    /// (Re)create the render target texture, its manual view, and the readback
-    /// buffer whenever the requested output size or format changes.
     fn ensure_output_target(
         app: &mut App,
         cpu_output: &mut Option<CpuOutputTarget>,
@@ -243,8 +227,6 @@ impl BevyTop {
         Ok(())
     }
 
-    /// Copy the rendered texture into the readback buffer, wait for the map,
-    /// and upload the rows to TouchDesigner.
     fn readback_and_upload(
         app: &mut App,
         cpu_output: &Option<CpuOutputTarget>,

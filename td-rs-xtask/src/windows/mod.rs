@@ -98,6 +98,11 @@ pub(crate) fn build_plugin(
     std::fs::write(format!("./{solution_name}.vcxproj"), vcxproj)?;
 
     let is_python_enabled = crate::metadata::is_python_enabled(plugin, &plugin_type);
+    let native = crate::link::native_static_libs(plugin, target)?;
+    let vcxproj = std::fs::read_to_string(format!("./{solution_name}.vcxproj"))?
+        .replace("{{ NATIVE_LIBS }}", &crate::link::msbuild_libs(&native))
+        .replace("{{ PYTHON_LIB }}", if is_python_enabled { "python311.lib" } else { "" });
+    std::fs::write(format!("./{solution_name}.vcxproj"), vcxproj)?;
     run_msbuild(config, &target, &plugin, is_python_enabled)?;
     fs_extra::remove_items(&files)?;
 

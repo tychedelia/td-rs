@@ -1,0 +1,15 @@
+[package]
+name = "simple-shapes-pop"
+version = "0.1.0"
+edition = "2021"
+
+[package.metadata.td-rs]
+type = "pop"
+
+[lib]
+name = "simple_shapes_pop"
+crate-type = ["staticlib"]
+
+[dependencies]
+td-rs-pop = { path = "../../../td-rs-pop" }
+td-rs-derive = { path = "../../../td-rs-derive" }

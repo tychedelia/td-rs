@@ -77,7 +77,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>{{ CUDA_LIB_DIRS }};$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>{{ CUDA_LIBS }};synchronization.lib;python311.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>{{ CUDA_LIBS }};{{ NATIVE_LIBS }};synchronization.lib;{{ PYTHON_LIB }};bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -96,7 +96,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <AdditionalLibraryDirectories>{{ CUDA_LIB_DIRS }};$(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>{{ CUDA_LIBS }};synchronization.lib;python311.lib;bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;opengl32.lib;dwmapi.lib;uxtheme.lib;dinput8.lib;dxguid.lib;setupapi.lib;winmm.lib;imm32.lib;oleacc.lib;version.lib;xinput.lib;hid.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;pdh.lib;psapi.lib;powrprof.lib;uiautomationcore.lib;windowsapp.lib;propsys.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>{{ CUDA_LIBS }};{{ NATIVE_LIBS }};synchronization.lib;{{ PYTHON_LIB }};bcrypt.lib;UserEnv.Lib;Ws2_32.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;msvcrt.lib;ntdll.lib;opengl32.lib;dwmapi.lib;uxtheme.lib;dinput8.lib;dxguid.lib;setupapi.lib;winmm.lib;imm32.lib;oleacc.lib;version.lib;xinput.lib;hid.lib;d3d12.lib;dxgi.lib;d3dcompiler.lib;pdh.lib;psapi.lib;powrprof.lib;uiautomationcore.lib;windowsapp.lib;propsys.lib;.\target\x86_64-pc-windows-msvc\release\{{ OP_LIB_NAME }};$(PLUGIN);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

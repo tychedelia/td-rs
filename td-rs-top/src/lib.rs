@@ -59,6 +59,39 @@ impl<'cook> TopOutput<'cook> {
         };
     }
 
+    pub fn suggested_output_desc(&mut self) -> TextureDesc {
+        let mut desc = crate::cxx::OP_TextureDesc {
+            aspectX: 0.0,
+            aspectY: 0.0,
+            depth: 1,
+            height: 0,
+            width: 0,
+            texDim: OP_TexDim::eInvalid,
+            pixelFormat: OP_PixelFormat::Invalid,
+            reserved: Default::default(),
+        };
+        unsafe {
+            self.output
+                .as_mut()
+                .getSuggestedOutputDesc(&mut desc, std::ptr::null_mut())
+        };
+        TextureDesc {
+            width: desc.width as usize,
+            height: desc.height as usize,
+            depth: desc.depth as usize,
+            tex_dim: match desc.texDim {
+                OP_TexDim::eInvalid => TexDim::EInvalid,
+                OP_TexDim::e2D => TexDim::E2D,
+                OP_TexDim::e2DArray => TexDim::E2DArray,
+                OP_TexDim::e3D => TexDim::E3D,
+                OP_TexDim::eCube => TexDim::ECube,
+            },
+            pixel_format: PixelFormat::from(&desc.pixelFormat),
+            aspect_x: desc.aspectX,
+            aspect_y: desc.aspectY,
+        }
+    }
+
     /// Create a CUDA array for CUDA execution mode
     #[cfg(feature = "cuda")]
     pub fn create_cuda_array(

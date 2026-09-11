@@ -69,30 +69,6 @@ fn get_bytes_per_pixel(format: &PixelFormat) -> usize {
     }
 }
 
-fn get_preferred_output_format(input_format: &PixelFormat) -> PixelFormat {
-    match input_format {
-        PixelFormat::RGBA8Fixed => PixelFormat::BGRA8Fixed,
-        PixelFormat::BGRA8Fixed => PixelFormat::BGRA8Fixed,
-
-        PixelFormat::RGBA16Fixed => PixelFormat::RGBA16Fixed,
-        PixelFormat::RGBA16Float => PixelFormat::RGBA16Float,
-
-        PixelFormat::RGBA32Float => PixelFormat::RGBA32Float,
-
-        PixelFormat::Mono8Fixed | PixelFormat::MonoA8Fixed | PixelFormat::RG8Fixed => {
-            PixelFormat::BGRA8Fixed
-        }
-        PixelFormat::Mono16Fixed | PixelFormat::MonoA16Fixed | PixelFormat::RG16Fixed => {
-            PixelFormat::RGBA16Fixed
-        }
-        PixelFormat::Mono32Float | PixelFormat::MonoA32Float | PixelFormat::RG32Float => {
-            PixelFormat::RGBA32Float
-        }
-
-        _ => PixelFormat::BGRA8Fixed,
-    }
-}
-
 #[cfg(windows)]
 fn pixel_format_to_vulkan_format(format: &PixelFormat) -> vk::Format {
     match format {
@@ -378,10 +354,7 @@ impl BevyTop {
             }
         }
 
-        let (output_width, output_height, output_format) = Self::get_resolution_and_format(
-            top_input.params(),
-            top_input.input(0).map(|x| x.texture_desc()),
-        );
+        let (output_width, output_height, output_format) = Self::resolve_output_desc(output);
         app.world_mut().insert_resource(PreferredOutput {
             format: output_format,
             resolution: UVec2::new(output_width as u32, output_height as u32),
@@ -461,180 +434,24 @@ impl BevyTop {
         Ok(())
     }
 
-    fn get_resolution_and_format(
-        params: ParamInputs,
-        first_input_desc: Option<TextureDesc>,
-    ) -> (usize, usize, PixelFormat) {
-        let mut output_width = 512;
-        let mut output_height = 512;
-        let output_resolution = params.get_string("outputresolution");
-        let mut output_format = PixelFormat::BGRA8Fixed;
-
-        match output_resolution {
-            "useinput" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width;
-                    output_height = input_desc.height;
-                }
-            }
-            "eigth" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width / 8;
-                    output_height = input_desc.height / 8;
-                }
-            }
-            "quarter" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width / 4;
-                    output_height = input_desc.height / 4;
-                }
-            }
-            "half" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width / 2;
-                    output_height = input_desc.height / 2;
-                }
-            }
-            "2x" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width * 2;
-                    output_height = input_desc.height * 2;
-                }
-            }
-            "4x" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width * 4;
-                    output_height = input_desc.height * 4;
-                }
-            }
-            "8x" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_width = input_desc.width * 8;
-                    output_height = input_desc.height * 8;
-                }
-            }
-            "fit" => {
-                if let Some(input_desc) = &first_input_desc {
-                    let aspect_ratio = input_desc.width as f32 / input_desc.height as f32;
-                    if aspect_ratio > 1.0 {
-                        output_width = 512;
-                        output_height = (512.0 / aspect_ratio) as usize;
-                    } else {
-                        output_height = 512;
-                        output_width = (512.0 * aspect_ratio) as usize;
-                    }
-                }
-            }
-            "limit" => {
-                if let Some(input_desc) = &first_input_desc {
-                    let max_size = 512;
-                    if input_desc.width > max_size || input_desc.height > max_size {
-                        let aspect_ratio = input_desc.width as f32 / input_desc.height as f32;
-                        if aspect_ratio > 1.0 {
-                            output_width = max_size;
-                            output_height = (max_size as f32 / aspect_ratio) as usize;
-                        } else {
-                            output_height = max_size;
-                            output_width = (max_size as f32 * aspect_ratio) as usize;
-                        }
-                    } else {
-                        output_width = input_desc.width;
-                        output_height = input_desc.height;
-                    }
-                }
-            }
-            "custom" => {
-                let custom_width = params.get_int("resolution", 0);
-                let custom_height = params.get_int("resolution", 1);
-                if custom_width > 0 && custom_height > 0 {
-                    output_width = custom_width as usize;
-                    output_height = custom_height as usize;
-                }
-            }
-            "parpanel" => {}
-            _ => {}
+    fn resolve_output_desc(output: &mut TopOutput) -> (usize, usize, PixelFormat) {
+        let suggested = output.suggested_output_desc();
+        let width = if suggested.width == 0 {
+            512
+        } else {
+            suggested.width
         };
-
-        let format = params.get_string("format");
-        match format {
-            "useinput" => {
-                if let Some(input_desc) = &first_input_desc {
-                    output_format = input_desc.pixel_format;
-                }
-            }
-            "rgba8fixed" => {
-                output_format = PixelFormat::RGBA8Fixed;
-            }
-            "bgra8fixed" => {
-                output_format = PixelFormat::BGRA8Fixed;
-            }
-            "rgba16fixed" => {
-                output_format = PixelFormat::RGBA16Fixed;
-            }
-            "rgba16float" => {
-                output_format = PixelFormat::RGBA16Float;
-            }
-            "rgba32float" => {
-                output_format = PixelFormat::RGBA32Float;
-            }
-            "mono8fixed" => {
-                output_format = PixelFormat::Mono8Fixed;
-            }
-            "mono16fixed" => {
-                output_format = PixelFormat::Mono16Fixed;
-            }
-            "mono16float" => {
-                output_format = PixelFormat::Mono16Float;
-            }
-            "mono32float" => {
-                output_format = PixelFormat::Mono32Float;
-            }
-            "rg8fixed" => {
-                output_format = PixelFormat::RG8Fixed;
-            }
-            "rg16fixed" => {
-                output_format = PixelFormat::RG16Fixed;
-            }
-            "rg16float" => {
-                output_format = PixelFormat::RG16Float;
-            }
-            "rg32float" => {
-                output_format = PixelFormat::RG32Float;
-            }
-            "a8fixed" => {
-                output_format = PixelFormat::A8Fixed;
-            }
-            "a16fixed" => {
-                output_format = PixelFormat::A16Fixed;
-            }
-            "a16float" => {
-                output_format = PixelFormat::A16Float;
-            }
-            "a32float" => {
-                output_format = PixelFormat::A32Float;
-            }
-            "monoalpha8fixed" => {
-                output_format = PixelFormat::MonoA8Fixed;
-            }
-            "monoalpha16fixed" => {
-                output_format = PixelFormat::MonoA16Fixed;
-            }
-            "monoalpha16float" => {
-                output_format = PixelFormat::MonoA16Float;
-            }
-            "monoalpha32float" => {
-                output_format = PixelFormat::MonoA32Float;
-            }
-            "rgb10a2fixed" => {
-                output_format = PixelFormat::RGB10A2Fixed;
-            }
-            "rgba11float" => {
-                output_format = PixelFormat::RGB11Float;
-            }
-            _ => {}
-        }
-
-        (output_width, output_height, output_format)
+        let height = if suggested.height == 0 {
+            512
+        } else {
+            suggested.height
+        };
+        let format = if suggested.pixel_format == PixelFormat::Invalid {
+            PixelFormat::BGRA8Fixed
+        } else {
+            suggested.pixel_format
+        };
+        (width, height, format)
     }
 
     #[cfg(windows)]
@@ -1352,8 +1169,6 @@ impl BevyTop {
             exit_condition: bevy::window::ExitCondition::DontExit,
             close_when_requested: false,
         });
-        // Without CUDA interop we read the output back synchronously after
-        // app.update(), so rendering must not be pipelined onto another frame.
         #[cfg(not(windows))]
         let default_plugins = default_plugins.build().disable::<PipelinedRenderingPlugin>();
         app.add_plugins(default_plugins);

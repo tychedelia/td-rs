@@ -6,6 +6,7 @@ pub enum PluginType {
     Sop,
     Dat,
     Top,
+    Pop,
 }
 
 impl PluginType {
@@ -15,6 +16,7 @@ impl PluginType {
             Self::Sop => "td-rs-sop",
             Self::Dat => "td-rs-dat",
             Self::Top => "td-rs-top",
+            Self::Pop => "td-rs-pop",
         }
     }
 
@@ -24,6 +26,7 @@ impl PluginType {
             Self::Sop => "sop",
             Self::Dat => "dat",
             Self::Top => "top",
+            Self::Pop => "pop",
         }
     }
 }
@@ -50,6 +53,7 @@ pub fn plugin_type(plugin: &str) -> PluginType {
             "sop" => PluginType::Sop,
             "dat" => PluginType::Dat,
             "top" => PluginType::Top,
+            "pop" => PluginType::Pop,
             _ => panic!("Unknown plugin type: {}", plugin_type),
         }
     } else {

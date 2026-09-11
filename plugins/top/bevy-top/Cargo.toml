@@ -5,8 +5,6 @@ edition = "2021"
 
 [package.metadata.td-rs]
 type = "top"
-# Frameworks bevy/winit link via #[link] attributes, which are lost when the
-# staticlib is relinked by Xcode.
 macos-frameworks = [
     "AppKit",
     "AudioToolbox",
