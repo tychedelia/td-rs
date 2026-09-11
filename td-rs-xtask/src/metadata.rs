@@ -62,9 +62,11 @@ pub fn plugin_type(plugin: &str) -> PluginType {
 }
 
 fn fetch_cargo_metadata() -> Metadata {
-    MetadataCommand::new()
-        .exec()
-        .expect("Failed to fetch cargo metadata")
+    let mut cmd = MetadataCommand::new();
+    if let Some(dir) = crate::external_manifest_dir() {
+        cmd.manifest_path(dir.join("Cargo.toml"));
+    }
+    cmd.exec().expect("Failed to fetch cargo metadata")
 }
 
 pub(crate) fn fetch_cargo_workspace_package(package: &str) -> anyhow::Result<Package> {

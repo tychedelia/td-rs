@@ -3,7 +3,9 @@ use std::process::{Command, Stdio};
 
 pub fn native_static_libs(plugin: &str, target: &str) -> anyhow::Result<Vec<String>> {
     let out = Command::new("cargo")
-        .args(["rustc", "-p", plugin, "--release", &format!("--target={target}"), "--", "--print=native-static-libs"])
+        .arg("rustc")
+        .args(crate::cargo_workspace_args())
+        .args(["-p", plugin, "--release", &format!("--target={target}"), "--", "--print=native-static-libs"])
         .stdout(Stdio::inherit())
         .stderr(Stdio::piped())
         .output()

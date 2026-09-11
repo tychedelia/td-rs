@@ -74,6 +74,9 @@ You can use [bacon](https://dystroy.org/bacon) to watch for changes and build + 
 - `cargo xtask build $PLUGIN` - Build the plugin for the current platform.
 - `cargo xtask install $PLUGIN` - Install a built plugin to the TouchDesigner plugins directory.
 - `cargo xtask list-plugins` - List all available plugins.
+- `cargo xtask build $PLUGIN --path <dir>` - Build a plugin crate that lives outside this repository
+  (a staticlib with its own `[workspace]` and td-rs as a path dependency). It is compiled into this
+  repo's `target/` and packaged exactly like a workspace plugin; `install` takes `--path` too.
 
 ### Windows
 

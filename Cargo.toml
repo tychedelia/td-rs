@@ -15,7 +15,6 @@ members = [
     "plugins/chop/monome-grid",
     "plugins/chop/python",
     "plugins/chop/wasm",
-    "plugins/chop/tempo",
     "plugins/dat/filter",
     "plugins/dat/dynamic_menu",
     "plugins/pop/simple-shapes-pop",
